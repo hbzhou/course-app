@@ -3,7 +3,7 @@ package com.itsz.setup.controller
 import com.itsz.setup.dto.LoginRequest
 import com.itsz.setup.dto.LoginResponse
 import com.itsz.setup.dto.RegisterRequest
-import com.itsz.setup.security.JwtService
+import com.itsz.setup.auth.JwtService
 import com.itsz.setup.service.UserService
 import com.itsz.setup.domain.User
 import com.itsz.setup.repository.RoleRepository

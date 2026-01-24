@@ -1,5 +1,6 @@
-package com.itsz.setup.security
+package com.itsz.setup.config
 
+import com.itsz.setup.auth.JwtAuthFilter
 import com.itsz.setup.service.UserDetailsServiceImpl
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -37,6 +38,12 @@ class SecurityConfig(
             .csrf { it.disable() }
             .authorizeHttpRequests {
                 it
+                    .requestMatchers(
+                        "/v3/api-docs/**",
+                        "/swagger-ui/**",
+                        "/swagger-ui.html",
+                        "/error"
+                    ).permitAll()
                     .requestMatchers("/api/auth/**").permitAll()
                     .requestMatchers(HttpMethod.GET, "/api/courses/**").hasAnyRole("USER", "ADMIN")
                     .requestMatchers(HttpMethod.POST, "/api/courses/**").hasRole("ADMIN")
@@ -50,4 +57,3 @@ class SecurityConfig(
         return http.build()
     }
 }
-
