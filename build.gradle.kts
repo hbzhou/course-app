@@ -21,9 +21,11 @@ java {
 
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter-web")
+//    implementation("org.springframework.data:spring-data-commons")
+
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-security")
-    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.0")
+//    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.0")
     implementation("io.jsonwebtoken:jjwt-api:0.11.5")
     runtimeOnly("io.jsonwebtoken:jjwt-impl:0.11.5")
     runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.11.5")
@@ -47,11 +49,4 @@ kotlin {
 
 tasks.withType<Test> {
     useJUnitPlatform()
-}
-
-// Spring Boot 4 enables Test AOT processing by default. Springdoc currently triggers
-// a missing optional Querydsl/Spring-Data type during AOT introspection.
-// Disabling AOT keeps normal JVM runtime working (bootRun, tests).
-tasks.matching { it.name in setOf("processAot", "processTestAot") }.configureEach {
-    enabled = false
 }
