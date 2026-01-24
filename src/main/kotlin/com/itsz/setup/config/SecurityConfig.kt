@@ -4,9 +4,9 @@ import com.itsz.setup.auth.JwtAuthFilter
 import com.itsz.setup.service.UserDetailsServiceImpl
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import org.springframework.http.HttpMethod
 import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.config.http.SessionCreationPolicy
@@ -17,6 +17,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity(prePostEnabled = true)
 class SecurityConfig(
     private val userDetailsService: UserDetailsServiceImpl,
     private val jwtAuthFilter: JwtAuthFilter
@@ -38,17 +39,16 @@ class SecurityConfig(
             .csrf { it.disable() }
             .authorizeHttpRequests {
                 it
+                    // Swagger UI / OpenAPI
                     .requestMatchers(
                         "/v3/api-docs/**",
                         "/swagger-ui/**",
                         "/swagger-ui.html",
                         "/error"
                     ).permitAll()
+                    // auth endpoints
                     .requestMatchers("/api/auth/**").permitAll()
-                    .requestMatchers(HttpMethod.GET, "/api/courses/**").hasAnyRole("USER", "ADMIN")
-                    .requestMatchers(HttpMethod.POST, "/api/courses/**").hasRole("ADMIN")
-                    .requestMatchers(HttpMethod.PUT, "/api/courses/**").hasRole("ADMIN")
-                    .requestMatchers(HttpMethod.DELETE, "/api/courses/**").hasRole("ADMIN")
+                    // everything else requires a valid JWT; permissions are enforced by @PreAuthorize
                     .anyRequest().authenticated()
             }
             .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }

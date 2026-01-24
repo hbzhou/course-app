@@ -15,11 +15,17 @@ class UserDetailsServiceImpl(private val userRepository: UserRepository) : UserD
         val user = userRepository.findByUsername(username)
             .orElseThrow { UsernameNotFoundException("User not found with username: $username") }
 
+        val authorities = buildSet {
+            // keep role-based auth working
+            user.roles.forEach { add(SimpleGrantedAuthority(it.name)) }
+            // add fine-grained permissions
+            user.roles.flatMap { it.permissions }.forEach { add(SimpleGrantedAuthority(it.name)) }
+        }.toList()
+
         return User(
             user.username,
             user.password,
-            user.roles.map { SimpleGrantedAuthority(it.name) }
+            authorities
         )
     }
 }
-
