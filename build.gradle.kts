@@ -8,7 +8,7 @@ plugins {
 
 group = "com.itsz"
 version = "0.0.1-SNAPSHOT"
-description = "course-kotlin"
+description = "course app"
 
 repositories {
     mavenCentral()
