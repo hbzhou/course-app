@@ -14,7 +14,7 @@ import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.web.bind.annotation.*
 
 @RestController
-@RequestMapping()
+@RequestMapping("/auth")
 class AuthController(
     private val authenticationManager: AuthenticationManager,
     private val userDetailsService: UserDetailsService,

@@ -12,6 +12,8 @@ class UserService(private val userRepository: UserRepository) {
 
     fun getUserById(id: Long): Optional<User> = userRepository.findById(id)
 
+    fun getUserByUsername(username: String): User? = userRepository.findByUsername(username).orElse(null)
+
     fun createUser(user: User): User = userRepository.save(user)
 
     fun updateUser(id: Long, user: User): User {
