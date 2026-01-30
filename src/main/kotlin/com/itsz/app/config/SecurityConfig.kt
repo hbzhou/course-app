@@ -1,7 +1,6 @@
 package com.itsz.app.config
 
 import com.itsz.app.auth.JwtAuthFilter
-import com.itsz.app.service.UserDetailsServiceImpl
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.security.authentication.AuthenticationManager
@@ -10,6 +9,7 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.config.http.SessionCreationPolicy
+import org.springframework.security.core.userdetails.UserDetailsService
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.security.web.SecurityFilterChain
@@ -19,8 +19,8 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableWebSecurity
 @EnableMethodSecurity(prePostEnabled = true)
 class SecurityConfig(
-    private val userDetailsService: com.itsz.app.service.UserDetailsServiceImpl,
-    private val jwtAuthFilter: com.itsz.app.auth.JwtAuthFilter
+    private val userDetailsService: UserDetailsService,
+    private val jwtAuthFilter: JwtAuthFilter
 ) {
 
     @Bean
@@ -46,8 +46,8 @@ class SecurityConfig(
                         "/swagger-ui.html",
                         "/error"
                     ).permitAll()
-                    // auth endpoints
-                    .requestMatchers("/api/auth/**").permitAll()
+                    // auth endpoints (context-path /api is already applied)
+                    .requestMatchers("/auth/**").permitAll()
                     // everything else requires a valid JWT; permissions are enforced by @PreAuthorize
                     .anyRequest().authenticated()
             }

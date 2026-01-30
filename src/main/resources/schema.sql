@@ -6,6 +6,7 @@ DROP TABLE IF EXISTS user_roles;
 DROP TABLE IF EXISTS role_permissions;
 DROP TABLE IF EXISTS permission;
 DROP TABLE IF EXISTS course;
+DROP TABLE IF EXISTS author;
 DROP TABLE IF EXISTS users;
 DROP TABLE IF EXISTS role;
 
@@ -42,6 +43,11 @@ CREATE TABLE user_roles (
     CONSTRAINT fk_user_roles_role FOREIGN KEY (role_id) REFERENCES role (id) ON DELETE CASCADE
 );
 
+CREATE TABLE author (
+    id VARCHAR(255) PRIMARY KEY,
+    name VARCHAR(255) NOT NULL
+);
+
 CREATE TABLE course (
     id VARCHAR(255) PRIMARY KEY,
     title VARCHAR(255) NOT NULL,
@@ -52,12 +58,13 @@ CREATE TABLE course (
 
 CREATE TABLE course_authors (
     course_id VARCHAR(255) NOT NULL,
-    user_id BIGINT NOT NULL,
-    PRIMARY KEY (course_id, user_id),
+    author_id VARCHAR(255) NOT NULL,
+    PRIMARY KEY (course_id, author_id),
     CONSTRAINT fk_course_authors_course FOREIGN KEY (course_id) REFERENCES course (id) ON DELETE CASCADE,
-    CONSTRAINT fk_course_authors_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+    CONSTRAINT fk_course_authors_author FOREIGN KEY (author_id) REFERENCES author (id) ON DELETE CASCADE
 );
 
 CREATE INDEX idx_users_email ON users(email);
 CREATE INDEX idx_role_name ON role(name);
 CREATE INDEX idx_permission_name ON permission(name);
+CREATE INDEX idx_author_name ON author(name);

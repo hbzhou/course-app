@@ -1,7 +1,6 @@
 package com.itsz.app.domain
 
 import jakarta.persistence.*
-import java.util.Date
 
 @Entity
 data class Course(
@@ -15,8 +14,8 @@ data class Course(
     @JoinTable(
         name = "course_authors",
         joinColumns = [JoinColumn(name = "course_id")],
-        inverseJoinColumns = [JoinColumn(name = "user_id")]
+        inverseJoinColumns = [JoinColumn(name = "author_id")]
     )
-    val authors: List<User>
+    val authors: List<Author> = emptyList()
 )
 
