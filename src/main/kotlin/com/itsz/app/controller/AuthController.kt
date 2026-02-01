@@ -3,6 +3,7 @@ package com.itsz.app.controller
 import com.itsz.app.dto.LoginRequest
 import com.itsz.app.dto.LoginResponse
 import com.itsz.app.dto.RegisterRequest
+import com.itsz.app.dto.UserInfo
 import com.itsz.app.auth.JwtService
 import com.itsz.app.service.UserService
 import com.itsz.app.domain.User
@@ -29,9 +30,18 @@ class AuthController(
         authenticationManager.authenticate(
             UsernamePasswordAuthenticationToken(loginRequest.username, loginRequest.password)
         )
+        val user = userService.getUserByUsername(loginRequest.username)
+            ?: throw RuntimeException("User not found")
         val userDetails = userDetailsService.loadUserByUsername(loginRequest.username)
         val token = jwtService.generateToken(userDetails)
-        return LoginResponse(token)
+
+        return LoginResponse(
+            token = token,
+            user = UserInfo(
+                name = user.username,
+                email = user.email
+            )
+        )
     }
 
     @PostMapping("/register")
