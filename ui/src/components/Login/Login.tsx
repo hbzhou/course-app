@@ -23,7 +23,7 @@ const Login = () => {
     try {
       setErrorMessage(null);
       await loginMutation.mutateAsync(request);
-      const fromPath = (location.state as any)?.from?.pathname as string | undefined;
+      const fromPath = (location.state as { from?: { pathname?: string } })?.from?.pathname;
       navigate(fromPath ?? "/courses", { replace: true });
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : "Login failed");

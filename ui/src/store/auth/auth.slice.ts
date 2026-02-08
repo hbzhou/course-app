@@ -11,10 +11,10 @@ export const authSlice = createSlice({
   name: "auth",
   initialState: {},
   reducers: {
-    login: (_: AuthSliceState, action: PayloadAction<User>) => {
+    login: (_state, action: PayloadAction<User>) => {
       return { ...action.payload };
     },
-    logout: (_: AuthSliceState, _action: PayloadAction) => {
+    logout: () => {
       return {};
     },
     rehydrateFromStorage: (state: AuthSliceState) => {

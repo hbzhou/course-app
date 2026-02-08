@@ -1,5 +1,4 @@
 import { configureStore } from "@reduxjs/toolkit";
-import { combineReducers } from "redux";
 import courseReducer, { CourseSliceState } from "./course/course.slice";
 import authorReducer, { AuthorSliceState } from "./author/author.slice";
 import authReducer, { AuthSliceState } from "./auth/auth.slice";

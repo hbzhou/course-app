@@ -5,9 +5,9 @@ import { Provider } from "react-redux";
 import { configureStore } from "@reduxjs/toolkit";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import ProtectedRoute from "./ProtectedRoute";
-import authReducer from "@/store/auth/auth.slice";
+import authReducer, { AuthSliceState } from "@/store/auth/auth.slice";
 
-const makeStore = (preloadedUser: any) =>
+const makeStore = (preloadedUser: AuthSliceState) =>
   configureStore({
     reducer: {
       currentUser: authReducer,

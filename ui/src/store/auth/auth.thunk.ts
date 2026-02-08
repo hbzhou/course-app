@@ -50,7 +50,7 @@ export const login = (loginRequest: LoginRequest) => async (dispatch: AppDispatc
   persistAuth(dispatch, loginResponse);
 };
 
-export const register = (registerRequest: RegisterRequest) => async (_dispatch: AppDispatch) => {
+export const register = (registerRequest: RegisterRequest) => async () => {
   const response = await fetch("/api/auth/register", {
     method: "POST",
     headers: {
