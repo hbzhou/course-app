@@ -19,7 +19,7 @@ native-image-publish:
   stage: publish
   image: mattermost/podman:1.8.0
   needs:
-    - api-build
+    - api-native-build
   script:
     - podman build -t $IMAGE_NAME-native:$BUILD_VERSION -f Dockerfile.native .
     - podman login -u "$DOCKER_HUB_USERNAME" -p "$DOCKER_HUB_PASSWORD" $DOCKERHUB_REGISTRY
