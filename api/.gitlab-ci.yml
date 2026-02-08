@@ -1,4 +1,4 @@
-image: eclipse-temurin:24-jdk-alpine-3.23
+image: eclipse-temurin:25.0.2_10-jdk
 variables:
   GRADLE_HOME: ${CI_PROJECT_DIR}/api/gradle_home
 
