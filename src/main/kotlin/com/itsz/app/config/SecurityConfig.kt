@@ -1,6 +1,6 @@
 package com.itsz.app.config
 
-import com.itsz.app.auth.JwtAuthFilter
+import com.itsz.app.auth.jwt.JwtAuthFilter
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.security.authentication.AuthenticationManager

@@ -1,4 +1,4 @@
-package com.itsz.app.auth
+package com.itsz.app.auth.jwt
 
 import io.jsonwebtoken.Claims
 import io.jsonwebtoken.Jwts

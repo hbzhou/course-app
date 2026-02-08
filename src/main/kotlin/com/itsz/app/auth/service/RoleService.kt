@@ -1,7 +1,7 @@
-package com.itsz.app.service
+package com.itsz.app.auth.service
 
-import com.itsz.app.domain.Role
-import com.itsz.app.repository.RoleRepository
+import com.itsz.app.auth.model.Role
+import com.itsz.app.auth.repository.RoleRepository
 import org.springframework.stereotype.Service
 import java.util.*
 

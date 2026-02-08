@@ -1,6 +1,6 @@
-package com.itsz.app.auth
+package com.itsz.app.auth.jwt
 
-import com.itsz.app.service.UserDetailsServiceImpl
+import com.itsz.app.auth.service.UserDetailsServiceImpl
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Component
@@ -11,8 +11,8 @@ import jakarta.servlet.http.HttpServletResponse
 
 @Component
 class JwtAuthFilter(
-    private val userDetailsService: com.itsz.app.service.UserDetailsServiceImpl,
-    private val jwtService: com.itsz.app.auth.JwtService
+    private val userDetailsService: UserDetailsServiceImpl,
+    private val jwtService: JwtService
 ) : OncePerRequestFilter() {
 
     override fun doFilterInternal(

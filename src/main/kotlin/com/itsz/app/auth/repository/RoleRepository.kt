@@ -1,6 +1,6 @@
-package com.itsz.app.repository
+package com.itsz.app.auth.repository
 
-import com.itsz.app.domain.Role
+import com.itsz.app.auth.model.Role
 import org.springframework.data.jpa.repository.JpaRepository
 import java.util.Optional
 

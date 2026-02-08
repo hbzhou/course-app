@@ -1,18 +1,17 @@
-package com.itsz.app.controller
+package com.itsz.app.auth.controller
 
-import com.itsz.app.dto.LoginRequest
-import com.itsz.app.dto.LoginResponse
-import com.itsz.app.dto.RegisterRequest
-import com.itsz.app.dto.UserInfo
-import com.itsz.app.auth.JwtService
-import com.itsz.app.service.UserService
-import com.itsz.app.domain.User
-import com.itsz.app.repository.RoleRepository
+import com.itsz.app.auth.jwt.JwtService
+import com.itsz.app.auth.model.User
+import com.itsz.app.auth.repository.RoleRepository
+import com.itsz.app.auth.service.UserService
 import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.userdetails.UserDetailsService
 import org.springframework.security.crypto.password.PasswordEncoder
-import org.springframework.web.bind.annotation.*
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping("/auth")
@@ -55,5 +54,22 @@ class AuthController(
         )
         return userService.createUser(user)
     }
+
 }
+
+
+data class LoginRequest(val username: String, val password: String)
+
+data class LoginResponse(
+    val token: String,  // JWT token
+    val user: UserInfo
+)
+
+data class UserInfo(
+    val name: String,
+    val email: String
+)
+
+data class RegisterRequest(val username: String, val email: String, val password: String)
+
 

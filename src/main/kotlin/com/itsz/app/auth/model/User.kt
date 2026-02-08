@@ -1,4 +1,4 @@
-package com.itsz.app.domain
+package com.itsz.app.auth.model
 
 import jakarta.persistence.*
 

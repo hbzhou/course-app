@@ -1,7 +1,7 @@
-package com.itsz.app.controller
+package com.itsz.app.auth.controller
 
-import com.itsz.app.domain.Role
-import com.itsz.app.service.RoleService
+import com.itsz.app.auth.model.Role
+import com.itsz.app.auth.service.RoleService
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize

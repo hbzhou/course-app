@@ -1,6 +1,6 @@
-package com.itsz.app.service
+package com.itsz.app.auth.service
 
-import com.itsz.app.repository.UserRepository
+import com.itsz.app.auth.repository.UserRepository
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.core.userdetails.User
 import org.springframework.security.core.userdetails.UserDetails
