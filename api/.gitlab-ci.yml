@@ -73,6 +73,7 @@ api-build:
 
 api-native-build:
     stage: build
+    image: ghcr.io/graalvm/jdk-community:25
     extends: .api-compiled
     needs:
       - api-unit-test

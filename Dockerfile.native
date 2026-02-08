@@ -1,0 +1,9 @@
+FROM ghcr.io/graalvm/jdk-community:25
+
+ARG TARGET_PATH=/usr/src/app
+COPY server/build/native/nativeCompile/api  app
+
+EXPOSE 8081
+ENV JAVA_OPTS="-Xmx1g -Xms256m"
+ENTRYPOINT exec ./app $JAVA_OPTS
+

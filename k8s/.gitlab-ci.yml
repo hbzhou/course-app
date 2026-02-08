@@ -15,6 +15,18 @@ image-publish:
     - echo "push image $IMAGE_NAME:$BUILD_VERSION to dockerhub repository"
   when: manual
 
+native-image-publish:
+  stage: publish
+  image: mattermost/podman:1.8.0
+  needs:
+    - api-build
+  script:
+    - podman build -t $IMAGE_NAME-native:$BUILD_VERSION -f Dockerfile.native .
+    - podman login -u "$DOCKER_HUB_USERNAME" -p "$DOCKER_HUB_PASSWORD" $DOCKERHUB_REGISTRY
+    - podman push $IMAGE_NAME-native:$BUILD_VERSION
+    - echo "push image $IMAGE_NAME:$BUILD_VERSION to dockerhub repository"
+  when: manual
+
 helmTar:
   image: eclipse-temurin:25.0.2_10-jdk
   stage: build
