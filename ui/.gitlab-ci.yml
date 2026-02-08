@@ -1,0 +1,75 @@
+cache:
+  - key: ${CI_PROJECT_NAME}-ui
+    paths:
+      - ui/node_modules
+    policy: pull
+  - key: ${CI_PROJECT_NAME}-ui-build-${CI_COMMIT_SHORT_SHA}
+    paths:
+      - ui/dist
+    policy: pull
+
+.base-ui:
+  image: node:20-slim
+  before_script:
+    - cd ui
+    - npm install
+  tags:
+    - kubernetes
+
+compile-ui:
+  extends: .base-ui
+  stage: compile
+  cache:
+   - key: ${CI_PROJECT_NAME}-ui
+     paths:
+      - ui/node_modules
+     policy: pull-push
+   - key: ${CI_PROJECT_NAME}-ui-build-${CI_COMMIT_SHORT_SHA}
+     paths:
+       - ui/dist
+     policy: pull-push
+  script:
+    - npm run build
+  artifacts:
+    name: ${CI_JOB_NAME}-${CI_PIPELINE}
+    paths:
+      - ui/dist/
+
+
+ui-lint:
+  stage: test
+  extends: .base-ui
+  needs:
+    - compile-ui
+  script:
+    - npm run lint
+
+
+ui-unit-test:
+  extends: .base-ui
+  stage: test
+  cache:
+    - key: ${CI_PROJECT_NAME}-ui
+      paths:
+        - ui/node_modules
+      policy: pull
+    - key: ${CI_PROJECT_NAME}-ui-build-${CI_COMMIT_SHORT_SHA}
+      paths:
+        - ui/dist
+      policy: pull
+  needs:
+    - compile-ui
+  script:
+    - npm run test
+  artifacts:
+    name: $CI_JOB_NAME-$CI_PIPELINE_ID
+    paths:
+      - ui/reports
+      - ui/coverage
+      - ui/test-results
+    expire_in: 5 days
+    expose_as: Test Result Report
+    reports:
+      junit:
+        - ui/test_results/*.xml
+

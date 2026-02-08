@@ -1,0 +1,69 @@
+image: eclipse-temurin:24-jdk-alpine-3.23
+variables:
+  GRADLE_HOME: ${CI_PROJECT_DIR}/api/gradle_home
+
+.base:
+  before_script:
+    - mkdir -p $GRADLE_HOME
+    - chmod +x ./gradlew
+  tags:
+    - kubernetes
+
+compile-api:
+  extends: .base
+  stage: compile
+  cache:
+    - key: ${CI_PROJECT_NAME}-api
+      paths:
+        - api/gradle_home
+      policy: pull-push
+    - key: ${CI_PROJECT_NAME}-api-build-${CI_COMMIT_SHORT_SHA}
+      paths:
+        - api/build
+      policy: pull-push
+  script:
+    - ./gradlew -g ${GRADLE_HOME} classes testClasses
+
+.api-compiled:
+  extends: .base
+  needs:
+    - compile-api
+  cache:
+    - key: ${CI_PROJECT_NAME}-api
+      paths:
+        - api/gradle_home
+      policy: pull
+    - key: ${CI_PROJECT_NAME}-api-build-${CI_COMMIT_SHORT_SHA}
+      paths:
+        - api/build
+      policy: pull
+
+api-unit-test:
+  stage: test
+  extends: .api-compiled
+  script:
+    - ./gradlew -g ${GRADLE_HOME} :api:test
+  artifacts:
+    when: on_success
+    paths:
+      - api/build/reports
+      - api/build/test-results
+    reports:
+      junit:
+        - "api/build/test-results/test/*.xml"
+    expire_in: 30 days
+    expose_as: Test Result Reports
+
+api-build:
+    stage: build
+    extends: .api-compiled
+    needs:
+      - api-unit-test
+    script:
+      - ./gradlew -g ${GRADLE_HOME} :api:bootJar
+    artifacts:
+      name: $CI_JOB_NAME-$CI_PIPELINE_ID
+      paths:
+        - api/build
+    when: on_success
+

@@ -1,0 +1,42 @@
+variables:
+  IMAGE_NAME: jeremygilbert/course-app
+  DOCKERHUB_REGISTRY: https://registry-1.docker.io/v2/
+  HELM_REGISTRY: registry-1.docker.io
+
+image-publish:
+  stage: publish
+  image: mattermost/podman:1.8.0
+  needs:
+    - server-build
+  script:
+    - podman build -t $IMAGE_NAME:$BUILD_VERSION .
+    - podman login -u "$DOCKER_HUB_USERNAME" -p "$DOCKER_HUB_PASSWORD" $DOCKERHUB_REGISTRY
+    - podman push $IMAGE_NAME:$BUILD_VERSION
+    - echo "push image $IMAGE_NAME:$BUILD_VERSION to dockerhub repository"
+  when: manual
+
+helmTar:
+  image: eclipse-temurin:21-jdk-alpine-3.23
+  stage: build
+  before_script:
+    - chmod +x ./gradlew
+    - chmod +x ./build_version.sh
+  script:
+    - ./build_version.sh $BUILD_VERSION $APP_VERSION
+    - ./gradlew k8s:helmTar -DbuildVersion=${BUILD_VERSION}
+  artifacts:
+    paths:
+      - k8s/build/distributions/
+  when: on_success
+
+push_helm_package:
+  stage: publish
+  needs:
+    - helmTar
+    - image-publish
+  image: alpine/helm:3.12.0  # Use Azure CLI image
+  script:
+    # Push Helm package
+    - helm registry login $HELM_REGISTRY --username $DOCKER_HUB_USERNAME --password $DOCKER_HUB_PASSWORD
+    - helm push k8s/build/distributions/fullstackapp-*.tgz  "oci://$HELM_REGISTRY/$DOCKER_HUB_USERNAME"
+  when: manual
