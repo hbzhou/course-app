@@ -59,6 +59,9 @@ api-build:
     extends: .api-compiled
     needs:
       - api-unit-test
+      - compile-ui
+    before_script:
+      - cp -r ui/dist/* api/src/main/resources/static/
     script:
       - ./gradlew -g ${GRADLE_HOME} :api:bootJar
     artifacts:
