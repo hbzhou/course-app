@@ -71,3 +71,19 @@ api-build:
         - api/build
     when: on_success
 
+api-native-build:
+    stage: build
+    extends: .api-compiled
+    needs:
+      - api-unit-test
+      - compile-ui
+    before_script:
+      - mkdir -p api/src/main/resources/static
+      - cp -r ui/dist/* api/src/main/resources/static/
+    script:
+      - ./gradlew -g ${GRADLE_HOME} :api:nativeCompile
+    artifacts:
+      name: $CI_JOB_NAME-$CI_PIPELINE_ID
+      paths:
+        - api/build
+    when: on_success

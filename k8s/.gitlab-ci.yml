@@ -16,7 +16,7 @@ image-publish:
   when: manual
 
 helmTar:
-  image: eclipse-temurin:21-jdk-alpine-3.23
+  image: eclipse-temurin:25.0.2_10-jdk
   stage: build
   before_script:
     - chmod +x ./gradlew

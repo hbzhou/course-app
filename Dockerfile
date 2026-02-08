@@ -1,4 +1,4 @@
-FROM openjdk:21-slim
+FROM eclipse-temurin:25.0.2_10-jdk
 
 ARG TARGET_PATH=/usr/src/app
 COPY server/build/libs/api-*.jar app.jar
