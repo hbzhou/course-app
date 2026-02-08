@@ -61,6 +61,7 @@ api-build:
       - api-unit-test
       - compile-ui
     before_script:
+      - mkdir -p api/src/main/resources/static
       - cp -r ui/dist/* api/src/main/resources/static/
     script:
       - ./gradlew -g ${GRADLE_HOME} :api:bootJar
