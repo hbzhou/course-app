@@ -7,7 +7,7 @@ image-publish:
   stage: publish
   image: mattermost/podman:1.8.0
   needs:
-    - server-build
+    - api-build
   script:
     - podman build -t $IMAGE_NAME:$BUILD_VERSION .
     - podman login -u "$DOCKER_HUB_USERNAME" -p "$DOCKER_HUB_PASSWORD" $DOCKERHUB_REGISTRY
