@@ -50,5 +50,5 @@ push_helm_package:
   script:
     # Push Helm package
     - helm registry login $HELM_REGISTRY --username $DOCKER_HUB_USERNAME --password $DOCKER_HUB_PASSWORD
-    - helm push k8s/build/distributions/fullstackapp-*.tgz  "oci://$HELM_REGISTRY/$DOCKER_HUB_USERNAME"
+    - helm push k8s/build/distributions/course-app-*.tgz  "oci://$HELM_REGISTRY/$DOCKER_HUB_USERNAME"
   when: manual
