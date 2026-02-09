@@ -42,15 +42,14 @@ class SecurityConfig(
                     // Swagger UI / OpenAPI
                     .requestMatchers(
                         "/",
+                        "/assets/**",
                         "/v3/api-docs/**",
                         "/swagger-ui/**",
                         "/swagger-ui.html",
                         "/error",
-                        "/**/*.html", "/**/*.css", "/**/*.js","/**/*.pgn", "/**/*.jpg", "/**/*.jpeg", "/**/*.gif", "/**/*.svg", "/**/*.ico",
+                        "/**/*.html", "/**/*.css", "/**/*.js","/**/*.png", "/**/*.jpg", "/**/*.jpeg", "/**/*.gif", "/**/*.svg", "/**/*.ico",
                     ).permitAll()
-                    // auth endpoints (context-path /api is already applied)
                     .requestMatchers("/api/auth/**").permitAll()
-                    // everything else requires a valid JWT; permissions are enforced by @PreAuthorize
                     .anyRequest().authenticated()
             }
             .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }
