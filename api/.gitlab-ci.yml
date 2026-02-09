@@ -92,4 +92,5 @@ api-native-build:
       name: $CI_JOB_NAME-$CI_PIPELINE_ID
       paths:
         - api/build
-    when: on_success
+    when: manual
+    allow_failure: true
