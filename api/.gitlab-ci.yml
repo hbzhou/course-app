@@ -62,10 +62,7 @@ api-build:
       - compile-ui
     before_script:
       - mkdir -p api/src/main/resources/public
-      - cp ui/dist/index.html api/src/main/resources/public/
-      - cp ui/dist/logo.png api/src/main/resources/public/
-      - cp ui/dist/favicon.ico api/src/main/resources/public/
-      - cp -r ui/dist/assets/* api/src/main/resources/public/
+      - cp -r ui/dist/* api/src/main/resources/public/
     script:
       - ./gradlew -g ${GRADLE_HOME} :api:bootJar
     artifacts:
@@ -87,8 +84,8 @@ api-native-build:
       KUBERNETES_CPU_REQUEST: "2000m"
       KUBERNETES_CPU_LIMIT: "4000m"
     before_script:
-      - mkdir -p api/src/main/resources/static
-      - cp -r ui/dist/* api/src/main/resources/static/
+      - mkdir -p api/src/main/resources/public
+      - cp -r ui/dist/* api/src/main/resources/public/
     script:
       - ./gradlew -g ${GRADLE_HOME} :api:nativeCompile
     artifacts:
