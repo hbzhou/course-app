@@ -81,6 +81,12 @@ api-native-build:
     needs:
       - api-unit-test
       - compile-ui
+
+    variables:
+      KUBERNETES_MEMORY_REQUEST: "4Gi"
+      KUBERNETES_MEMORY_LIMIT: "10Gi"
+      KUBERNETES_CPU_REQUEST: "2000m"
+      KUBERNETES_CPU_LIMIT: "4000m"
     before_script:
       - mkdir -p api/src/main/resources/static
       - cp -r ui/dist/* api/src/main/resources/static/
