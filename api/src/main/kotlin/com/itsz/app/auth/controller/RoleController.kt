@@ -8,7 +8,7 @@ import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.*
 
 @RestController
-@RequestMapping("/roles")
+@RequestMapping("/api/roles")
 class RoleController(private val roleService: RoleService) {
 
     @GetMapping

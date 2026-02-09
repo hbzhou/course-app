@@ -1,7 +1,9 @@
+import org.gradle.kotlin.dsl.javaToolchains
+
 plugins {
-    kotlin("jvm") version "2.2.21"
-    kotlin("plugin.spring") version "2.2.21"
-    kotlin("plugin.jpa") version "2.2.21"
+    kotlin("jvm") version "2.3.0"
+    kotlin("plugin.spring") version "2.3.0"
+    kotlin("plugin.jpa") version "2.3.0"
     id("org.springframework.boot") version "4.0.1"
     id("io.spring.dependency-management") version "1.1.7"
     id("org.graalvm.buildtools.native") version "0.11.3"
@@ -15,9 +17,13 @@ repositories {
     mavenCentral()
 }
 
-java {
-    sourceCompatibility = JavaVersion.VERSION_24
-    targetCompatibility = JavaVersion.VERSION_24
+javaToolchains {
+
+    java {
+        sourceCompatibility = JavaVersion.VERSION_25
+        targetCompatibility = JavaVersion.VERSION_25
+    }
+
 }
 
 dependencies {
@@ -50,3 +56,11 @@ kotlin {
 tasks.withType<Test> {
     useJUnitPlatform()
 }
+
+tasks.bootJar{
+    from("./../ui/dist") {
+        into("public")
+    }
+}
+
+
