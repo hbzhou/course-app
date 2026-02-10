@@ -70,5 +70,5 @@ ui-unit-test:
     expose_as: Test Result Report
     reports:
       junit:
-        - ui/test_results/*.xml
+        - ui/test_results/junit.xml
 
