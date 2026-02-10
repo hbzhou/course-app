@@ -64,7 +64,6 @@ ui-unit-test:
   artifacts:
     name: $CI_JOB_NAME-$CI_PIPELINE_ID
     paths:
-      - ui/reports
       - ui/coverage
       - ui/test-results
     expire_in: 5 days
