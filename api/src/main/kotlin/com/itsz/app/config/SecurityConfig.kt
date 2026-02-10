@@ -49,6 +49,7 @@ class SecurityConfig(
                         "/error",
                         "/**/*.html", "/**/*.css", "/**/*.js","/**/*.png", "/**/*.jpg", "/**/*.jpeg", "/**/*.gif", "/**/*.svg", "/**/*.ico",
                     ).permitAll()
+                    .requestMatchers("/actuator/health/**").permitAll()
                     .requestMatchers("/api/auth/**").permitAll()
                     .anyRequest().authenticated()
             }
