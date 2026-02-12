@@ -10,6 +10,7 @@ import Header from "@/components/Header/Header";
 import Login from "@/components/Login/Login";
 import Registration from "@/components/Registration/Registration";
 import ProtectedRoute from "@/components/ProtectedRoute/ProtectedRoute";
+import Users from "@/components/Users/Users";
 import { Provider, useDispatch } from "react-redux";
 import { store } from "@/store/store";
 import { actions } from "@/store/auth/auth.slice";
@@ -72,6 +73,14 @@ const App: React.FC = () => {
                 element={
                   <ProtectedRoute>
                     <Authors />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path='/users'
+                element={
+                  <ProtectedRoute>
+                    <Users />
                   </ProtectedRoute>
                 }
               />

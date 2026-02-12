@@ -19,7 +19,7 @@ class UserDetailsServiceImpl(private val userRepository: UserRepository) : UserD
             // keep role-based auth working
             user.roles.forEach { add(SimpleGrantedAuthority(it.name)) }
             // add fine-grained permissions
-            user.roles.flatMap { it.permissions }.forEach { add(SimpleGrantedAuthority(it.name)) }
+            user.roles.flatMap { it.permissions!! }.forEach { add(SimpleGrantedAuthority(it.name)) }
         }.toList()
 
         return User(

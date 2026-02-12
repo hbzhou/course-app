@@ -35,6 +35,18 @@ const Nav: React.FC = () => {
             >
                 Authors
             </NavLink>
+            <NavLink
+                to="/users"
+                className={({ isActive }) =>
+                    cn(
+                        buttonVariants({ variant: "ghost", size: "sm" }),
+                        "text-sm",
+                        isActive && "bg-accent text-accent-foreground"
+                    )
+                }
+            >
+                Users
+            </NavLink>
         </nav>
 
     );

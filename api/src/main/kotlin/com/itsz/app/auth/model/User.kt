@@ -6,7 +6,7 @@ import jakarta.persistence.*
 @Table(name = "users")
 data class User(
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val id: Long = 0,
+    val id: Long? = null,
     val username: String,
     val email: String,
     val password: String?,
