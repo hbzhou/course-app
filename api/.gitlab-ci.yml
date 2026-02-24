@@ -41,6 +41,17 @@ compile-api:
 api-unit-test:
   stage: test
   extends: .api-compiled
+  services:
+    - name: mysql:8.0
+      alias: mysql
+  variables:
+    MYSQL_ROOT_PASSWORD: root123
+    MYSQL_DATABASE: coursedb
+    MYSQL_USER: admin
+    MYSQL_PASSWORD: welcome123
+    SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/coursedb
+    SPRING_DATASOURCE_USERNAME: admin
+    SPRING_DATASOURCE_PASSWORD: welcome123
   script:
     - ./gradlew -g ${GRADLE_HOME} :api:test
   artifacts:
