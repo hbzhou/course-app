@@ -73,7 +73,7 @@ api/src/main/resources/db/migration/
 Download and configure the official Flyway CLI tool:
 
 ```bash
-./flyway-manager.sh
+./flyway-setup.sh
 ```
 
 This will:
