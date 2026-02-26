@@ -13,9 +13,9 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # Flyway version
-FLYWAY_VERSION="10.10.0"
+FLYWAY_VERSION="12.0.2"
 FLYWAY_DIR="./flyway-${FLYWAY_VERSION}"
-FLYWAY_URL="https://repo1.maven.org/maven2/org/flywaydb/flyway-commandline/${FLYWAY_VERSION}/flyway-commandline-${FLYWAY_VERSION}.tar.gz"
+FLYWAY_URL="https://download.red-gate.com/maven/release/com/redgate/flyway/flyway-commandline/${FLYWAY_VERSION}/flyway-commandline-${FLYWAY_VERSION}-macosx-x64.tar.gz"
 
 # Function to print colored messages
 print_info() {
@@ -107,6 +107,10 @@ flyway.outputQueryResults=true
 
 # Mixed mode (allow out-of-order migrations in development)
 flyway.outOfOrder=false
+
+# Clean command settings (set to false to allow clean in development)
+# WARNING: Clean drops all objects in the schema - use with extreme caution!
+flyway.cleanDisabled=false
 EOF
 
     # Download MySQL JDBC driver if not present
@@ -134,7 +138,7 @@ create_helper_script() {
 # Flyway CLI Helper Script
 # Wrapper for common Flyway operations
 
-FLYWAY_VERSION="10.10.0"
+FLYWAY_VERSION="12.0.2"
 FLYWAY_CMD="./flyway-${FLYWAY_VERSION}/flyway"
 
 # Colors
