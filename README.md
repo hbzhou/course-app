@@ -30,7 +30,7 @@ A Spring Boot + Kotlin application with React frontend for managing courses, aut
 ### 1. Start the Database
 
 ```bash
-docker-compose up -d
+docker compose up -d
 ```
 
 This starts MySQL 8.0 with the following credentials:

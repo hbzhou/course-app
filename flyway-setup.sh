@@ -160,7 +160,7 @@ check_docker() {
     if ! docker ps | grep -q "course-app-mysql"; then
         print_warning "MySQL container is not running!"
         print_info "Starting Docker Compose services..."
-        docker-compose up -d
+        docker compose up -d
         sleep 10
     fi
 }
@@ -302,7 +302,7 @@ show_usage() {
     print_info "Flyway CLI ${FLYWAY_VERSION} installed in: $FLYWAY_DIR"
     echo ""
     echo "Quick Start:"
-    echo "  1. Start MySQL:       docker-compose up -d"
+    echo "  1. Start MySQL:       docker compose up -d"
     echo "  2. Check status:      ./flyway.sh info"
     echo "  3. Run migrations:    ./flyway.sh migrate"
     echo ""
