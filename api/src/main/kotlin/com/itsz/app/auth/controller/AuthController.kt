@@ -4,14 +4,19 @@ import com.itsz.app.auth.jwt.JwtService
 import com.itsz.app.auth.model.User
 import com.itsz.app.auth.repository.RoleRepository
 import com.itsz.app.auth.service.UserService
+import com.oracle.svm.core.annotate.Delete
+import org.springframework.http.HttpStatus
+import org.springframework.http.ResponseEntity
 import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.userdetails.UserDetailsService
 import org.springframework.security.crypto.password.PasswordEncoder
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
+import java.net.http.HttpResponse
 
 @RestController
 @RequestMapping("/api/auth")
@@ -55,6 +60,10 @@ class AuthController(
         return userService.createUser(user)
     }
 
+    @DeleteMapping("/logout")
+    fun logout() : ResponseEntity<Void> {
+        return ResponseEntity(HttpStatus.OK)
+    }
 }
 
 

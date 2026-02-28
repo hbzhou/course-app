@@ -7,9 +7,11 @@ export type AuthSliceState = {
   token?: string;
 };
 
+const initialState: AuthSliceState = {};
+
 export const authSlice = createSlice({
   name: "auth",
-  initialState: {},
+  initialState,
   reducers: {
     login: (_state, action: PayloadAction<User>) => {
       return { ...action.payload };

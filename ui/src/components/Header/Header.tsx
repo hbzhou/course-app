@@ -2,6 +2,7 @@ import React from "react";
 import Logo from "@/components/Logo/Logo";
 import Profile from "@/components/Profile/Profile";
 import Nav from "@/components/Navigation/Nav";
+import NotificationBell from "@/components/Notifications/NotificationBell";
 
 
 const Header: React.FC = () => {
@@ -13,7 +14,10 @@ const Header: React.FC = () => {
           <Logo />
           <Nav />
         </div>
-        <Profile />
+        <div className="flex items-center gap-3">
+          <NotificationBell />
+          <Profile />
+        </div>
       </div>
     </header>
   );
