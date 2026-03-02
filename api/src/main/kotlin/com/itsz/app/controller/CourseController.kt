@@ -17,7 +17,7 @@ class CourseController(private val courseService: CourseService) {
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAuthority('COURSE_VIEW')")
-    fun getCourseById(@PathVariable id: String): ResponseEntity<Course> {
+    fun getCourseById(@PathVariable id: Long): ResponseEntity<Course> {
         return courseService.getCourseById(id)
             .map { ResponseEntity.ok(it) }
             .orElse(ResponseEntity.notFound().build())
@@ -32,7 +32,7 @@ class CourseController(private val courseService: CourseService) {
 
     @PutMapping("/{id}")
     @PreAuthorize("hasAuthority('COURSE_EDIT')")
-    fun updateCourse(@PathVariable id: String, @RequestBody course: Course): ResponseEntity<Course> {
+    fun updateCourse(@PathVariable id: Long, @RequestBody course: Course): ResponseEntity<Course> {
         return try {
             val updatedCourse = courseService.updateCourse(id, course)
             ResponseEntity.ok(updatedCourse)
@@ -43,7 +43,7 @@ class CourseController(private val courseService: CourseService) {
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('COURSE_EDIT')")
-    fun deleteCourse(@PathVariable id: String): ResponseEntity<Void> {
+    fun deleteCourse(@PathVariable id: Long): ResponseEntity<Void> {
         return try {
             courseService.deleteCourse(id)
             ResponseEntity.noContent().build()

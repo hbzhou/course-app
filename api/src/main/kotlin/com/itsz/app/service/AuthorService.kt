@@ -3,77 +3,36 @@ package com.itsz.app.service
 import com.itsz.app.domain.Author
 import com.itsz.app.event.DomainEventPublisher
 import com.itsz.app.event.EntityType
-import com.itsz.app.event.OperationEvent
-import com.itsz.app.event.OperationType
 import com.itsz.app.repository.AuthorRepository
-import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.util.*
 
 @Service
 class AuthorService(
-    private val authorRepository: AuthorRepository,
-    private val eventPublisher: DomainEventPublisher
+    authorRepository: AuthorRepository,
+    eventPublisher: DomainEventPublisher
+) : EntityCrudService<Author, Long>(
+    authorRepository,
+    eventPublisher,
+    EntityType.AUTHOR,
+    "Author",
+    idExtractor = { it.id?.toString() },
+    nameExtractor = { it.name }
 ) {
 
-    fun getAllAuthors(): List<Author> = authorRepository.findAll()
+    fun getAllAuthors(): List<Author> = getAll()
 
-    fun getAuthorById(id: String): Optional<Author> = authorRepository.findById(id)
-
-    @Transactional
-    fun createAuthor(author: Author): Author {
-        val saved = authorRepository.save(author)
-        eventPublisher.publish(
-            OperationEvent(
-                entityType = EntityType.AUTHOR,
-                operation = OperationType.CREATED,
-                entityId = saved.id,
-                entityName = saved.name,
-                initiatedBy = currentUser()
-            )
-        )
-        return saved
-    }
+    fun getAuthorById(id: Long): Optional<Author> = getById(id)
 
     @Transactional
-    fun updateAuthor(id: String, author: Author): Author {
-        return if (authorRepository.existsById(id)) {
-            val saved = authorRepository.save(author.copy(id = id))
-            eventPublisher.publish(
-                OperationEvent(
-                    entityType = EntityType.AUTHOR,
-                    operation = OperationType.UPDATED,
-                    entityId = saved.id,
-                    entityName = saved.name,
-                    initiatedBy = currentUser()
-                )
-            )
-            saved
-        } else {
-            throw RuntimeException("Author not found with id: $id")
-        }
-    }
+    fun createAuthor(author: Author): Author = create(author)
 
     @Transactional
-    fun deleteAuthor(id: String) {
-        if (authorRepository.existsById(id)) {
-            val author = authorRepository.findById(id).get()
-            authorRepository.deleteById(id)
-            eventPublisher.publish(
-                OperationEvent(
-                    entityType = EntityType.AUTHOR,
-                    operation = OperationType.DELETED,
-                    entityId = id,
-                    entityName = author.name,
-                    initiatedBy = currentUser()
-                )
-            )
-        } else {
-            throw RuntimeException("Author not found with id: $id")
-        }
-    }
+    fun updateAuthor(id: Long, author: Author): Author = update(id, author)
 
-    private fun currentUser(): String? =
-        SecurityContextHolder.getContext().authentication?.name
+    @Transactional
+    fun deleteAuthor(id: Long) = delete(id)
+
+    override fun assignId(entity: Author, id: Long): Author = entity.copy(id = id)
 }

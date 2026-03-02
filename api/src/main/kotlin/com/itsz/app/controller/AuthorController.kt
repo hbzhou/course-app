@@ -17,7 +17,7 @@ class AuthorController(private val authorService: AuthorService) {
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAuthority('COURSE_VIEW')")
-    fun getAuthorById(@PathVariable id: String): ResponseEntity<Author> {
+    fun getAuthorById(@PathVariable id: Long): ResponseEntity<Author> {
         return authorService.getAuthorById(id)
             .map { ResponseEntity.ok(it) }
             .orElse(ResponseEntity.notFound().build())
@@ -32,7 +32,7 @@ class AuthorController(private val authorService: AuthorService) {
 
     @PutMapping("/{id}")
     @PreAuthorize("hasAuthority('COURSE_EDIT')")
-    fun updateAuthor(@PathVariable id: String, @RequestBody author: Author): ResponseEntity<Author> {
+    fun updateAuthor(@PathVariable id: Long, @RequestBody author: Author): ResponseEntity<Author> {
         return try {
             val updatedAuthor = authorService.updateAuthor(id, author)
             ResponseEntity.ok(updatedAuthor)
@@ -43,7 +43,7 @@ class AuthorController(private val authorService: AuthorService) {
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('COURSE_EDIT')")
-    fun deleteAuthor(@PathVariable id: String): ResponseEntity<Void> {
+    fun deleteAuthor(@PathVariable id: Long): ResponseEntity<Void> {
         return try {
             authorService.deleteAuthor(id)
             ResponseEntity.noContent().build()

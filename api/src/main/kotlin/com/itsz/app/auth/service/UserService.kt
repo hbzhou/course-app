@@ -4,9 +4,7 @@ import com.itsz.app.auth.model.User
 import com.itsz.app.auth.repository.UserRepository
 import com.itsz.app.event.DomainEventPublisher
 import com.itsz.app.event.EntityType
-import com.itsz.app.event.OperationEvent
-import com.itsz.app.event.OperationType
-import org.springframework.security.core.context.SecurityContextHolder
+import com.itsz.app.service.EntityCrudService
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -16,75 +14,42 @@ import java.util.*
 class UserService(
     private val userRepository: UserRepository,
     private val passwordEncoder: PasswordEncoder,
-    private val eventPublisher: DomainEventPublisher
+    eventPublisher: DomainEventPublisher
+) : EntityCrudService<User, Long>(
+    userRepository,
+    eventPublisher,
+    EntityType.USER,
+    "User",
+    idExtractor = { it.id?.toString() },
+    nameExtractor = { it.username }
 ) {
 
-    fun getAllUsers(): List<User> = userRepository.findAll()
+    fun getAllUsers(): List<User> = getAll()
 
-    fun getUserById(id: Long): Optional<User> = userRepository.findById(id)
+    fun getUserById(id: Long): Optional<User> = getById(id)
 
     fun getUserByUsername(username: String): User? = userRepository.findByUsername(username).orElse(null)
 
     @Transactional
-    fun createUser(user: User): User {
-        val encodedPassword = user.password?.let { passwordEncoder.encode(it) }
-        val saved = userRepository.save(user.copy(password = encodedPassword))
-        eventPublisher.publish(
-            OperationEvent(
-                entityType = EntityType.USER,
-                operation = OperationType.CREATED,
-                entityId = saved.id?.toString(),
-                entityName = saved.username,
-                initiatedBy = currentUser()
-            )
-        )
-        return saved
-    }
+    fun createUser(user: User): User = create(user)
 
     @Transactional
-    fun updateUser(id: Long, user: User): User {
-        return if (userRepository.existsById(id)) {
-            val existingUser = userRepository.findById(id).get()
-            val updatedUser = if (user.password.isNullOrBlank()) {
-                user.copy(id = id, password = existingUser.password)
-            } else {
-                user.copy(id = id, password = passwordEncoder.encode(user.password))
-            }
-            val saved = userRepository.save(updatedUser)
-            eventPublisher.publish(
-                OperationEvent(
-                    entityType = EntityType.USER,
-                    operation = OperationType.UPDATED,
-                    entityId = id.toString(),
-                    entityName = saved.username,
-                    initiatedBy = currentUser()
-                )
-            )
-            saved
-        } else {
-            throw RuntimeException("User not found with id: $id")
-        }
-    }
+    fun updateUser(id: Long, user: User): User = update(id, user)
 
     @Transactional
-    fun deleteUser(id: Long) {
-        if (userRepository.existsById(id)) {
-            val user = userRepository.findById(id).get()
-            userRepository.deleteById(id)
-            eventPublisher.publish(
-                OperationEvent(
-                    entityType = EntityType.USER,
-                    operation = OperationType.DELETED,
-                    entityId = id.toString(),
-                    entityName = user.username,
-                    initiatedBy = currentUser()
-                )
-            )
-        } else {
-            throw RuntimeException("User not found with id: $id")
-        }
+    fun deleteUser(id: Long) = delete(id)
+
+    override fun prepareForCreate(entity: User): User {
+        val encodedPassword = entity.password?.let { passwordEncoder.encode(it) }
+        return entity.copy(password = encodedPassword)
     }
 
-    private fun currentUser(): String? =
-        SecurityContextHolder.getContext().authentication?.name
+    override fun prepareForUpdate(existing: User, incoming: User, id: Long): User {
+        val password = if (incoming.password.isNullOrBlank()) {
+            existing.password
+        } else {
+            passwordEncoder.encode(incoming.password)
+        }
+        return incoming.copy(id = id, password = password)
+    }
 }

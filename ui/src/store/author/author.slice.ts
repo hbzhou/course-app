@@ -21,7 +21,7 @@ export const authorSlice = createSlice({
         state[index] = action.payload;
       }
     },
-    removeAuthor: (state: AuthorSliceState, action: PayloadAction<string>) => {
+    removeAuthor: (state: AuthorSliceState, action: PayloadAction<number>) => {
       return state.filter((author) => author.id !== action.payload);
     },
   },

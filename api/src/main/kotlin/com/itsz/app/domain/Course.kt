@@ -4,8 +4,8 @@ import jakarta.persistence.*
 
 @Entity
 data class Course(
-    @Id @GeneratedValue(strategy = GenerationType.AUTO)
-    val id: String?,
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    val id: Long?,
     val title: String,
     val description: String,
     val creationDate: String,
@@ -18,4 +18,3 @@ data class Course(
     )
     val authors: MutableList<Author> = mutableListOf()
 )
-
