@@ -2,7 +2,6 @@ package com.itsz.app.service
 
 import com.itsz.app.domain.Author
 import com.itsz.app.event.DomainEventPublisher
-import com.itsz.app.event.EntityType
 import com.itsz.app.repository.AuthorRepository
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -15,8 +14,6 @@ class AuthorService(
 ) : EntityCrudService<Author>(
     authorRepository,
     eventPublisher,
-    EntityType.AUTHOR,
-    "Author",
     nameExtractor = { it.name }
 ) {
 

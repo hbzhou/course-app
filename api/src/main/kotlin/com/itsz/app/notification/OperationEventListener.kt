@@ -10,7 +10,7 @@ import org.springframework.transaction.event.TransactionPhase
 import org.springframework.transaction.event.TransactionalEventListener
 
 @Component
-class TransactionalNotificationListener(
+class OperationEventListener(
     private val redisTemplate: StringRedisTemplate,
     private val objectMapper: ObjectMapper,
     @Value("\${app.notification.redis-channel}") private val redisChannel: String
@@ -24,9 +24,6 @@ class TransactionalNotificationListener(
                 NotificationMessage(
                     entityType = event.entityType.name,
                     operation = event.operation.name,
-                    entityId = event.entityId,
-                    entityName = event.entityName,
-                    initiatedBy = event.initiatedBy,
                     timestamp = event.timestamp
                 )
             )

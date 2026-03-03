@@ -2,7 +2,6 @@ package com.itsz.app.service
 
 import com.itsz.app.domain.Course
 import com.itsz.app.event.DomainEventPublisher
-import com.itsz.app.event.EntityType
 import com.itsz.app.repository.CourseRepository
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -15,8 +14,6 @@ class CourseService(
 ) : EntityCrudService<Course>(
     courseRepository,
     eventPublisher,
-    EntityType.COURSE,
-    "Course",
     nameExtractor = { it.title }
 ) {
 

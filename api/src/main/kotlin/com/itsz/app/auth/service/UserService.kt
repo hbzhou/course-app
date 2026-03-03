@@ -3,12 +3,13 @@ package com.itsz.app.auth.service
 import com.itsz.app.auth.model.User
 import com.itsz.app.auth.repository.UserRepository
 import com.itsz.app.event.DomainEventPublisher
-import com.itsz.app.event.EntityType
 import com.itsz.app.service.EntityCrudService
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.util.*
+
+
 
 @Service
 class UserService(
@@ -18,8 +19,6 @@ class UserService(
 ) : EntityCrudService<User>(
     userRepository,
     eventPublisher,
-    EntityType.USER,
-    "User",
     nameExtractor = { it.username }
 ) {
 

@@ -4,9 +4,6 @@ export type OperationType = "CREATED" | "UPDATED" | "DELETED";
 export interface NotificationMessage {
   entityType: EntityType;
   operation: OperationType;
-  entityId: string | null;
-  entityName: string | null;
-  initiatedBy: string | null;
   timestamp: number;
 }
 
@@ -15,7 +12,6 @@ export interface Notification {
   message: string;
   entityType: EntityType;
   operation: OperationType;
-  entityId: string | null;
   timestamp: number;
   read: boolean;
 }

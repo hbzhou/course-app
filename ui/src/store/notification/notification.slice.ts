@@ -24,9 +24,7 @@ const entityLabel: Record<string, string> = {
 function buildMessage(msg: NotificationMessage): string {
   const entity = entityLabel[msg.entityType] ?? msg.entityType;
   const op = operationLabel[msg.operation] ?? msg.operation;
-  const name = msg.entityName ? ` "${msg.entityName}"` : "";
-  const by = msg.initiatedBy ? ` by ${msg.initiatedBy}` : "";
-  return `${entity}${name} was ${op}${by}.`;
+  return `${entity} was ${op}.`;
 }
 
 export const notificationSlice = createSlice({
@@ -40,7 +38,6 @@ export const notificationSlice = createSlice({
         message: buildMessage(msg),
         entityType: msg.entityType,
         operation: msg.operation,
-        entityId: msg.entityId,
         timestamp: msg.timestamp,
         read: false,
       };
