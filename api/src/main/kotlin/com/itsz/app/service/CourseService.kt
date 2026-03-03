@@ -17,7 +17,6 @@ class CourseService(
     eventPublisher,
     EntityType.COURSE,
     "Course",
-    idExtractor = { it.id?.toString() },
     nameExtractor = { it.title }
 ) {
 

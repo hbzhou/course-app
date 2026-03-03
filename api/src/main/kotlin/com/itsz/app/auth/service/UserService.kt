@@ -20,7 +20,6 @@ class UserService(
     eventPublisher,
     EntityType.USER,
     "User",
-    idExtractor = { it.id?.toString() },
     nameExtractor = { it.username }
 ) {
 

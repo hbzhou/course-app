@@ -17,7 +17,6 @@ class AuthorService(
     eventPublisher,
     EntityType.AUTHOR,
     "Author",
-    idExtractor = { it.id?.toString() },
     nameExtractor = { it.name }
 ) {
 

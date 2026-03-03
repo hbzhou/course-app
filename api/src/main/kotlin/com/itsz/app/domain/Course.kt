@@ -5,7 +5,7 @@ import jakarta.persistence.*
 @Entity
 data class Course(
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val id: Long?,
+    override val id: Long?,
     val title: String,
     val description: String,
     val creationDate: String,
@@ -17,4 +17,4 @@ data class Course(
         inverseJoinColumns = [JoinColumn(name = "author_id")]
     )
     val authors: MutableList<Author> = mutableListOf()
-)
+) : BaseEntity

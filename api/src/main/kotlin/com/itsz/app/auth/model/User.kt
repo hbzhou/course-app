@@ -1,12 +1,13 @@
 package com.itsz.app.auth.model
 
+import com.itsz.app.domain.BaseEntity
 import jakarta.persistence.*
 
 @Entity
 @Table(name = "users")
 data class User(
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val id: Long? = null,
+    override val id: Long? = null,
     val username: String,
     val email: String,
     val password: String?,
@@ -17,5 +18,4 @@ data class User(
         inverseJoinColumns = [JoinColumn(name = "role_id")]
     )
     val roles: Set<Role> = HashSet()
-)
-
+) : BaseEntity

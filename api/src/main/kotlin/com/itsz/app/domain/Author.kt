@@ -6,6 +6,6 @@ import jakarta.persistence.*
 @Table(name = "author")
 data class Author(
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val id: Long?,
+    override val id: Long?,
     val name: String
-)
+) : BaseEntity
