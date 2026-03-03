@@ -12,7 +12,7 @@ import java.util.*
 class CourseService(
     courseRepository: CourseRepository,
     eventPublisher: DomainEventPublisher
-) : EntityCrudService<Course, Long>(
+) : EntityCrudService<Course>(
     courseRepository,
     eventPublisher,
     EntityType.COURSE,

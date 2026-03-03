@@ -15,7 +15,7 @@ class UserService(
     private val userRepository: UserRepository,
     private val passwordEncoder: PasswordEncoder,
     eventPublisher: DomainEventPublisher
-) : EntityCrudService<User, Long>(
+) : EntityCrudService<User>(
     userRepository,
     eventPublisher,
     EntityType.USER,

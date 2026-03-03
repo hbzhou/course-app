@@ -9,19 +9,19 @@ import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.transaction.annotation.Transactional
 import java.util.Optional
 
-abstract class EntityCrudService<T : Any, ID : Any>(
-    private val repository: JpaRepository<T, ID>,
+abstract class EntityCrudService<T>(
+    private val repository: JpaRepository<T, Long>,
     private val eventPublisher: DomainEventPublisher,
     private val entityType: EntityType,
     private val entityLabel: String,
     private val idExtractor: (T) -> String?,
     private val nameExtractor: (T) -> String?,
-    private val idToString: (ID) -> String = { it.toString() }
+    private val idToString: (Long) -> String = { it.toString() }
 ) {
 
     open fun getAll(): List<T> = repository.findAll()
 
-    open fun getById(id: ID): Optional<T> = repository.findById(id)
+    open fun getById(id: Long): Optional<T> = repository.findById(id)
 
     @Transactional
     open fun create(entity: T): T {
@@ -32,7 +32,7 @@ abstract class EntityCrudService<T : Any, ID : Any>(
     }
 
     @Transactional
-    open fun update(id: ID, entity: T): T {
+    open fun update(id: Long, entity: T): T {
         val existing = repository.findById(id).orElseThrow {
             RuntimeException(notFoundMessage(id))
         }
@@ -43,7 +43,7 @@ abstract class EntityCrudService<T : Any, ID : Any>(
     }
 
     @Transactional
-    open fun delete(id: ID) {
+    open fun delete(id: Long) {
         val existing = repository.findById(id).orElseThrow {
             RuntimeException(notFoundMessage(id))
         }
@@ -53,11 +53,11 @@ abstract class EntityCrudService<T : Any, ID : Any>(
 
     protected open fun prepareForCreate(entity: T): T = entity
 
-    protected open fun prepareForUpdate(existing: T, incoming: T, id: ID): T = assignId(incoming, id)
+    protected open fun prepareForUpdate(existing: T, incoming: T, id: Long): T = assignId(incoming, id)
 
-    protected open fun assignId(entity: T, id: ID): T = entity
+    protected open fun assignId(entity: T, id: Long): T = entity
 
-    protected open fun notFoundMessage(id: ID): String = "$entityLabel not found with id: $id"
+    protected open fun notFoundMessage(id: Long): String = "$entityLabel not found with id: $id"
 
     protected open fun currentUser(): String? =
         SecurityContextHolder.getContext().authentication?.name

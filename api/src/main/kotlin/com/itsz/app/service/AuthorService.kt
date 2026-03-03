@@ -12,7 +12,7 @@ import java.util.*
 class AuthorService(
     authorRepository: AuthorRepository,
     eventPublisher: DomainEventPublisher
-) : EntityCrudService<Author, Long>(
+) : EntityCrudService<Author>(
     authorRepository,
     eventPublisher,
     EntityType.AUTHOR,
