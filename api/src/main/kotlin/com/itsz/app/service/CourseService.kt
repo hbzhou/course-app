@@ -8,27 +8,7 @@ import org.springframework.transaction.annotation.Transactional
 import java.util.*
 
 @Service
-class CourseService(
-    courseRepository: CourseRepository,
-    eventPublisher: DomainEventPublisher
-) : EntityCrudService<Course>(
-    courseRepository,
-    eventPublisher,
-    nameExtractor = { it.title }
-) {
-
-    fun getAllCourses(): List<Course> = getAll()
-
-    fun getCourseById(id: Long): Optional<Course> = getById(id)
-
-    @Transactional
-    fun createCourse(course: Course): Course = create(course)
-
-    @Transactional
-    fun updateCourse(id: Long, course: Course): Course = update(id, course)
-
-    @Transactional
-    fun deleteCourse(id: Long) = delete(id)
+class CourseService(override val repository: CourseRepository, override val nameExtractor: (Course) -> String?= {it.title}) : EntityCrudService<Course>() {
 
     override fun assignId(entity: Course, id: Long): Course = entity.copy(id = id)
 }

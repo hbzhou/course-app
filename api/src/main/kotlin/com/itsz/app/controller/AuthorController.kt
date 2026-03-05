@@ -13,12 +13,12 @@ class AuthorController(private val authorService: AuthorService) {
 
     @GetMapping
     @PreAuthorize("hasAuthority('COURSE_VIEW')")
-    fun getAllAuthors(): List<Author> = authorService.getAllAuthors()
+    fun getAllAuthors(): List<Author> = authorService.getAll()
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAuthority('COURSE_VIEW')")
     fun getAuthorById(@PathVariable id: Long): ResponseEntity<Author> {
-        return authorService.getAuthorById(id)
+        return authorService.getById(id)
             .map { ResponseEntity.ok(it) }
             .orElse(ResponseEntity.notFound().build())
     }
@@ -26,7 +26,7 @@ class AuthorController(private val authorService: AuthorService) {
     @PostMapping
     @PreAuthorize("hasAuthority('COURSE_EDIT')")
     fun createAuthor(@RequestBody author: Author): ResponseEntity<Author> {
-        val createdAuthor = authorService.createAuthor(author)
+        val createdAuthor = authorService.create(author)
         return ResponseEntity.status(HttpStatus.CREATED).body(createdAuthor)
     }
 
@@ -34,7 +34,7 @@ class AuthorController(private val authorService: AuthorService) {
     @PreAuthorize("hasAuthority('COURSE_EDIT')")
     fun updateAuthor(@PathVariable id: Long, @RequestBody author: Author): ResponseEntity<Author> {
         return try {
-            val updatedAuthor = authorService.updateAuthor(id, author)
+            val updatedAuthor = authorService.update(id, author)
             ResponseEntity.ok(updatedAuthor)
         } catch (_: RuntimeException) {
             ResponseEntity.notFound().build()
@@ -45,7 +45,7 @@ class AuthorController(private val authorService: AuthorService) {
     @PreAuthorize("hasAuthority('COURSE_EDIT')")
     fun deleteAuthor(@PathVariable id: Long): ResponseEntity<Void> {
         return try {
-            authorService.deleteAuthor(id)
+            authorService.delete(id)
             ResponseEntity.noContent().build()
         } catch (_: RuntimeException) {
             ResponseEntity.notFound().build()

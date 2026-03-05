@@ -4,16 +4,17 @@ import com.itsz.app.domain.BaseEntity
 import com.itsz.app.event.DomainEventPublisher
 import com.itsz.app.event.EventProvider
 import com.itsz.app.event.EventProviders
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.transaction.annotation.Transactional
 import java.util.Optional
 
-abstract class EntityCrudService<T : BaseEntity>(
-    private val repository: JpaRepository<T, Long>,
-    private val eventPublisher: DomainEventPublisher,
-    private val nameExtractor: (T) -> String?
-) {
+abstract class EntityCrudService<T : BaseEntity> {
+    abstract val repository: JpaRepository<T, Long>
+    abstract val nameExtractor: (T) -> String?
+    @Autowired
+    open lateinit var eventPublisher: DomainEventPublisher
 
     open fun getAll(): List<T> = repository.findAll()
 

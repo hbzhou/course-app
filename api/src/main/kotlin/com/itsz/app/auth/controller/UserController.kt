@@ -13,12 +13,12 @@ class UserController(private val userService: UserService) {
 
     @GetMapping
     @PreAuthorize("hasAuthority('USER_MANAGE')")
-    fun getAllUsers(): List<User> = userService.getAllUsers()
+    fun getAllUsers(): List<User> = userService.getAll()
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAuthority('USER_MANAGE')")
     fun getUserById(@PathVariable id: Long): ResponseEntity<User> {
-        return userService.getUserById(id)
+        return userService.getById(id)
             .map { ResponseEntity.ok(it) }
             .orElse(ResponseEntity.notFound().build())
     }
@@ -26,7 +26,7 @@ class UserController(private val userService: UserService) {
     @PostMapping
     @PreAuthorize("hasAuthority('USER_MANAGE')")
     fun createUser(@RequestBody user: User): ResponseEntity<User> {
-        val createdUser = userService.createUser(user)
+        val createdUser = userService.create(user)
         return ResponseEntity.status(HttpStatus.CREATED).body(createdUser)
     }
 
@@ -34,7 +34,7 @@ class UserController(private val userService: UserService) {
     @PreAuthorize("hasAuthority('USER_MANAGE')")
     fun updateUser(@PathVariable id: Long, @RequestBody user: User): ResponseEntity<User> {
         return try {
-            val updatedUser = userService.updateUser(id, user)
+            val updatedUser = userService.update(id, user)
             ResponseEntity.ok(updatedUser)
         } catch (_: RuntimeException) {
             ResponseEntity.notFound().build()
@@ -45,7 +45,7 @@ class UserController(private val userService: UserService) {
     @PreAuthorize("hasAuthority('USER_MANAGE')")
     fun deleteUser(@PathVariable id: Long): ResponseEntity<Void> {
         return try {
-            userService.deleteUser(id)
+            userService.delete(id)
             ResponseEntity.noContent().build()
         } catch (_: RuntimeException) {
             ResponseEntity.notFound().build()

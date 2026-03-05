@@ -12,30 +12,10 @@ import java.util.*
 
 
 @Service
-class UserService(
-    private val userRepository: UserRepository,
-    private val passwordEncoder: PasswordEncoder,
-    eventPublisher: DomainEventPublisher
-) : EntityCrudService<User>(
-    userRepository,
-    eventPublisher,
-    nameExtractor = { it.username }
-) {
+class UserService(override val repository: UserRepository, private val passwordEncoder: PasswordEncoder, override val nameExtractor: (User) -> String = { it.username }) : EntityCrudService<User>() {
 
-    fun getAllUsers(): List<User> = getAll()
 
-    fun getUserById(id: Long): Optional<User> = getById(id)
-
-    fun getUserByUsername(username: String): User? = userRepository.findByUsername(username).orElse(null)
-
-    @Transactional
-    fun createUser(user: User): User = create(user)
-
-    @Transactional
-    fun updateUser(id: Long, user: User): User = update(id, user)
-
-    @Transactional
-    fun deleteUser(id: Long) = delete(id)
+    fun getUserByUsername(username: String): User? = repository.findByUsername(username).orElse(null)
 
     override fun prepareForCreate(entity: User): User {
         val encodedPassword = entity.password?.let { passwordEncoder.encode(it) }

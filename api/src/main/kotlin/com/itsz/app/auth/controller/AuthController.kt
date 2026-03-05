@@ -51,7 +51,7 @@ class AuthController(
             password = passwordEncoder.encode(registerRequest.password),
             roles = setOf(userRole)
         )
-        return userService.createUser(user)
+        return userService.create(user)
     }
 
     @DeleteMapping("/logout")
