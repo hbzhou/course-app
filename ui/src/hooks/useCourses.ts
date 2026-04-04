@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { courseApi } from "@/api/courseApi";
 import { Course } from "@/types/course";
+import { QUERY_STALE_TIME_MS } from "@/lib/queryConfig";
 
 export const COURSES_QUERY_KEY = ["courses"];
 
@@ -8,7 +9,7 @@ export const useCourses = () => {
   return useQuery({
     queryKey: COURSES_QUERY_KEY,
     queryFn: courseApi.getCourses,
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: QUERY_STALE_TIME_MS,
   });
 };
 

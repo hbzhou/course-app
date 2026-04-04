@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { tagApi } from "@/api/tagApi";
 import { Tag } from "@/types/tag";
+import { QUERY_STALE_TIME_MS } from "@/lib/queryConfig";
 
 export const TAGS_QUERY_KEY = ["tags"];
 
@@ -8,7 +9,7 @@ export const useTags = () => {
   return useQuery({
     queryKey: TAGS_QUERY_KEY,
     queryFn: tagApi.getTags,
-    staleTime: 5 * 60 * 1000,
+    staleTime: QUERY_STALE_TIME_MS,
   });
 };
 
