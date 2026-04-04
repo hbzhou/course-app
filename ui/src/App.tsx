@@ -13,6 +13,7 @@ import Registration from "@/components/Registration/Registration";
 import ProtectedRoute from "@/components/ProtectedRoute/ProtectedRoute";
 import Users from "@/components/Users/Users";
 import ToastContainer from "@/components/Notifications/ToastContainer";
+import ErrorBoundary from "@/common/ErrorBoundary";
 import { Provider, useDispatch } from "react-redux";
 import { store } from "@/store/store";
 import { actions } from "@/store/auth/auth.slice";
@@ -54,30 +55,34 @@ const ProtectedLayout = () => {
 
 const App: React.FC = () => {
   return (
-    <Provider store={store}>
-      <QueryClientProvider client={queryClient}>
-        <AuthBootstrap>
-          <BrowserRouter>
-            <Header />
-            <Routes>
-              <Route element={<ProtectedLayout />}>
-                <Route path='/' element={<Navigate to='/courses' replace />} />
-                <Route path='/courses' element={<Courses />} />
-                <Route path='/courses/:id' element={<CourseInfo />} />
-                <Route path='/authors' element={<Authors />} />
-                <Route path='/tags' element={<Tags />} />
-                <Route path='/users' element={<Users />} />
-                <Route path='/courses/add' element={<CreateCourse />} />
-              </Route>
-              <Route path='/login' element={<Login />} />
-              <Route path='/register' element={<Registration />} />
-            </Routes>
-            <ToastContainer />
-          </BrowserRouter>
-        </AuthBootstrap>
-        <ReactQueryDevtools initialIsOpen={false} />
-      </QueryClientProvider>
-    </Provider>
+    <ErrorBoundary>
+      <Provider store={store}>
+        <QueryClientProvider client={queryClient}>
+          <AuthBootstrap>
+            <BrowserRouter>
+              <Header />
+              <ErrorBoundary>
+                <Routes>
+                  <Route element={<ProtectedLayout />}>
+                    <Route path='/' element={<Navigate to='/courses' replace />} />
+                    <Route path='/courses' element={<Courses />} />
+                    <Route path='/courses/:id' element={<CourseInfo />} />
+                    <Route path='/authors' element={<Authors />} />
+                    <Route path='/tags' element={<Tags />} />
+                    <Route path='/users' element={<Users />} />
+                    <Route path='/courses/add' element={<CreateCourse />} />
+                  </Route>
+                  <Route path='/login' element={<Login />} />
+                  <Route path='/register' element={<Registration />} />
+                </Routes>
+              </ErrorBoundary>
+              <ToastContainer />
+            </BrowserRouter>
+          </AuthBootstrap>
+          <ReactQueryDevtools initialIsOpen={false} />
+        </QueryClientProvider>
+      </Provider>
+    </ErrorBoundary>
   );
 };
 
