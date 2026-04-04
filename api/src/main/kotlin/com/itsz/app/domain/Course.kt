@@ -16,14 +16,6 @@ data class Course(
         joinColumns = [JoinColumn(name = "course_id")],
         inverseJoinColumns = [JoinColumn(name = "author_id")]
     )
-<<<<<<< Updated upstream
-    val authors: MutableList<Author> = mutableListOf()
-<<<<<<< Updated upstream
-) : BaseEntity
-=======
-)
-
-=======
     val authors: MutableList<Author> = mutableListOf(),
     @ManyToMany
     @JoinTable(
@@ -33,5 +25,3 @@ data class Course(
     )
     val tags: MutableList<Tag> = mutableListOf()
 ) : BaseEntity
->>>>>>> Stashed changes
->>>>>>> Stashed changes

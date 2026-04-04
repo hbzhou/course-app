@@ -154,17 +154,6 @@ class TagController(private val tagService: TagService) {
         catch (_: RuntimeException) { ResponseEntity.notFound().build() }
 }
 ```
-
-<<<<<<< Updated upstream
-**Permission reference:**
-
-| Permission | Holders | Use for |
-|-----------|---------|---------|
-| `COURSE_VIEW` | ROLE_ADMIN, ROLE_USER | GET endpoints |
-| `COURSE_EDIT` | ROLE_ADMIN | POST, PUT, DELETE |
-| `USER_MANAGE` | ROLE_ADMIN | User CRUD |
-| `ROLE_MANAGE` | ROLE_ADMIN | Role assignment |
-=======
 **Permission reference (existing permissions):**
 
 | Permission | Holders | Use for |
@@ -193,7 +182,6 @@ INSERT INTO role_permissions (role_id, permission_id)
 SELECT r.id, p.id FROM role r JOIN permission p ON p.name IN ('<DOMAIN>_VIEW', '<DOMAIN>_EDIT')
 WHERE r.name = 'ROLE_ADMIN';
 ```
->>>>>>> Stashed changes
 
 **Security rules:**
 - Never skip `@PreAuthorize` on write endpoints
@@ -402,12 +390,8 @@ Before marking a full-stack feature complete:
 - [ ] Migration file versioned correctly (V{N}__) and never replaces an existing file
 - [ ] Entity is a `data class` implementing `BaseEntity`
 - [ ] `assignId` overridden in service (required for Kotlin data class immutability)
-<<<<<<< Updated upstream
-- [ ] All write endpoints have `@PreAuthorize` with appropriate permission
-=======
 - [ ] **New domain-specific permissions added** (`<DOMAIN>_VIEW`, `<DOMAIN>_EDIT`) in a migration — not reusing another domain's permissions
 - [ ] All write endpoints have `@PreAuthorize` with the correct domain permission
->>>>>>> Stashed changes
 - [ ] Controller returns `404` for not-found, not `500`
 - [ ] No business logic in entities or controllers — it belongs in services
 - [ ] No `@Transactional` on controllers

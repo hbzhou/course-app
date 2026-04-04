@@ -2,11 +2,7 @@ package com.itsz.app.event
 
 import com.itsz.app.domain.BaseEntity
 
-<<<<<<< Updated upstream
-enum class EntityType { COURSE, AUTHOR, USER }
-=======
 enum class EntityType { COURSE, AUTHOR, USER, TAG }
->>>>>>> Stashed changes
 enum class OperationType { CREATED, UPDATED, DELETED }
 
 data class OperationEvent(
