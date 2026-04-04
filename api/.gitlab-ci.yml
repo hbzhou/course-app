@@ -44,14 +44,18 @@ api-unit-test:
   services:
     - name: mysql:8.0
       alias: mysql
+    - name: redis:7.2
+      alias: redis
   variables:
-    MYSQL_ROOT_PASSWORD: root123
+    MYSQL_ROOT_PASSWORD: ${CI_MYSQL_ROOT_PASSWORD}
     MYSQL_DATABASE: coursedb
-    MYSQL_USER: admin
-    MYSQL_PASSWORD: welcome123
+    MYSQL_USER: ${CI_MYSQL_USER}
+    MYSQL_PASSWORD: ${CI_MYSQL_PASSWORD}
     SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/coursedb
-    SPRING_DATASOURCE_USERNAME: admin
-    SPRING_DATASOURCE_PASSWORD: welcome123
+    SPRING_DATASOURCE_USERNAME: ${CI_MYSQL_USER}
+    SPRING_DATASOURCE_PASSWORD: ${CI_MYSQL_PASSWORD}
+    SPRING_DATA_REDIS_HOST: redis
+    SPRING_DATA_REDIS_PORT: 6379
   script:
     - ./gradlew -g ${GRADLE_HOME} :api:test
   artifacts:
