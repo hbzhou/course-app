@@ -1,5 +1,5 @@
-import React, { useEffect } from "react";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { useEffect } from "react";
+import { BrowserRouter, Navigate, Outlet, Route, Routes } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import Authors from "@/components/Authors/Authors";
@@ -17,6 +17,7 @@ import { Provider, useDispatch } from "react-redux";
 import { store } from "@/store/store";
 import { actions } from "@/store/auth/auth.slice";
 import { useWebSocket } from "@/hooks/useWebSocket";
+import { QUERY_STALE_TIME_MS } from "@/lib/queryConfig";
 
 // Create a client for React Query
 const queryClient = new QueryClient({
@@ -24,7 +25,7 @@ const queryClient = new QueryClient({
     queries: {
       retry: 1,
       refetchOnWindowFocus: false,
-      staleTime: 5 * 60 * 1000, // 5 minutes
+      staleTime: QUERY_STALE_TIME_MS,
     },
   },
 });
@@ -33,13 +34,22 @@ const AuthBootstrap: React.FC<{ children: React.ReactElement }> = ({ children })
   const dispatch = useDispatch();
 
   useEffect(() => {
-    dispatch(actions.rehydrateFromStorage());
+    const token = localStorage.getItem("token");
+    dispatch(actions.setToken(token ?? undefined));
   }, [dispatch]);
 
   // Start WebSocket connection (connects only when authenticated)
   useWebSocket();
 
   return children;
+};
+
+const ProtectedLayout = () => {
+  return (
+    <ProtectedRoute>
+      <Outlet />
+    </ProtectedRoute>
+  );
 };
 
 const App: React.FC = () => {
@@ -50,62 +60,15 @@ const App: React.FC = () => {
           <BrowserRouter>
             <Header />
             <Routes>
-              <Route
-                path='/'
-                element={
-                  <ProtectedRoute>
-                    <Courses />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path='/courses'
-                element={
-                  <ProtectedRoute>
-                    <Courses />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path='/courses/:id'
-                element={
-                  <ProtectedRoute>
-                    <CourseInfo />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path='/authors'
-                element={
-                  <ProtectedRoute>
-                    <Authors />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path='/tags'
-                element={
-                  <ProtectedRoute>
-                    <Tags />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path='/users'
-                element={
-                  <ProtectedRoute>
-                    <Users />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path='/courses/add'
-                element={
-                  <ProtectedRoute>
-                    <CreateCourse />
-                  </ProtectedRoute>
-                }
-              />
+              <Route element={<ProtectedLayout />}>
+                <Route path='/' element={<Navigate to='/courses' replace />} />
+                <Route path='/courses' element={<Courses />} />
+                <Route path='/courses/:id' element={<CourseInfo />} />
+                <Route path='/authors' element={<Authors />} />
+                <Route path='/tags' element={<Tags />} />
+                <Route path='/users' element={<Users />} />
+                <Route path='/courses/add' element={<CreateCourse />} />
+              </Route>
               <Route path='/login' element={<Login />} />
               <Route path='/register' element={<Registration />} />
             </Routes>

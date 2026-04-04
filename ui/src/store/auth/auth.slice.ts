@@ -19,12 +19,15 @@ export const authSlice = createSlice({
     logout: () => {
       return {};
     },
-    rehydrateFromStorage: (state: AuthSliceState) => {
-      const token = localStorage.getItem("token");
-      if (token) {
-        return { ...state, token };
+    setToken: (state: AuthSliceState, action: PayloadAction<string | undefined>) => {
+      if (!action.payload) {
+        return state;
       }
-      return state;
+
+      return {
+        ...state,
+        token: action.payload,
+      };
     },
   },
 });
