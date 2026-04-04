@@ -8,7 +8,7 @@ export const AUTHORS_QUERY_KEY = ["authors"];
 export const useAuthors = () => {
   return useQuery({
     queryKey: AUTHORS_QUERY_KEY,
-    queryFn: authorApi.getAuthors,
+    queryFn: ({ signal }) => authorApi.getAuthors(signal),
     staleTime: QUERY_STALE_TIME_MS,
   });
 };

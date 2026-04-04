@@ -2,8 +2,8 @@ import { apiClient } from "./client";
 import { Tag } from "@/types/tag";
 
 export const tagApi = {
-  getTags: async (): Promise<Tag[]> => {
-    return apiClient<Tag[]>("/api/tags", { method: "GET" });
+  getTags: async (signal?: AbortSignal): Promise<Tag[]> => {
+    return apiClient<Tag[]>("/api/tags", { method: "GET", signal });
   },
 
   createTag: async (tag: Omit<Tag, "id">): Promise<Tag> => {

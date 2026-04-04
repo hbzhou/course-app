@@ -8,7 +8,7 @@ export const COURSES_QUERY_KEY = ["courses"];
 export const useCourses = () => {
   return useQuery({
     queryKey: COURSES_QUERY_KEY,
-    queryFn: courseApi.getCourses,
+    queryFn: ({ signal }) => courseApi.getCourses(signal),
     staleTime: QUERY_STALE_TIME_MS,
   });
 };
