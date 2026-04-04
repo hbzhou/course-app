@@ -16,7 +16,7 @@ export const useCreateCourse = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (course: Course) => courseApi.createCourse(course),
+    mutationFn: (course: Omit<Course, "id">) => courseApi.createCourse(course),
     onSuccess: (newCourse) => {
       // Update cache with the new course from server response
       queryClient.setQueryData<Course[]>(COURSES_QUERY_KEY, (old) => {
@@ -66,8 +66,8 @@ export const useDeleteCourse = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (courseId: string) => courseApi.deleteCourse(courseId),
-    onMutate: async (courseId: string) => {
+    mutationFn: (courseId: number) => courseApi.deleteCourse(courseId),
+    onMutate: async (courseId: number) => {
       await queryClient.cancelQueries({ queryKey: COURSES_QUERY_KEY });
       const previousCourses = queryClient.getQueryData<Course[]>(COURSES_QUERY_KEY);
 

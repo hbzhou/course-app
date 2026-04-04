@@ -62,7 +62,7 @@ export const updateAuthor = (author: Author) => async (dispatch: AppDispatch) =>
   return updatedAuthor;
 };
 
-export const deleteAuthor = (authorId: string) => async (dispatch: AppDispatch) => {
+export const deleteAuthor = (authorId: number) => async (dispatch: AppDispatch) => {
   const token = localStorage.getItem("token") ?? "";
   const response = await fetch(`/api/authors/${authorId}`, {
     method: "DELETE",

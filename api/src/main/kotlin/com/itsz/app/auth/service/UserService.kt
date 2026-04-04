@@ -2,49 +2,32 @@ package com.itsz.app.auth.service
 
 import com.itsz.app.auth.model.User
 import com.itsz.app.auth.repository.UserRepository
+import com.itsz.app.event.DomainEventPublisher
+import com.itsz.app.service.EntityCrudService
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import java.util.*
 
+
+
 @Service
-class UserService(
-    private val userRepository: UserRepository,
-    private val passwordEncoder: PasswordEncoder
-) {
+class UserService(override val repository: UserRepository, private val passwordEncoder: PasswordEncoder, override val nameExtractor: (User) -> String = { it.username }) : EntityCrudService<User>() {
 
-    fun getAllUsers(): List<User> = userRepository.findAll()
 
-    fun getUserById(id: Long): Optional<User> = userRepository.findById(id)
+    fun getUserByUsername(username: String): User? = repository.findByUsername(username).orElse(null)
 
-    fun getUserByUsername(username: String): User? = userRepository.findByUsername(username).orElse(null)
-
-    fun createUser(user: User): User {
-        val encodedPassword = user.password?.let { passwordEncoder.encode(it) }
-        return userRepository.save(user.copy(password = encodedPassword))
+    override fun prepareForCreate(entity: User): User {
+        val encodedPassword = entity.password?.let { passwordEncoder.encode(it) }
+        return entity.copy(password = encodedPassword)
     }
 
-    fun updateUser(id: Long, user: User): User {
-        return if (userRepository.existsById(id)) {
-            val existingUser = userRepository.findById(id).get()
-            val updatedUser = if (user.password.isNullOrBlank()) {
-                // Keep existing password if no new password provided
-                user.copy(id = id, password = existingUser.password)
-            } else {
-                // Encode new password
-                user.copy(id = id, password = passwordEncoder.encode(user.password))
-            }
-            userRepository.save(updatedUser)
+    override fun prepareForUpdate(existing: User, incoming: User, id: Long): User {
+        val password = if (incoming.password.isNullOrBlank()) {
+            existing.password
         } else {
-            throw RuntimeException("User not found with id: $id")
+            passwordEncoder.encode(incoming.password)
         }
-    }
-
-    fun deleteUser(id: Long) {
-        if (userRepository.existsById(id)) {
-            userRepository.deleteById(id)
-        } else {
-            throw RuntimeException("User not found with id: $id")
-        }
+        return incoming.copy(id = id, password = password)
     }
 }
-

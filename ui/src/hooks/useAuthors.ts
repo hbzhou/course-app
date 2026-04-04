@@ -72,9 +72,9 @@ export const useDeleteAuthor = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (authorId: string) => authorApi.deleteAuthor(authorId),
+    mutationFn: (authorId: number) => authorApi.deleteAuthor(authorId),
     // Optimistically update the cache before server responds
-    onMutate: async (authorId: string) => {
+    onMutate: async (authorId: number) => {
       // Cancel any outgoing refetches to avoid overwriting our optimistic update
       await queryClient.cancelQueries({ queryKey: AUTHORS_QUERY_KEY });
 

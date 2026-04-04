@@ -11,7 +11,8 @@ const CourseInfo: React.FC = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { data: courses = [], isLoading, error } = useCourses();
-  const course = courses.find((course: Course) => course.id === id);
+  const courseId = id ? Number(id) : NaN;
+  const course = courses.find((course: Course) => course.id === courseId);
 
   if (isLoading) {
     return (
@@ -103,11 +104,7 @@ const CourseInfo: React.FC = () => {
             </div>
           </div>
 
-          <div className="pt-4 border-t">
-            <p className="text-sm text-muted-foreground">
-              <span className="font-semibold">Course ID:</span> {course.id}
-            </p>
-          </div>
+          {/* Don't display internal numeric IDs in the UI */}
         </CardContent>
       </Card>
     </div>
