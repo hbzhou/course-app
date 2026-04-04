@@ -16,5 +16,12 @@ data class Course(
         joinColumns = [JoinColumn(name = "course_id")],
         inverseJoinColumns = [JoinColumn(name = "author_id")]
     )
-    val authors: MutableList<Author> = mutableListOf()
+    val authors: MutableList<Author> = mutableListOf(),
+    @ManyToMany
+    @JoinTable(
+        name = "course_tags",
+        joinColumns = [JoinColumn(name = "course_id")],
+        inverseJoinColumns = [JoinColumn(name = "tag_id")]
+    )
+    val tags: MutableList<Tag> = mutableListOf()
 ) : BaseEntity

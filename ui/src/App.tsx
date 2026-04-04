@@ -3,6 +3,7 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import Authors from "@/components/Authors/Authors";
+import Tags from "@/components/Tags/Tags";
 import CourseInfo from "@/components/CourseInfo/CourseInfo";
 import Courses from "@/components/Courses/Courses";
 import CreateCourse from "@/components/CreateCourse/CreateCourse";
@@ -78,6 +79,14 @@ const App: React.FC = () => {
                 element={
                   <ProtectedRoute>
                     <Authors />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path='/tags'
+                element={
+                  <ProtectedRoute>
+                    <Tags />
                   </ProtectedRoute>
                 }
               />

@@ -5,4 +5,5 @@ export type Course = {
   creationDate: string;
   duration: number;
   authors: Author[];
+  tags: Tag[];
 };
