@@ -155,6 +155,7 @@ class TagController(private val tagService: TagService) {
 }
 ```
 
+<<<<<<< Updated upstream
 **Permission reference:**
 
 | Permission | Holders | Use for |
@@ -163,6 +164,36 @@ class TagController(private val tagService: TagService) {
 | `COURSE_EDIT` | ROLE_ADMIN | POST, PUT, DELETE |
 | `USER_MANAGE` | ROLE_ADMIN | User CRUD |
 | `ROLE_MANAGE` | ROLE_ADMIN | Role assignment |
+=======
+**Permission reference (existing permissions):**
+
+| Permission | Holders | Use for |
+|-----------|---------|----------|
+| `COURSE_VIEW` | ROLE_ADMIN, ROLE_USER | Course GET endpoints |
+| `COURSE_EDIT` | ROLE_ADMIN | Course POST, PUT, DELETE |
+| `USER_MANAGE` | ROLE_ADMIN | User CRUD |
+| `ROLE_MANAGE` | ROLE_ADMIN | Role assignment |
+| `TAG_VIEW` | ROLE_ADMIN, ROLE_USER | Tag GET endpoints |
+| `TAG_EDIT` | ROLE_ADMIN | Tag POST, PUT, DELETE |
+
+**Each new domain must introduce its own permissions** — never reuse permissions from another domain (e.g. do not put `@PreAuthorize("hasAuthority('COURSE_EDIT')")` on a Tag endpoint). Create a new migration to insert the permissions and assign them to roles.
+
+Template for new domain permissions (add to the migration that creates the domain's table, or in a dedicated `V{N}__add_<domain>_permissions.sql`):
+```sql
+INSERT INTO permission (name) VALUES ('<DOMAIN>_VIEW');
+INSERT INTO permission (name) VALUES ('<DOMAIN>_EDIT');
+
+-- ROLE_USER: read access
+INSERT INTO role_permissions (role_id, permission_id)
+SELECT r.id, p.id FROM role r JOIN permission p ON p.name = '<DOMAIN>_VIEW'
+WHERE r.name = 'ROLE_USER';
+
+-- ROLE_ADMIN: full access
+INSERT INTO role_permissions (role_id, permission_id)
+SELECT r.id, p.id FROM role r JOIN permission p ON p.name IN ('<DOMAIN>_VIEW', '<DOMAIN>_EDIT')
+WHERE r.name = 'ROLE_ADMIN';
+```
+>>>>>>> Stashed changes
 
 **Security rules:**
 - Never skip `@PreAuthorize` on write endpoints
@@ -371,7 +402,12 @@ Before marking a full-stack feature complete:
 - [ ] Migration file versioned correctly (V{N}__) and never replaces an existing file
 - [ ] Entity is a `data class` implementing `BaseEntity`
 - [ ] `assignId` overridden in service (required for Kotlin data class immutability)
+<<<<<<< Updated upstream
 - [ ] All write endpoints have `@PreAuthorize` with appropriate permission
+=======
+- [ ] **New domain-specific permissions added** (`<DOMAIN>_VIEW`, `<DOMAIN>_EDIT`) in a migration — not reusing another domain's permissions
+- [ ] All write endpoints have `@PreAuthorize` with the correct domain permission
+>>>>>>> Stashed changes
 - [ ] Controller returns `404` for not-found, not `500`
 - [ ] No business logic in entities or controllers — it belongs in services
 - [ ] No `@Transactional` on controllers

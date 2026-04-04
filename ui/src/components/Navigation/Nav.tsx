@@ -36,6 +36,18 @@ const Nav: React.FC = () => {
                 Authors
             </NavLink>
             <NavLink
+                to="/tags"
+                className={({ isActive }) =>
+                    cn(
+                        buttonVariants({ variant: "ghost", size: "sm" }),
+                        "text-sm",
+                        isActive && "bg-accent text-accent-foreground"
+                    )
+                }
+            >
+                Tags
+            </NavLink>
+            <NavLink
                 to="/users"
                 className={({ isActive }) =>
                     cn(
