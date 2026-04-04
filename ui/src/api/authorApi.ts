@@ -2,9 +2,10 @@ import { apiClient } from "./client";
 import { Author } from "@/types/author";
 
 export const authorApi = {
-  getAuthors: async (): Promise<Author[]> => {
+  getAuthors: async (signal?: AbortSignal): Promise<Author[]> => {
     return apiClient<Author[]>("/api/authors", {
       method: "GET",
+      signal,
     });
   },
 

@@ -2,15 +2,17 @@ import { apiClient } from "./client";
 import { ManagedUser, CreateUserRequest, UpdateUserRequest, Role } from "@/types/managed-user";
 
 export const userApi = {
-  getUsers: async (): Promise<ManagedUser[]> => {
+  getUsers: async (signal?: AbortSignal): Promise<ManagedUser[]> => {
     return apiClient<ManagedUser[]>("/api/users", {
       method: "GET",
+      signal,
     });
   },
 
-  getUserById: async (userId: number): Promise<ManagedUser> => {
+  getUserById: async (userId: number, signal?: AbortSignal): Promise<ManagedUser> => {
     return apiClient<ManagedUser>(`/api/users/${userId}`, {
       method: "GET",
+      signal,
     });
   },
 
@@ -34,9 +36,10 @@ export const userApi = {
     });
   },
 
-  getRoles: async (): Promise<Role[]> => {
+  getRoles: async (signal?: AbortSignal): Promise<Role[]> => {
     return apiClient<Role[]>("/api/roles", {
       method: "GET",
+      signal,
     });
   },
 };
