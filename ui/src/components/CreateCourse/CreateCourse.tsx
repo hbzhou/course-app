@@ -5,45 +5,61 @@ import { Input } from "@/common/Input";
 import { Label } from "@/common/Label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/common/Card";
 import { Textarea } from "@/common/Textarea";
-import moment from "moment";
 
-import React, { useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuthors } from "@/hooks/useAuthors";
 import { useTags } from "@/hooks/useTags";
 import { useCreateCourse } from "@/hooks/useCourses";
-import { Course } from "@/types/course";
 import { Author } from "@/types/author";
 import { Tag } from "@/types/tag";
 
-const CreateCourse: React.FC = () => {
+type CreateCourseFormValues = {
+  title: string;
+  description: string;
+  duration: number;
+  authors: number[];
+  tags: number[];
+};
+
+const CreateCourse = () => {
   const {
     register,
     handleSubmit,
     control,
     formState: { errors },
-  } = useForm<Course>();
+  } = useForm<CreateCourseFormValues>({
+    defaultValues: {
+      authors: [],
+      tags: [],
+    },
+  });
   const navigator = useNavigate();
   const { data: authors = [] } = useAuthors();
   const { data: tags = [] } = useTags();
   const createCourseMutation = useCreateCourse();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const onSubmit: SubmitHandler<Course> = async (data) => {
+  const onSubmit: SubmitHandler<CreateCourseFormValues> = async (data) => {
     try {
       setErrorMessage(null);
-      const creationDate = moment().format('MM/DD/YYYY');
+      const creationDate = new Date().toLocaleDateString("en-US", {
+        month: "2-digit",
+        day: "2-digit",
+        year: "numeric",
+      });
       const courseData = {
         ...data,
         creationDate,
-        authors: (data.authors as unknown as number[]).map((authorId: number) => {
+        authors: data.authors.map((authorId) => {
           const author = authors.find((a: Author) => a.id === authorId);
           return author || { id: authorId, name: '' };
         }),
-        tags: ((data.tags as unknown as number[]) ?? []).map((tagId: number) => {
+        tags: data.tags.map((tagId) => {
           const tag = tags.find((t: Tag) => t.id === tagId);
-          return tag || { id: tagId, name: '', color: '' };
+          return tag || { id: tagId, name: "", color: "" };
         }),
+        
       };
       await createCourseMutation.mutateAsync(courseData);
       navigator("/courses");
@@ -100,7 +116,6 @@ const CreateCourse: React.FC = () => {
               <Label htmlFor="authors">Authors</Label>
               <Controller
                 control={control}
-                defaultValue={[]}
                 name="authors"
                 rules={{ required: true }}
                 render={({ field: { onChange, value, ref } }) => (

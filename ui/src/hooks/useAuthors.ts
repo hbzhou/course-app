@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { authorApi } from "@/api/authorApi";
 import { Author } from "@/types/author";
+import { QUERY_STALE_TIME_MS } from "@/lib/queryConfig";
 
 export const AUTHORS_QUERY_KEY = ["authors"];
 
@@ -8,7 +9,7 @@ export const useAuthors = () => {
   return useQuery({
     queryKey: AUTHORS_QUERY_KEY,
     queryFn: authorApi.getAuthors,
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: QUERY_STALE_TIME_MS,
   });
 };
 
