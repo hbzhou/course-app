@@ -37,17 +37,20 @@ JOIN role r ON r.name IN ('ROLE_ADMIN', 'ROLE_USER')
 WHERE u.email = 'admin@email.com';
 
 -- Authors data
-INSERT INTO author (id, name) VALUES ('9b87e8b8-6ba5-40fc-a439-c4e30a373d36', 'author');
-INSERT INTO author (id, name) VALUES ('1c972c52-3198-4098-b6f7-799b45903199', 'author2');
-INSERT INTO author (id, name) VALUES ('072fe3fc-e751-4745-9af5-aa9eed0ea9ed', 'author3');
-INSERT INTO author (id, name) VALUES ('40b21bd5-cbae-4f33-b154-0252b1ae03a9', 'author4');
-INSERT INTO author (id, name) VALUES ('5e0b0f18-32c9-4933-b142-50459b47f09e', 'author5');
-INSERT INTO author (id, name) VALUES ('9987de6a-b475-484a-b885-622b8fb88bda', 'author6');
+INSERT INTO author (name) VALUES ('author');
+INSERT INTO author (name) VALUES ('author2');
+INSERT INTO author (name) VALUES ('author3');
+INSERT INTO author (name) VALUES ('author4');
+INSERT INTO author (name) VALUES ('author5');
+INSERT INTO author (name) VALUES ('author6');
 
 -- Course data
-INSERT INTO course (id, title, description, creation_date, duration)
-VALUES ('66cc289e-6de9-49b2-9ca7-8b4f409d6467', 'title', 'description', '9/3/2021', 30);
+INSERT INTO course (title, description, creation_date, duration)
+VALUES ('title', 'description', '9/3/2021', 30);
 
 -- Course-Author relationships
 INSERT INTO course_authors (course_id, author_id)
-VALUES ('66cc289e-6de9-49b2-9ca7-8b4f409d6467', '9b87e8b8-6ba5-40fc-a439-c4e30a373d36');
+SELECT c.id, a.id
+FROM course c
+JOIN author a ON a.name = 'author'
+WHERE c.title = 'title';

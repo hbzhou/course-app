@@ -11,9 +11,11 @@ import Login from "@/components/Login/Login";
 import Registration from "@/components/Registration/Registration";
 import ProtectedRoute from "@/components/ProtectedRoute/ProtectedRoute";
 import Users from "@/components/Users/Users";
+import ToastContainer from "@/components/Notifications/ToastContainer";
 import { Provider, useDispatch } from "react-redux";
 import { store } from "@/store/store";
 import { actions } from "@/store/auth/auth.slice";
+import { useWebSocket } from "@/hooks/useWebSocket";
 
 // Create a client for React Query
 const queryClient = new QueryClient({
@@ -32,6 +34,9 @@ const AuthBootstrap: React.FC<{ children: React.ReactElement }> = ({ children })
   useEffect(() => {
     dispatch(actions.rehydrateFromStorage());
   }, [dispatch]);
+
+  // Start WebSocket connection (connects only when authenticated)
+  useWebSocket();
 
   return children;
 };
@@ -95,6 +100,7 @@ const App: React.FC = () => {
               <Route path='/login' element={<Login />} />
               <Route path='/register' element={<Registration />} />
             </Routes>
+            <ToastContainer />
           </BrowserRouter>
         </AuthBootstrap>
         <ReactQueryDevtools initialIsOpen={false} />

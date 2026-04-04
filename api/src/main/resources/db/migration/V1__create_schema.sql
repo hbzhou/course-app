@@ -44,12 +44,12 @@ CREATE TABLE user_roles (
 );
 
 CREATE TABLE author (
-    id VARCHAR(255) PRIMARY KEY,
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(255) NOT NULL
 );
 
 CREATE TABLE course (
-    id VARCHAR(255) PRIMARY KEY,
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
     title VARCHAR(255) NOT NULL,
     description VARCHAR(2000) NOT NULL,
     creation_date VARCHAR(255) NOT NULL,
@@ -57,8 +57,8 @@ CREATE TABLE course (
 );
 
 CREATE TABLE course_authors (
-    course_id VARCHAR(255) NOT NULL,
-    author_id VARCHAR(255) NOT NULL,
+    course_id BIGINT NOT NULL,
+    author_id BIGINT NOT NULL,
     PRIMARY KEY (course_id, author_id),
     CONSTRAINT fk_course_authors_course FOREIGN KEY (course_id) REFERENCES course (id) ON DELETE CASCADE,
     CONSTRAINT fk_course_authors_author FOREIGN KEY (author_id) REFERENCES author (id) ON DELETE CASCADE

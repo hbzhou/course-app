@@ -13,12 +13,12 @@ class CourseController(private val courseService: CourseService) {
 
     @GetMapping
     @PreAuthorize("hasAuthority('COURSE_VIEW')")
-    fun getAllCourses(): List<Course> = courseService.getAllCourses()
+    fun getAllCourses(): List<Course> = courseService.getAll()
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAuthority('COURSE_VIEW')")
-    fun getCourseById(@PathVariable id: String): ResponseEntity<Course> {
-        return courseService.getCourseById(id)
+    fun getCourseById(@PathVariable id: Long): ResponseEntity<Course> {
+        return courseService.getById(id)
             .map { ResponseEntity.ok(it) }
             .orElse(ResponseEntity.notFound().build())
     }
@@ -26,15 +26,15 @@ class CourseController(private val courseService: CourseService) {
     @PostMapping
     @PreAuthorize("hasAuthority('COURSE_EDIT')")
     fun createCourse(@RequestBody course: Course): ResponseEntity<Course> {
-        val createdCourse = courseService.createCourse(course)
+        val createdCourse = courseService.create(course)
         return ResponseEntity.status(HttpStatus.CREATED).body(createdCourse)
     }
 
     @PutMapping("/{id}")
     @PreAuthorize("hasAuthority('COURSE_EDIT')")
-    fun updateCourse(@PathVariable id: String, @RequestBody course: Course): ResponseEntity<Course> {
+    fun updateCourse(@PathVariable id: Long, @RequestBody course: Course): ResponseEntity<Course> {
         return try {
-            val updatedCourse = courseService.updateCourse(id, course)
+            val updatedCourse = courseService.update(id, course)
             ResponseEntity.ok(updatedCourse)
         } catch (_: RuntimeException) {
             ResponseEntity.notFound().build()
@@ -43,9 +43,9 @@ class CourseController(private val courseService: CourseService) {
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('COURSE_EDIT')")
-    fun deleteCourse(@PathVariable id: String): ResponseEntity<Void> {
+    fun deleteCourse(@PathVariable id: Long): ResponseEntity<Void> {
         return try {
-            courseService.deleteCourse(id)
+            courseService.delete(id)
             ResponseEntity.noContent().build()
         } catch (_: RuntimeException) {
             ResponseEntity.notFound().build()

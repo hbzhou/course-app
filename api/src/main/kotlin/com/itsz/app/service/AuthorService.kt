@@ -3,30 +3,11 @@ package com.itsz.app.service
 import com.itsz.app.domain.Author
 import com.itsz.app.repository.AuthorRepository
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import java.util.*
 
 @Service
-class AuthorService(private val authorRepository: AuthorRepository) {
+class AuthorService(override val repository: AuthorRepository, override val nameExtractor: (Author) -> String? = {it.name}) : EntityCrudService<Author>() {
 
-    fun getAllAuthors(): List<Author> = authorRepository.findAll()
-
-    fun getAuthorById(id: String): Optional<Author> = authorRepository.findById(id)
-
-    fun createAuthor(author: Author): Author = authorRepository.save(author)
-
-    fun updateAuthor(id: String, author: Author): Author {
-        return if (authorRepository.existsById(id)) {
-            authorRepository.save(author.copy(id = id))
-        } else {
-            throw RuntimeException("Author not found with id: $id")
-        }
-    }
-
-    fun deleteAuthor(id: String) {
-        if (authorRepository.existsById(id)) {
-            authorRepository.deleteById(id)
-        } else {
-            throw RuntimeException("Author not found with id: $id")
-        }
-    }
+    override fun assignId(entity: Author, id: Long): Author = entity.copy(id = id)
 }

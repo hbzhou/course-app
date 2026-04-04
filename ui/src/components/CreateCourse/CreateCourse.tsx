@@ -33,7 +33,7 @@ const CreateCourse: React.FC = () => {
       const courseData = {
         ...data,
         creationDate,
-        authors: (data.authors as unknown as string[]).map((authorId: string) => {
+        authors: (data.authors as unknown as number[]).map((authorId: number) => {
           const author = authors.find((a: Author) => a.id === authorId);
           return author || { id: authorId, name: '' };
         })
@@ -93,8 +93,8 @@ const CreateCourse: React.FC = () => {
                 render={({ field: { onChange, value, ref } }) => (
                   <Select
                     ref={ref}
-                    value={authorOptions.filter((c: { value: string; label: string }) => value.includes(c.value))}
-                    onChange={(val) => onChange(val.map((c: { value: string; label: string }) => c.value))}
+                    value={authorOptions.filter((c: { value: number; label: string }) => value.includes(c.value))}
+                    onChange={(val) => onChange(val.map((c: { value: number; label: string }) => c.value))}
                     options={authorOptions}
                     isMulti
                     className="react-select-container"

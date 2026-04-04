@@ -8,7 +8,7 @@ export const courseApi = {
     });
   },
 
-  createCourse: async (course: Course): Promise<Course> => {
+  createCourse: async (course: Omit<Course, "id">): Promise<Course> => {
     return apiClient<Course>("/api/courses", {
       method: "POST",
       body: JSON.stringify(course),
@@ -22,7 +22,7 @@ export const courseApi = {
     });
   },
 
-  deleteCourse: async (courseId: string): Promise<void> => {
+  deleteCourse: async (courseId: number): Promise<void> => {
     return apiClient<void>(`/api/courses/${courseId}`, {
       method: "DELETE",
     });

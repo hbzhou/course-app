@@ -51,6 +51,7 @@ class SecurityConfig(
                     ).permitAll()
                     .requestMatchers("/actuator/health/**").permitAll()
                     .requestMatchers("/api/auth/**").permitAll()
+                    .requestMatchers("/ws/**").permitAll()
                     .anyRequest().authenticated()
             }
             .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }

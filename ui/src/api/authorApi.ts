@@ -22,7 +22,7 @@ export const authorApi = {
     });
   },
 
-  deleteAuthor: async (authorId: string): Promise<void> => {
+  deleteAuthor: async (authorId: number): Promise<void> => {
     return apiClient<void>(`/api/authors/${authorId}`, {
       method: "DELETE",
     });
