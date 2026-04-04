@@ -3,9 +3,10 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useCourses } from "@/hooks/useCourses";
 import { Course } from "@/types/course";
 import { Author } from "@/types/author";
+import { Tag } from "@/types/tag";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/common/Card";
 import { Button } from "@/common/Button";
-import { Clock, Calendar, Users, ArrowLeft } from "lucide-react";
+import { Clock, Calendar, Users, Tag as TagIcon, ArrowLeft } from "lucide-react";
 
 const CourseInfo: React.FC = () => {
   const { id } = useParams();
@@ -102,6 +103,26 @@ const CourseInfo: React.FC = () => {
                 </div>
               </div>
             </div>
+
+            {course.tags && course.tags.length > 0 && (
+              <div className="flex items-start gap-3">
+                <TagIcon className="h-5 w-5 text-muted-foreground mt-0.5" />
+                <div className="flex-1">
+                  <p className="font-semibold mb-2">Tags</p>
+                  <div className="flex flex-wrap gap-2">
+                    {course.tags.map((tag: Tag) => (
+                      <span
+                        key={tag.id}
+                        className="inline-flex items-center rounded-full px-3 py-1 text-sm font-medium text-white"
+                        style={{ backgroundColor: tag.color }}
+                      >
+                        {tag.name}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Don't display internal numeric IDs in the UI */}

@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Course } from "@/types/course";
 import { Clock, Calendar, Users } from "lucide-react";
 
-const CourseCard: React.FC<Course> = ({ id, title, description, duration, creationDate, authors }) => {
+const CourseCard: React.FC<Course> = ({ id, title, description, duration, creationDate, authors, tags }) => {
   const navigate = useNavigate();
 
   return (
@@ -20,6 +20,19 @@ const CourseCard: React.FC<Course> = ({ id, title, description, duration, creati
           <span className="font-medium">Authors:</span>
           <span>{authors.map((author)=> author.name).join(", ")}</span>
         </div>
+        {tags && tags.length > 0 && (
+          <div className="flex flex-wrap gap-1">
+            {tags.map((tag) => (
+              <span
+                key={tag.id}
+                className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium text-white"
+                style={{ backgroundColor: tag.color }}
+              >
+                {tag.name}
+              </span>
+            ))}
+          </div>
+        )}
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <Clock className="h-4 w-4" />
           <span className="font-medium">Duration:</span>
