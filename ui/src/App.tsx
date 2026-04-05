@@ -2,9 +2,9 @@ import { lazy, Suspense, useEffect, ReactNode } from "react";
 import { BrowserRouter, Navigate, Outlet, Route, Routes } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-import Header from "@/components/Header/Header";
-import ProtectedRoute from "@/components/ProtectedRoute/ProtectedRoute";
-import ToastContainer from "@/components/Notifications/ToastContainer";
+import Header from "@/layout/Header";
+import ProtectedRoute from "@/router/ProtectedRoute";
+import ToastContainer from "@/layout/ToastContainer";
 import ErrorBoundary from "@/common/ErrorBoundary";
 import { Provider, useDispatch } from "react-redux";
 import { store } from "@/store/store";
@@ -13,14 +13,14 @@ import { useWebSocket } from "@/hooks/useWebSocket";
 import { QUERY_STALE_TIME_MS } from "@/lib/queryConfig";
 import { Loader2 } from "lucide-react";
 
-const Authors = lazy(() => import("@/components/Authors/Authors"));
-const Tags = lazy(() => import("@/components/Tags/Tags"));
-const CourseInfo = lazy(() => import("@/components/CourseInfo/CourseInfo"));
-const Courses = lazy(() => import("@/components/Courses/Courses"));
-const CreateCourse = lazy(() => import("@/components/CreateCourse/CreateCourse"));
-const Login = lazy(() => import("@/components/Login/Login"));
-const Registration = lazy(() => import("@/components/Registration/Registration"));
-const Users = lazy(() => import("@/components/Users/Users"));
+const Authors = lazy(() => import("@/pages/authors/Authors"));
+const Tags = lazy(() => import("@/pages/tags/Tags"));
+const CourseInfo = lazy(() => import("@/pages/courses/CourseInfo"));
+const Courses = lazy(() => import("@/pages/courses/Courses"));
+const CreateCourse = lazy(() => import("@/pages/courses/CreateCourse"));
+const Login = lazy(() => import("@/pages/auth/Login"));
+const Registration = lazy(() => import("@/pages/auth/Registration"));
+const Users = lazy(() => import("@/pages/users/Users"));
 
 // Create a client for React Query
 const queryClient = new QueryClient({
