@@ -1,4 +1,3 @@
-import React from "react";
 import { Button } from "@/common/Button";
 import { Tag } from "@/types/tag";
 import { Edit, Trash2 } from "lucide-react";
@@ -9,14 +8,14 @@ interface TagItemProps extends Tag {
   isRemoving?: boolean;
 }
 
-const TagItem: React.FC<TagItemProps> = ({
+const TagItem = ({
   id,
   name,
   color,
   onEdit,
   onRemove,
   isRemoving = false,
-}) => {
+}: TagItemProps) => {
   return (
     <div className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent/50 transition-colors">
       <div className="flex items-center gap-3">

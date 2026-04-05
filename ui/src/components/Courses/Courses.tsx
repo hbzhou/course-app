@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/common/Button";
 import CourseCard from "./CourseCard";
@@ -7,7 +7,7 @@ import { useCourses } from "@/hooks/useCourses";
 import { useAuthors } from "@/hooks/useAuthors";
 import { Course } from "@/types/course";
 
-const Courses: React.FC = () => {
+const Courses = () => {
   const [keyword, setKeyword] = useState<string>("");
   const navigate = useNavigate();
   const { data: courses = [], isLoading: coursesLoading, error: coursesError } = useCourses();

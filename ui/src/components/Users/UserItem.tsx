@@ -1,4 +1,3 @@
-import React from "react";
 import { Button } from "@/common/Button";
 import { ManagedUser } from "@/types/managed-user";
 import { Edit, Trash2, Mail, User } from "lucide-react";
@@ -9,7 +8,7 @@ interface UserItemProps extends ManagedUser {
   isRemoving?: boolean;
 }
 
-const UserItem: React.FC<UserItemProps> = ({
+const UserItem = ({
   id,
   username,
   email,
@@ -17,7 +16,7 @@ const UserItem: React.FC<UserItemProps> = ({
   onEdit,
   onRemove,
   isRemoving = false,
-}) => {
+}: UserItemProps) => {
   return (
     <div className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent/50 transition-colors">
       <div className="flex-1 space-y-2">

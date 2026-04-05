@@ -1,4 +1,3 @@
-import React from "react";
 import { Button } from "@/common/Button";
 import { Author } from "@/types/author";
 import { Edit, Trash2 } from "lucide-react";
@@ -9,13 +8,13 @@ interface AuthorItemProps extends Author {
   isRemoving?: boolean;
 }
 
-const AuthorItem: React.FC<AuthorItemProps> = ({
+const AuthorItem = ({
   name,
   id,
   onEdit,
   onRemove,
   isRemoving = false,
-}) => {
+}: AuthorItemProps) => {
   return (
     <div className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent/50 transition-colors">
       <div className="font-medium">{name}</div>

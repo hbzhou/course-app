@@ -1,14 +1,14 @@
-import React from "react";
+import type { ReactNode } from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { selectCurrentUser } from "@/store/store";
 import { AuthSliceState } from "@/store/auth/auth.slice";
 
 type ProtectedRouteProps = {
-  children: React.ReactElement;
+  children: ReactNode;
 };
 
-const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
+const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   const location = useLocation();
   const currentUser = useSelector(selectCurrentUser) as AuthSliceState;
 

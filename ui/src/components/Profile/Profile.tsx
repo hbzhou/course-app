@@ -1,4 +1,3 @@
-import React from "react";
 import { Button } from "@/common/Button";
 import { useSelector } from "react-redux";
 import { selectCurrentUser } from "@/store/store";
@@ -7,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { AuthSliceState } from "@/store/auth/auth.slice";
 import { LogOut, User } from "lucide-react";
 
-const Profile: React.FC = () => {
+const Profile = () => {
   const currentUser = useSelector(selectCurrentUser) as AuthSliceState;
   const logoutMutation = useLogout();
   const navigate = useNavigate();

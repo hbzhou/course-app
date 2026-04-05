@@ -1,4 +1,3 @@
-import React from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { selectNotifications } from "@/store/store";
 import { notificationActions } from "@/store/notification/notification.slice";
@@ -26,7 +25,7 @@ const operationVariant: Record<string, ToastProps["variant"]> = {
   DELETED: "deleted",
 };
 
-const ToastContainer: React.FC = () => {
+const ToastContainer = () => {
   const notifications = useSelector(selectNotifications);
   const dispatch = useDispatch();
 
