@@ -1,4 +1,4 @@
-import React from "react";
+import { Fragment } from "react";
 import { Bell } from "lucide-react";
 import { useSelector, useDispatch } from "react-redux";
 import { selectNotifications, selectUnreadCount } from "@/store/store";
@@ -16,7 +16,7 @@ const operationColor: Record<string, string> = {
   DELETED: "text-red-600",
 };
 
-const NotificationBell: React.FC = () => {
+const NotificationBell = () => {
   const notifications = useSelector(selectNotifications);
   const unreadCount = useSelector(selectUnreadCount);
   const dispatch = useDispatch();
@@ -66,7 +66,7 @@ const NotificationBell: React.FC = () => {
           ) : (
             <ul>
               {notifications.map((n, i) => (
-                <React.Fragment key={n.id}>
+                <Fragment key={n.id}>
                   <li className="px-4 py-3 hover:bg-muted/50 transition-colors">
                     <p className={cn("text-sm font-medium", operationColor[n.operation] ?? "text-foreground")}>
                       {n.message}
@@ -76,7 +76,7 @@ const NotificationBell: React.FC = () => {
                     </p>
                   </li>
                   {i < notifications.length - 1 && <Separator />}
-                </React.Fragment>
+                </Fragment>
               ))}
             </ul>
           )}

@@ -1,11 +1,10 @@
-import React from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/common/Button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/common/Card";
 import { Course } from "@/types/course";
 import { Clock, Calendar, Users } from "lucide-react";
 
-const CourseCard: React.FC<Course> = ({ id, title, description, duration, creationDate, authors, tags }) => {
+const CourseCard = ({ id, title, description, duration, creationDate, authors, tags }: Course) => {
   const navigate = useNavigate();
 
   return (

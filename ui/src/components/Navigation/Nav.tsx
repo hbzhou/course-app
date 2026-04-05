@@ -1,9 +1,8 @@
-import React from "react";
 import {NavLink, useLocation} from "react-router-dom";
 import {cn} from "@/lib/utils";
 import { buttonVariants } from "@/common/button-variants";
 
-const Nav: React.FC = () => {
+const Nav = () => {
     const location = useLocation();
     const isCoursesTabActive =
         location.pathname === "/" || location.pathname.startsWith("/courses");
@@ -62,6 +61,6 @@ const Nav: React.FC = () => {
         </nav>
 
     );
-}
+};
 
 export default Nav;

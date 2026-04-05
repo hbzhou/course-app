@@ -1,11 +1,10 @@
-import React from "react";
 import Logo from "@/components/Logo/Logo";
 import Profile from "@/components/Profile/Profile";
 import Nav from "@/components/Navigation/Nav";
 import NotificationBell from "@/components/Notifications/NotificationBell";
 
 
-const Header: React.FC = () => {
+const Header = () => {
 
   return (
     <header className="border-b bg-card">

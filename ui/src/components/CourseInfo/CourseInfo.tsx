@@ -1,4 +1,3 @@
-import React from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useCourses } from "@/hooks/useCourses";
 import { Course } from "@/types/course";
@@ -8,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/common/Button";
 import { Clock, Calendar, Users, Tag as TagIcon, ArrowLeft } from "lucide-react";
 
-const CourseInfo: React.FC = () => {
+const CourseInfo = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { data: courses = [], isLoading, error } = useCourses();

@@ -1,4 +1,5 @@
 import { lazy, Suspense, useEffect } from "react";
+import type { ReactNode } from "react";
 import { BrowserRouter, Navigate, Outlet, Route, Routes } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
@@ -32,7 +33,11 @@ const queryClient = new QueryClient({
   },
 });
 
-const AuthBootstrap: React.FC<{ children: React.ReactElement }> = ({ children }) => {
+type AuthBootstrapProps = {
+  children: ReactNode;
+};
+
+const AuthBootstrap = ({ children }: AuthBootstrapProps) => {
   const dispatch = useDispatch();
 
   useEffect(() => {
@@ -62,7 +67,7 @@ const RouteLoadingFallback = () => {
   );
 };
 
-const App: React.FC = () => {
+const App = () => {
   return (
     <ErrorBoundary>
       <Provider store={store}>

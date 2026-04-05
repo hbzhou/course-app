@@ -1,4 +1,4 @@
-import React, { createRef } from "react";
+import { useRef } from "react";
 import { Button } from "@/common/Button";
 import { Input } from "@/common/Input";
 import { Search } from "lucide-react";
@@ -7,8 +7,8 @@ interface Props {
   handleSearch: (keyword: string) => void;
 }
 
-const SearchBar: React.FC<Props> = ({ handleSearch }) => {
-  const inputRef = createRef<HTMLInputElement>();
+const SearchBar = ({ handleSearch }: Props) => {
+  const inputRef = useRef<HTMLInputElement>(null);
   const search = () => {
     handleSearch(inputRef.current?.value ?? "");
   };

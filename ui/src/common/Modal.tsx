@@ -1,4 +1,4 @@
-import React from "react";
+import type { ReactNode } from "react";
 import {
   Dialog,
   DialogContent,
@@ -10,7 +10,7 @@ import { Button } from "@/common/Button";
 
 interface Props {
   title: string;
-  children: React.ReactNode;
+  children: ReactNode;
   handleClose: () => void;
   handleSave?: () => void;
   open?: boolean;
@@ -20,7 +20,7 @@ interface Props {
   showFooter?: boolean;
 }
 
-const Modal: React.FC<Props> = ({
+const Modal = ({
   title,
   children,
   handleClose,
@@ -30,7 +30,7 @@ const Modal: React.FC<Props> = ({
   saveLabel = "Save",
   disableSave = false,
   showFooter = true,
-}) => {
+}: Props) => {
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && handleClose()}>
       <DialogContent className="sm:max-w-[600px]">
