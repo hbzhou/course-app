@@ -24,16 +24,23 @@ const Profile = () => {
     }
   };
 
-  if (!currentUser.token) return <span />;
+  if (!currentUser.token) return null;
+
   return (
     <div className="flex items-center gap-3">
-      <div className="flex items-center gap-2">
+      <div className="hidden sm:flex items-center gap-2 px-3 py-2 rounded-lg bg-secondary/50">
         <User className="h-4 w-4 text-muted-foreground" />
-        <span className="font-medium">{currentUser.username}</span>
+        <span className="text-sm font-medium line-clamp-1">{currentUser.username}</span>
       </div>
-      <Button variant="outline" onClick={handleOnClick} disabled={logoutMutation.isPending}>
-        <LogOut className="h-4 w-4 mr-2" />
-        {logoutMutation.isPending ? "Logging out..." : "Logout"}
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={handleOnClick}
+        disabled={logoutMutation.isPending}
+        className="gap-2 transition-colors-fast"
+      >
+        <LogOut className="h-4 w-4" />
+        <span className="hidden sm:inline">{logoutMutation.isPending ? "Logging out..." : "Logout"}</span>
       </Button>
     </div>
   );

@@ -53,8 +53,47 @@
   * {
     @apply border-border;
   }
+  html {
+    scroll-behavior: smooth;
+  }
   body {
     @apply bg-background text-foreground;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+@layer components {
+  .skeleton {
+    @apply bg-skeleton rounded-md animate-pulse;
+  }
+
+  .skeleton-text {
+    @apply h-4 rounded-sm bg-skeleton animate-pulse;
+  }
+
+  .skeleton-title {
+    @apply h-6 rounded-sm bg-skeleton animate-pulse w-2/3;
+  }
+
+  .skeleton-card {
+    @apply rounded-lg border border-border p-6 space-y-4;
+  }
+
+  .transition-fade {
+    @apply transition-all duration-300;
+  }
+
+  .transition-colors-fast {
+    @apply transition-colors duration-200;
+  }
+
+  .hover-lift {
+    @apply transition-all duration-300 hover:shadow-lg hover:-translate-y-1;
+  }
+
+  .glass-effect {
+    @apply backdrop-blur-sm bg-background/80 border border-border/50;
   }
 }
 
