@@ -2,9 +2,10 @@ import { apiClient } from "./client";
 import { Course } from "@/types/course";
 
 export const courseApi = {
-  getCourses: async (): Promise<Course[]> => {
+  getCourses: async (signal?: AbortSignal): Promise<Course[]> => {
     return apiClient<Course[]>("/api/courses", {
       method: "GET",
+      signal,
     });
   },
 

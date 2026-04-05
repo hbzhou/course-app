@@ -2,7 +2,6 @@
 const getAuthHeaders = () => {
   const token = localStorage.getItem("token");
   return {
-    "Content-Type": "application/json",
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
   };
 };
@@ -35,9 +34,12 @@ export const apiClient = async <T>(
   url: string,
   options?: RequestInit
 ): Promise<T> => {
+  const hasBody = options?.body !== undefined && options?.body !== null;
+
   const response = await fetch(url, {
     ...options,
     headers: {
+      ...(hasBody ? { "Content-Type": "application/json" } : {}),
       ...getAuthHeaders(),
       ...options?.headers,
     },

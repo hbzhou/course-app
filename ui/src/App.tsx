@@ -1,23 +1,25 @@
-import { useEffect } from "react";
+import { lazy, Suspense, useEffect } from "react";
 import { BrowserRouter, Navigate, Outlet, Route, Routes } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-import Authors from "@/components/Authors/Authors";
-import Tags from "@/components/Tags/Tags";
-import CourseInfo from "@/components/CourseInfo/CourseInfo";
-import Courses from "@/components/Courses/Courses";
-import CreateCourse from "@/components/CreateCourse/CreateCourse";
 import Header from "@/components/Header/Header";
-import Login from "@/components/Login/Login";
-import Registration from "@/components/Registration/Registration";
 import ProtectedRoute from "@/components/ProtectedRoute/ProtectedRoute";
-import Users from "@/components/Users/Users";
 import ToastContainer from "@/components/Notifications/ToastContainer";
+import ErrorBoundary from "@/common/ErrorBoundary";
 import { Provider, useDispatch } from "react-redux";
 import { store } from "@/store/store";
 import { actions } from "@/store/auth/auth.slice";
 import { useWebSocket } from "@/hooks/useWebSocket";
 import { QUERY_STALE_TIME_MS } from "@/lib/queryConfig";
+
+const Authors = lazy(() => import("@/components/Authors/Authors"));
+const Tags = lazy(() => import("@/components/Tags/Tags"));
+const CourseInfo = lazy(() => import("@/components/CourseInfo/CourseInfo"));
+const Courses = lazy(() => import("@/components/Courses/Courses"));
+const CreateCourse = lazy(() => import("@/components/CreateCourse/CreateCourse"));
+const Login = lazy(() => import("@/components/Login/Login"));
+const Registration = lazy(() => import("@/components/Registration/Registration"));
+const Users = lazy(() => import("@/components/Users/Users"));
 
 // Create a client for React Query
 const queryClient = new QueryClient({
@@ -52,32 +54,46 @@ const ProtectedLayout = () => {
   );
 };
 
+const RouteLoadingFallback = () => {
+  return (
+    <main className='container mx-auto p-6'>
+      <div className='text-center py-12 text-muted-foreground'>Loading page...</div>
+    </main>
+  );
+};
+
 const App: React.FC = () => {
   return (
-    <Provider store={store}>
-      <QueryClientProvider client={queryClient}>
-        <AuthBootstrap>
-          <BrowserRouter>
-            <Header />
-            <Routes>
-              <Route element={<ProtectedLayout />}>
-                <Route path='/' element={<Navigate to='/courses' replace />} />
-                <Route path='/courses' element={<Courses />} />
-                <Route path='/courses/:id' element={<CourseInfo />} />
-                <Route path='/authors' element={<Authors />} />
-                <Route path='/tags' element={<Tags />} />
-                <Route path='/users' element={<Users />} />
-                <Route path='/courses/add' element={<CreateCourse />} />
-              </Route>
-              <Route path='/login' element={<Login />} />
-              <Route path='/register' element={<Registration />} />
-            </Routes>
-            <ToastContainer />
-          </BrowserRouter>
-        </AuthBootstrap>
-        <ReactQueryDevtools initialIsOpen={false} />
-      </QueryClientProvider>
-    </Provider>
+    <ErrorBoundary>
+      <Provider store={store}>
+        <QueryClientProvider client={queryClient}>
+          <AuthBootstrap>
+            <BrowserRouter>
+              <Header />
+              <ErrorBoundary>
+                <Suspense fallback={<RouteLoadingFallback />}>
+                  <Routes>
+                    <Route element={<ProtectedLayout />}>
+                      <Route path='/' element={<Navigate to='/courses' replace />} />
+                      <Route path='/courses' element={<Courses />} />
+                      <Route path='/courses/:id' element={<CourseInfo />} />
+                      <Route path='/authors' element={<Authors />} />
+                      <Route path='/tags' element={<Tags />} />
+                      <Route path='/users' element={<Users />} />
+                      <Route path='/courses/add' element={<CreateCourse />} />
+                    </Route>
+                    <Route path='/login' element={<Login />} />
+                    <Route path='/register' element={<Registration />} />
+                  </Routes>
+                </Suspense>
+              </ErrorBoundary>
+              <ToastContainer />
+            </BrowserRouter>
+          </AuthBootstrap>
+          <ReactQueryDevtools initialIsOpen={false} />
+        </QueryClientProvider>
+      </Provider>
+    </ErrorBoundary>
   );
 };
 

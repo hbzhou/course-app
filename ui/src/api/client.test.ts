@@ -29,10 +29,49 @@ describe("apiClient", () => {
         method: "GET",
         headers: expect.objectContaining({
           Authorization: "Bearer test-token",
-          "Content-Type": "application/json",
         }),
       })
     );
+
+    const [, requestInit] = vi.mocked(fetch).mock.calls[0];
+    const headers = requestInit?.headers as Record<string, string>;
+    expect(headers["Content-Type"]).toBeUndefined();
+  });
+
+  it("adds json content-type when request body is present", async () => {
+    vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      new Response(JSON.stringify({ ok: true }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      })
+    );
+
+    await apiClient<{ ok: boolean }>("/api/courses", {
+      method: "POST",
+      body: JSON.stringify({ title: "New Course" }),
+    });
+
+    const [, requestInit] = vi.mocked(fetch).mock.calls[0];
+    const headers = requestInit?.headers as Record<string, string>;
+    expect(headers["Content-Type"]).toBe("application/json");
+  });
+
+  it("passes request signal through to fetch", async () => {
+    vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      new Response(JSON.stringify({ ok: true }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      })
+    );
+
+    const controller = new AbortController();
+    await apiClient<{ ok: boolean }>("/api/courses", {
+      method: "GET",
+      signal: controller.signal,
+    });
+
+    const [, requestInit] = vi.mocked(fetch).mock.calls[0];
+    expect(requestInit?.signal).toBe(controller.signal);
   });
 
   it("returns undefined for 204 no-content responses", async () => {

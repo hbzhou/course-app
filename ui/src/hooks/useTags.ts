@@ -8,7 +8,7 @@ export const TAGS_QUERY_KEY = ["tags"];
 export const useTags = () => {
   return useQuery({
     queryKey: TAGS_QUERY_KEY,
-    queryFn: tagApi.getTags,
+    queryFn: ({ signal }) => tagApi.getTags(signal),
     staleTime: QUERY_STALE_TIME_MS,
   });
 };

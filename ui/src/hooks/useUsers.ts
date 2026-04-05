@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { userApi } from "@/api/userApi";
 import { ManagedUser, CreateUserRequest, UpdateUserRequest } from "@/types/managed-user";
+import { QUERY_ROLES_STALE_TIME_MS, QUERY_STALE_TIME_MS } from "@/lib/queryConfig";
 
 export const USERS_QUERY_KEY = ["users"];
 export const ROLES_QUERY_KEY = ["roles"];
@@ -8,16 +9,16 @@ export const ROLES_QUERY_KEY = ["roles"];
 export const useUsers = () => {
   return useQuery({
     queryKey: USERS_QUERY_KEY,
-    queryFn: userApi.getUsers,
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    queryFn: ({ signal }) => userApi.getUsers(signal),
+    staleTime: QUERY_STALE_TIME_MS,
   });
 };
 
 export const useRoles = () => {
   return useQuery({
     queryKey: ROLES_QUERY_KEY,
-    queryFn: userApi.getRoles,
-    staleTime: 10 * 60 * 1000, // 10 minutes
+    queryFn: ({ signal }) => userApi.getRoles(signal),
+    staleTime: QUERY_ROLES_STALE_TIME_MS,
   });
 };
 
