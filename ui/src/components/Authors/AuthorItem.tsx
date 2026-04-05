@@ -8,33 +8,29 @@ interface AuthorItemProps extends Author {
   isRemoving?: boolean;
 }
 
-const AuthorItem = ({
-  name,
-  id,
-  onEdit,
-  onRemove,
-  isRemoving = false,
-}: AuthorItemProps) => {
+const AuthorItem = ({ id, name, onEdit, onRemove, isRemoving = false }: AuthorItemProps) => {
   return (
-    <div className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent/50 transition-colors">
-      <div className="font-medium">{name}</div>
-      <div className="flex gap-2">
+    <div className="flex items-center justify-between p-4 border border-border rounded-lg hover-lift group transition-colors-fast">
+      <div className="font-semibold text-sm group-hover:text-primary transition-colors-fast flex-1 truncate">{name}</div>
+      <div className="flex gap-2 ml-3 flex-shrink-0">
         <Button
           variant="outline"
           size="sm"
           onClick={() => onEdit({ id, name })}
+          className="gap-1.5 transition-colors-fast"
         >
-          <Edit className="h-4 w-4 mr-1" />
-          Edit
+          <Edit className="h-3.5 w-3.5" />
+          <span className="hidden sm:inline">Edit</span>
         </Button>
         <Button
           variant="destructive"
           size="sm"
           onClick={() => onRemove({ id, name })}
           disabled={isRemoving}
+          className="gap-1.5 transition-colors-fast"
         >
-          <Trash2 className="h-4 w-4 mr-1" />
-          {isRemoving ? "Removing" : "Remove"}
+          <Trash2 className="h-3.5 w-3.5" />
+          <span className="hidden sm:inline">{isRemoving ? "Removing" : "Remove"}</span>
         </Button>
       </div>
     </div>

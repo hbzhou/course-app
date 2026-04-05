@@ -1,5 +1,4 @@
-import { lazy, Suspense, useEffect } from "react";
-import type { ReactNode } from "react";
+import { lazy, Suspense, useEffect, ReactNode } from "react";
 import { BrowserRouter, Navigate, Outlet, Route, Routes } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
@@ -12,6 +11,7 @@ import { store } from "@/store/store";
 import { actions } from "@/store/auth/auth.slice";
 import { useWebSocket } from "@/hooks/useWebSocket";
 import { QUERY_STALE_TIME_MS } from "@/lib/queryConfig";
+import { Loader2 } from "lucide-react";
 
 const Authors = lazy(() => import("@/components/Authors/Authors"));
 const Tags = lazy(() => import("@/components/Tags/Tags"));
@@ -61,8 +61,11 @@ const ProtectedLayout = () => {
 
 const RouteLoadingFallback = () => {
   return (
-    <main className='container mx-auto p-6'>
-      <div className='text-center py-12 text-muted-foreground'>Loading page...</div>
+    <main className="container mx-auto px-4 py-12 md:py-16">
+      <div className="flex flex-col items-center justify-center gap-4 py-20">
+        <Loader2 className="w-10 h-10 text-primary animate-spin" />
+        <p className="text-muted-foreground text-lg">Loading page...</p>
+      </div>
     </main>
   );
 };
