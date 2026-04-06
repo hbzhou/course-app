@@ -1,7 +1,7 @@
-import Logo from "@/components/Logo/Logo";
-import Profile from "@/components/Profile/Profile";
-import Nav from "@/components/Navigation/Nav";
-import NotificationBell from "@/components/Notifications/NotificationBell";
+import Logo from "@/layout/Logo";
+import Profile from "@/layout/Profile";
+import Nav from "@/layout/Nav";
+import NotificationBell from "@/layout/NotificationBell";
 
 const Header = () => {
   return (
