@@ -29,12 +29,12 @@ class TagController(private val tagService: TagService) {
     @PutMapping("/{id}")
     @PreAuthorize("hasAuthority('TAG_EDIT')")
     fun update(@PathVariable id: Long, @RequestBody tag: Tag): ResponseEntity<Tag> =
-        try { ResponseEntity.ok(tagService.update(id, tag)) }
-        catch (_: RuntimeException) { ResponseEntity.notFound().build() }
+        ResponseEntity.ok(tagService.update(id, tag))
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('TAG_EDIT')")
-    fun delete(@PathVariable id: Long): ResponseEntity<Void> =
-        try { tagService.delete(id); ResponseEntity.noContent().build() }
-        catch (_: RuntimeException) { ResponseEntity.notFound().build() }
+    fun delete(@PathVariable id: Long): ResponseEntity<Void> {
+        tagService.delete(id)
+        return ResponseEntity.noContent().build()
+    }
 }

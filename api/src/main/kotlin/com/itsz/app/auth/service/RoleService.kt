@@ -2,6 +2,7 @@ package com.itsz.app.auth.service
 
 import com.itsz.app.auth.model.Role
 import com.itsz.app.auth.repository.RoleRepository
+import com.itsz.app.exception.EntityNotFoundException
 import org.springframework.stereotype.Service
 import java.util.*
 
@@ -18,7 +19,7 @@ class RoleService(private val roleRepository: RoleRepository) {
         return if (roleRepository.existsById(id)) {
             roleRepository.save(role.copy(id = id))
         } else {
-            throw RuntimeException("Role not found with id: $id")
+            throw EntityNotFoundException("Role", id)
         }
     }
 
@@ -26,7 +27,7 @@ class RoleService(private val roleRepository: RoleRepository) {
         if (roleRepository.existsById(id)) {
             roleRepository.deleteById(id)
         } else {
-            throw RuntimeException("Role not found with id: $id")
+            throw EntityNotFoundException("Role", id)
         }
     }
 }
