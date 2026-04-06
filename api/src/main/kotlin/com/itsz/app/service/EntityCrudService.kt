@@ -1,6 +1,7 @@
 package com.itsz.app.service
 
 import com.itsz.app.domain.BaseEntity
+import com.itsz.app.exception.EntityNotFoundException
 import com.itsz.app.event.DomainEventPublisher
 import com.itsz.app.event.EventProvider
 import com.itsz.app.event.EventProviders
@@ -36,7 +37,7 @@ abstract class EntityCrudService<T : BaseEntity> {
 
     private fun update(id: Long, entity: T, eventProvider: EventProvider<T>): T {
         val existing = repository.findById(id).orElseThrow {
-            RuntimeException(notFoundMessage(id))
+            EntityNotFoundException(entityName(), id)
         }
         val prepared = prepareForUpdate(existing, entity, id)
         val saved = repository.save(prepared)
@@ -50,7 +51,7 @@ abstract class EntityCrudService<T : BaseEntity> {
 
     private fun delete(id: Long, eventProvider: EventProvider<T>) {
         val existing = repository.findById(id).orElseThrow {
-            RuntimeException(notFoundMessage(id))
+            EntityNotFoundException(entityName(), id)
         }
         repository.deleteById(id)
         val event = eventProvider.toEvent(existing, nameExtractor(existing), currentUser())
@@ -64,6 +65,8 @@ abstract class EntityCrudService<T : BaseEntity> {
     protected open fun assignId(entity: T, id: Long): T = entity
 
     protected open fun notFoundMessage(id: Long): String = "Not found with id: $id"
+
+    protected open fun entityName(): String = "Entity"
 
     protected open fun currentUser(): String? =
         SecurityContextHolder.getContext().authentication?.name

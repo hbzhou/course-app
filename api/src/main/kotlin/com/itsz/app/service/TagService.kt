@@ -11,4 +11,6 @@ class TagService(
 ) : EntityCrudService<Tag>() {
 
     override fun assignId(entity: Tag, id: Long): Tag = entity.copy(id = id)
+
+    override fun entityName(): String = "Tag"
 }

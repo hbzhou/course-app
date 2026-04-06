@@ -32,23 +32,13 @@ class CourseController(private val courseService: CourseService) {
 
     @PutMapping("/{id}")
     @PreAuthorize("hasAuthority('COURSE_EDIT')")
-    fun updateCourse(@PathVariable id: Long, @RequestBody course: Course): ResponseEntity<Course> {
-        return try {
-            val updatedCourse = courseService.update(id, course)
-            ResponseEntity.ok(updatedCourse)
-        } catch (_: RuntimeException) {
-            ResponseEntity.notFound().build()
-        }
-    }
+    fun updateCourse(@PathVariable id: Long, @RequestBody course: Course): ResponseEntity<Course> =
+        ResponseEntity.ok(courseService.update(id, course))
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('COURSE_EDIT')")
     fun deleteCourse(@PathVariable id: Long): ResponseEntity<Void> {
-        return try {
-            courseService.delete(id)
-            ResponseEntity.noContent().build()
-        } catch (_: RuntimeException) {
-            ResponseEntity.notFound().build()
-        }
+        courseService.delete(id)
+        return ResponseEntity.noContent().build()
     }
 }
