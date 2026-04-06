@@ -35,6 +35,17 @@ A full-stack web application for managing courses, authors, and users, built wit
 - Docker and Docker Compose
 - Gradle (wrapper included)
 
+### 0. Configure Environment Variables
+
+```bash
+cp .env.example .env
+set -a
+source .env
+set +a
+```
+
+For security, database and JWT secrets are loaded from environment variables.
+
 ### 1. Start Infrastructure
 
 ```bash
@@ -42,7 +53,7 @@ docker compose up -d
 ```
 
 This starts:
-- **MySQL 8** — database `coursedb`, user `admin` / `welcome123`, port `3306`
+- **MySQL 8** — database `coursedb`, credentials from `.env`, port `3306`
 - **Redis 7.2** — port `6379`
 
 ### 2. Build and Run the Backend
