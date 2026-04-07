@@ -2,14 +2,9 @@ package com.itsz.app.auth.service
 
 import com.itsz.app.auth.model.User
 import com.itsz.app.auth.repository.UserRepository
-import com.itsz.app.event.DomainEventPublisher
 import com.itsz.app.service.EntityCrudService
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Transactional
-import java.util.*
-
-
 
 @Service
 class UserService(override val repository: UserRepository, private val passwordEncoder: PasswordEncoder, override val nameExtractor: (User) -> String = { it.username }) : EntityCrudService<User>() {
@@ -30,4 +25,6 @@ class UserService(override val repository: UserRepository, private val passwordE
         }
         return incoming.copy(id = id, password = password)
     }
+
+    override fun entityName(): String = "User"
 }

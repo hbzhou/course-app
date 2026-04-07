@@ -32,23 +32,13 @@ class RoleController(private val roleService: RoleService) {
 
     @PutMapping("/{id}")
     @PreAuthorize("hasAuthority('ROLE_MANAGE')")
-    fun updateRole(@PathVariable id: Long, @RequestBody role: Role): ResponseEntity<Role> {
-        return try {
-            val updatedRole = roleService.updateRole(id, role)
-            ResponseEntity.ok(updatedRole)
-        } catch (_: RuntimeException) {
-            ResponseEntity.notFound().build()
-        }
-    }
+    fun updateRole(@PathVariable id: Long, @RequestBody role: Role): ResponseEntity<Role> =
+        ResponseEntity.ok(roleService.updateRole(id, role))
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('ROLE_MANAGE')")
     fun deleteRole(@PathVariable id: Long): ResponseEntity<Void> {
-        return try {
-            roleService.deleteRole(id)
-            ResponseEntity.noContent().build()
-        } catch (_: RuntimeException) {
-            ResponseEntity.notFound().build()
-        }
+        roleService.deleteRole(id)
+        return ResponseEntity.noContent().build()
     }
 }

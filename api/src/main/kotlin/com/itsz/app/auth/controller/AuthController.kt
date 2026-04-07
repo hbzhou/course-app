@@ -4,6 +4,7 @@ import com.itsz.app.auth.jwt.JwtService
 import com.itsz.app.auth.model.User
 import com.itsz.app.auth.repository.RoleRepository
 import com.itsz.app.auth.service.UserService
+import com.itsz.app.exception.ResourceNotFoundException
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.authentication.AuthenticationManager
@@ -29,7 +30,7 @@ class AuthController(
             UsernamePasswordAuthenticationToken(loginRequest.username, loginRequest.password)
         )
         val user = userService.getUserByUsername(loginRequest.username)
-            ?: throw RuntimeException("User not found")
+            ?: throw ResourceNotFoundException("User not found")
         val userDetails = userDetailsService.loadUserByUsername(loginRequest.username)
         val token = jwtService.generateToken(userDetails)
 
@@ -44,7 +45,7 @@ class AuthController(
 
     @PostMapping("/register")
     fun register(@RequestBody registerRequest: RegisterRequest): User {
-        val userRole = roleRepository.findByName("ROLE_USER").orElseThrow { RuntimeException("Role not found") }
+        val userRole = roleRepository.findByName("ROLE_USER").orElseThrow { ResourceNotFoundException("Role not found") }
         val user = User(
             username = registerRequest.username,
             email = registerRequest.email,

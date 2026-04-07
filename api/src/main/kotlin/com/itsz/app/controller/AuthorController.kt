@@ -32,23 +32,13 @@ class AuthorController(private val authorService: AuthorService) {
 
     @PutMapping("/{id}")
     @PreAuthorize("hasAuthority('COURSE_EDIT')")
-    fun updateAuthor(@PathVariable id: Long, @RequestBody author: Author): ResponseEntity<Author> {
-        return try {
-            val updatedAuthor = authorService.update(id, author)
-            ResponseEntity.ok(updatedAuthor)
-        } catch (_: RuntimeException) {
-            ResponseEntity.notFound().build()
-        }
-    }
+    fun updateAuthor(@PathVariable id: Long, @RequestBody author: Author): ResponseEntity<Author> =
+        ResponseEntity.ok(authorService.update(id, author))
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('COURSE_EDIT')")
     fun deleteAuthor(@PathVariable id: Long): ResponseEntity<Void> {
-        return try {
-            authorService.delete(id)
-            ResponseEntity.noContent().build()
-        } catch (_: RuntimeException) {
-            ResponseEntity.notFound().build()
-        }
+        authorService.delete(id)
+        return ResponseEntity.noContent().build()
     }
 }

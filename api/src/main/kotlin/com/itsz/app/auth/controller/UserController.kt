@@ -32,23 +32,13 @@ class UserController(private val userService: UserService) {
 
     @PutMapping("/{id}")
     @PreAuthorize("hasAuthority('USER_MANAGE')")
-    fun updateUser(@PathVariable id: Long, @RequestBody user: User): ResponseEntity<User> {
-        return try {
-            val updatedUser = userService.update(id, user)
-            ResponseEntity.ok(updatedUser)
-        } catch (_: RuntimeException) {
-            ResponseEntity.notFound().build()
-        }
-    }
+    fun updateUser(@PathVariable id: Long, @RequestBody user: User): ResponseEntity<User> =
+        ResponseEntity.ok(userService.update(id, user))
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('USER_MANAGE')")
     fun deleteUser(@PathVariable id: Long): ResponseEntity<Void> {
-        return try {
-            userService.delete(id)
-            ResponseEntity.noContent().build()
-        } catch (_: RuntimeException) {
-            ResponseEntity.notFound().build()
-        }
+        userService.delete(id)
+        return ResponseEntity.noContent().build()
     }
 }
