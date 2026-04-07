@@ -1,26 +1,16 @@
-import { apiClient } from "./client";
+import { createCrudApi } from "./createCrudApi";
 import { Tag } from "@/types/tag";
 
+// Generic CRUD API for tags
+const crudApi = createCrudApi<Tag>("/api/tags");
+
+// Re-export with original naming for backward compatibility
 export const tagApi = {
-  getTags: async (signal?: AbortSignal): Promise<Tag[]> => {
-    return apiClient<Tag[]>("/api/tags", { method: "GET", signal });
-  },
-
-  createTag: async (tag: Omit<Tag, "id">): Promise<Tag> => {
-    return apiClient<Tag>("/api/tags", {
-      method: "POST",
-      body: JSON.stringify(tag),
-    });
-  },
-
-  updateTag: async (tag: Tag): Promise<Tag> => {
-    return apiClient<Tag>(`/api/tags/${tag.id}`, {
-      method: "PUT",
-      body: JSON.stringify(tag),
-    });
-  },
-
-  deleteTag: async (tagId: number): Promise<void> => {
-    return apiClient<void>(`/api/tags/${tagId}`, { method: "DELETE" });
-  },
+  getTags: crudApi.getAll,
+  createTag: crudApi.create,
+  updateTag: crudApi.update,
+  deleteTag: crudApi.delete,
 };
+
+// Also export the standard CRUD interface for generic hook usage
+export { crudApi as tagCrudApi };

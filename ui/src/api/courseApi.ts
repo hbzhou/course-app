@@ -1,31 +1,16 @@
-import { apiClient } from "./client";
+import { createCrudApi } from "./createCrudApi";
 import { Course } from "@/types/course";
 
+// Generic CRUD API for courses
+const crudApi = createCrudApi<Course>("/api/courses");
+
+// Re-export with original naming for backward compatibility
 export const courseApi = {
-  getCourses: async (signal?: AbortSignal): Promise<Course[]> => {
-    return apiClient<Course[]>("/api/courses", {
-      method: "GET",
-      signal,
-    });
-  },
-
-  createCourse: async (course: Omit<Course, "id">): Promise<Course> => {
-    return apiClient<Course>("/api/courses", {
-      method: "POST",
-      body: JSON.stringify(course),
-    });
-  },
-
-  updateCourse: async (course: Course): Promise<Course> => {
-    return apiClient<Course>(`/api/courses/${course.id}`, {
-      method: "PUT",
-      body: JSON.stringify(course),
-    });
-  },
-
-  deleteCourse: async (courseId: number): Promise<void> => {
-    return apiClient<void>(`/api/courses/${courseId}`, {
-      method: "DELETE",
-    });
-  },
+  getCourses: crudApi.getAll,
+  createCourse: crudApi.create,
+  updateCourse: crudApi.update,
+  deleteCourse: crudApi.delete,
 };
+
+// Also export the standard CRUD interface for generic hook usage
+export { crudApi as courseCrudApi };
