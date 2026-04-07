@@ -1,8 +1,6 @@
 import type { ReactNode } from "react";
 import { Navigate, useLocation } from "react-router-dom";
-import { useSelector } from "react-redux";
-import { selectCurrentUser } from "@/store/store";
-import { AuthSliceState } from "@/store/auth/auth.slice";
+import { useAuthContext } from "@/context/AuthContext";
 
 type ProtectedRouteProps = {
   children: ReactNode;
@@ -10,10 +8,10 @@ type ProtectedRouteProps = {
 
 const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   const location = useLocation();
-  const currentUser = useSelector(selectCurrentUser) as AuthSliceState;
+  const { token } = useAuthContext();
 
   // Token is the app's auth signal today.
-  if (!currentUser?.token) {
+  if (!token) {
     return <Navigate to="/login" replace state={{ from: location }} />;
   }
 

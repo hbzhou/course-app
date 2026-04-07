@@ -1,17 +1,44 @@
 import { useEffect, useRef } from "react";
 import { Client } from "@stomp/stompjs";
-import { useDispatch, useSelector } from "react-redux";
-import { notificationActions } from "@/store/notification/notification.slice";
-import { RootState } from "@/store/store";
-import { NotificationMessage } from "@/types/notification";
+import { useAuthContext } from "@/context/AuthContext";
+import { useNotificationContext } from "@/context/NotificationContext";
+import { NotificationMessage, Notification } from "@/types/notification";
 
 // Native WebSocket URL — resolves to ws://host/ws in the browser
 const WS_URL = `${window.location.protocol === "https:" ? "wss" : "ws"}://${window.location.host}/ws`;
 const TOPIC = "/topic/notifications";
 
+// Transform backend message into frontend notification
+function transformToNotification(msg: NotificationMessage): Notification {
+  const entityLabel = msg.entityType.charAt(0) + msg.entityType.slice(1).toLowerCase();
+  const operationLabel = msg.operation.toLowerCase();
+  
+  // Generate message based on available data
+  let message: string;
+  if (msg.entityName) {
+    // Best case: we have the entity name
+    message = `${entityLabel} "${msg.entityName}" ${operationLabel}`;
+  } else if (msg.entityId) {
+    // Fallback: we have the ID but no name
+    message = `${entityLabel} #${msg.entityId} ${operationLabel}`;
+  } else {
+    // Worst case: no name or ID
+    message = `${entityLabel} ${operationLabel}`;
+  }
+  
+  return {
+    id: `${msg.timestamp}-${Math.random().toString(36).substr(2, 9)}`,
+    message,
+    entityType: msg.entityType,
+    operation: msg.operation,
+    timestamp: msg.timestamp,
+    read: false,
+  };
+}
+
 export function useWebSocket() {
-  const dispatch = useDispatch();
-  const token = useSelector((state: RootState) => state.currentUser.token);
+  const { token } = useAuthContext();
+  const { addNotification } = useNotificationContext();
   const clientRef = useRef<Client | null>(null);
 
   useEffect(() => {
@@ -29,10 +56,13 @@ export function useWebSocket() {
       },
       reconnectDelay: 5000,
       onConnect: () => {
+        console.log("WebSocket connected");
         client.subscribe(TOPIC, (frame) => {
           try {
             const msg: NotificationMessage = JSON.parse(frame.body);
-            dispatch(notificationActions.addNotification(msg));
+            console.log("Received notification:", msg);
+            const notification = transformToNotification(msg);
+            addNotification(notification);
           } catch (e) {
             console.error("Failed to parse WebSocket notification", e);
           }
@@ -49,5 +79,5 @@ export function useWebSocket() {
     return () => {
       client.deactivate();
     };
-  }, [token, dispatch]);
+  }, [token, addNotification]);
 }

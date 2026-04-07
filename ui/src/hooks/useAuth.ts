@@ -1,24 +1,20 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useDispatch } from "react-redux";
+import { useAuthContext } from "@/context/AuthContext";
 import { authApi, LoginRequest, RegisterRequest, AuthResponse } from "@/api/authApi";
-import { actions } from "@/store/auth/auth.slice";
 
 export const useLogin = () => {
-  const dispatch = useDispatch();
+  const { login } = useAuthContext();
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: (credentials: LoginRequest) => authApi.login(credentials),
     onSuccess: (data: AuthResponse) => {
-      // Store token and update Redux state
-      localStorage.setItem("token", data.token);
-      dispatch(
-        actions.login({
-          username: data.user.name,
-          email: data.user.email,
-          token: data.token,
-        })
-      );
+      // Update auth context (which syncs to localStorage)
+      login({
+        username: data.user.name,
+        email: data.user.email,
+        token: data.token,
+      });
       // Invalidate all queries on login to refetch with new token
       queryClient.invalidateQueries();
     },
@@ -32,15 +28,14 @@ export const useRegister = () => {
 };
 
 export const useLogout = () => {
-  const dispatch = useDispatch();
+  const { logout } = useAuthContext();
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: (token: string) => authApi.logout(token),
     onSuccess: () => {
-      // Clear token and update Redux state
-      localStorage.removeItem("token");
-      dispatch(actions.logout());
+      // Clear auth context (which clears localStorage)
+      logout();
       // Clear all cached queries on logout
       queryClient.clear();
     },

@@ -1,36 +1,39 @@
-import { describe, it, expect, beforeEach, vi } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
-import { Provider } from "react-redux";
-import { configureStore } from "@reduxjs/toolkit";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import ProtectedRoute from "./ProtectedRoute";
-import authReducer, { AuthSliceState } from "@/store/auth/auth.slice";
+import { AuthProvider } from "@/context/AuthContext";
+import type { ReactNode } from "react";
 
-const makeStore = (preloadedUser: AuthSliceState) =>
-  configureStore({
-    reducer: {
-      currentUser: authReducer,
-    },
-    preloadedState: {
-      currentUser: preloadedUser,
-    },
-  });
+// Mock AuthContext with test values
+const MockAuthProvider = ({ children, hasToken }: { children: ReactNode; hasToken: boolean }) => {
+  const mockContextValue = {
+    currentUser: hasToken ? { username: "test", email: "test@example.com" } : null,
+    token: hasToken ? "test-token" : null,
+    login: vi.fn(),
+    logout: vi.fn(),
+    setToken: vi.fn(),
+  };
+
+  return (
+    <AuthProvider>
+      {/* We use the actual provider, but control it via localStorage mock */}
+      {children}
+    </AuthProvider>
+  );
+};
 
 describe("ProtectedRoute", () => {
-  beforeEach(() => {
-    // Some Vitest/jsdom setups don't provide a full localStorage implementation.
+  it("redirects to /login when unauthenticated", () => {
+    // Mock localStorage to return no token
     vi.stubGlobal("localStorage", {
       getItem: vi.fn(() => null),
       setItem: vi.fn(),
       removeItem: vi.fn(),
     });
-  });
-
-  it("redirects to /login when unauthenticated", () => {
-    const store = makeStore({});
 
     render(
-      <Provider store={store}>
+      <AuthProvider>
         <MemoryRouter initialEntries={["/courses"]}>
           <Routes>
             <Route
@@ -44,17 +47,22 @@ describe("ProtectedRoute", () => {
             <Route path="/login" element={<div>Login Page</div>} />
           </Routes>
         </MemoryRouter>
-      </Provider>
+      </AuthProvider>
     );
 
     expect(screen.getByText("Login Page")).toBeInTheDocument();
   });
 
   it("renders children when authenticated", () => {
-    const store = makeStore({ token: "abc" });
+    // Mock localStorage to return a token
+    vi.stubGlobal("localStorage", {
+      getItem: vi.fn(() => "test-token"),
+      setItem: vi.fn(),
+      removeItem: vi.fn(),
+    });
 
     render(
-      <Provider store={store}>
+      <AuthProvider>
         <MemoryRouter initialEntries={["/courses"]}>
           <Routes>
             <Route
@@ -68,7 +76,7 @@ describe("ProtectedRoute", () => {
             <Route path="/login" element={<div>Login Page</div>} />
           </Routes>
         </MemoryRouter>
-      </Provider>
+      </AuthProvider>
     );
 
     expect(screen.getByText("Courses Page")).toBeInTheDocument();
