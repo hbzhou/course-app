@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { authorApi, authorCrudApi } from "@/api/authorApi";
 import { Author } from "@/types/author";
-import { createCrudHooks, useEntityQuery, useUpdateMutation, useDeleteMutation } from "./useCrudHooks";
+import { useEntityQuery, useUpdateMutation, useDeleteMutation } from "./useCrudHooks";
 
 export const AUTHORS_QUERY_KEY = ["authors"];
 
