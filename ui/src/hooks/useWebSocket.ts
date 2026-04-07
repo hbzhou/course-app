@@ -1,8 +1,7 @@
 import { useEffect, useRef } from "react";
 import { Client } from "@stomp/stompjs";
-import { useDispatch, useSelector } from "react-redux";
-import { notificationActions } from "@/store/notification/notification.slice";
-import { RootState } from "@/store/store";
+import { useAuthContext } from "@/context/AuthContext";
+import { useNotificationContext } from "@/context/NotificationContext";
 import { NotificationMessage } from "@/types/notification";
 
 // Native WebSocket URL — resolves to ws://host/ws in the browser
@@ -10,8 +9,8 @@ const WS_URL = `${window.location.protocol === "https:" ? "wss" : "ws"}://${wind
 const TOPIC = "/topic/notifications";
 
 export function useWebSocket() {
-  const dispatch = useDispatch();
-  const token = useSelector((state: RootState) => state.currentUser.token);
+  const { token } = useAuthContext();
+  const { addNotification } = useNotificationContext();
   const clientRef = useRef<Client | null>(null);
 
   useEffect(() => {
@@ -32,7 +31,7 @@ export function useWebSocket() {
         client.subscribe(TOPIC, (frame) => {
           try {
             const msg: NotificationMessage = JSON.parse(frame.body);
-            dispatch(notificationActions.addNotification(msg));
+            addNotification(msg);
           } catch (e) {
             console.error("Failed to parse WebSocket notification", e);
           }
@@ -49,5 +48,5 @@ export function useWebSocket() {
     return () => {
       client.deactivate();
     };
-  }, [token, dispatch]);
+  }, [token, addNotification]);
 }

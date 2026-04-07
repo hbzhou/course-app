@@ -1,6 +1,4 @@
-import { useSelector, useDispatch } from "react-redux";
-import { selectNotifications } from "@/store/store";
-import { notificationActions } from "@/store/notification/notification.slice";
+import { useNotificationContext } from "@/context/NotificationContext";
 import {
   ToastProvider,
   ToastViewport,
@@ -26,13 +24,12 @@ const operationVariant: Record<string, ToastProps["variant"]> = {
 };
 
 const ToastContainer = () => {
-  const notifications = useSelector(selectNotifications);
-  const dispatch = useDispatch();
+  const { notifications, markAllAsRead } = useNotificationContext();
 
   // Only unread toasts, newest 5
   const toasts = notifications.filter((n) => !n.read).slice(0, 5);
 
-  const dismiss = () => dispatch(notificationActions.markAllRead());
+  const dismiss = () => markAllAsRead();
 
   return (
     <ToastProvider duration={AUTO_DISMISS_MS}>

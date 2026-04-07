@@ -1,8 +1,6 @@
 import { Fragment } from "react";
 import { Bell } from "lucide-react";
-import { useSelector, useDispatch } from "react-redux";
-import { selectNotifications, selectUnreadCount } from "@/store/store";
-import { notificationActions } from "@/store/notification/notification.slice";
+import { useNotificationContext } from "@/context/NotificationContext";
 import { Popover, PopoverContent, PopoverTrigger } from "@/common/Popover";
 import { ScrollArea } from "@/common/ScrollArea";
 import { Badge } from "@/common/Badge";
@@ -17,12 +15,10 @@ const operationColor: Record<string, string> = {
 };
 
 const NotificationBell = () => {
-  const notifications = useSelector(selectNotifications);
-  const unreadCount = useSelector(selectUnreadCount);
-  const dispatch = useDispatch();
+  const { notifications, unreadCount, markAllAsRead, clearAll } = useNotificationContext();
 
   const handleOpenChange = (open: boolean) => {
-    if (open) dispatch(notificationActions.markAllRead());
+    if (open) markAllAsRead();
   };
 
   return (
@@ -49,7 +45,7 @@ const NotificationBell = () => {
               variant="ghost"
               size="sm"
               className="h-auto p-0 text-xs text-muted-foreground hover:text-destructive"
-              onClick={() => dispatch(notificationActions.clearNotifications())}
+              onClick={() => clearAll()}
             >
               Clear all
             </Button>
