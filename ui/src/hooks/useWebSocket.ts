@@ -11,12 +11,24 @@ const TOPIC = "/topic/notifications";
 // Transform backend message into frontend notification
 function transformToNotification(msg: NotificationMessage): Notification {
   const entityLabel = msg.entityType.charAt(0) + msg.entityType.slice(1).toLowerCase();
-  const operationLabel = msg.operation.charAt(0) + msg.operation.slice(1).toLowerCase();
-  const name = msg.entityName || `${entityLabel} #${msg.entityId}`;
+  const operationLabel = msg.operation.toLowerCase();
+  
+  // Generate message based on available data
+  let message: string;
+  if (msg.entityName) {
+    // Best case: we have the entity name
+    message = `${entityLabel} "${msg.entityName}" ${operationLabel}`;
+  } else if (msg.entityId) {
+    // Fallback: we have the ID but no name
+    message = `${entityLabel} #${msg.entityId} ${operationLabel}`;
+  } else {
+    // Worst case: no name or ID
+    message = `${entityLabel} ${operationLabel}`;
+  }
   
   return {
     id: `${msg.timestamp}-${Math.random().toString(36).substr(2, 9)}`,
-    message: `${entityLabel} "${name}" ${operationLabel}`,
+    message,
     entityType: msg.entityType,
     operation: msg.operation,
     timestamp: msg.timestamp,

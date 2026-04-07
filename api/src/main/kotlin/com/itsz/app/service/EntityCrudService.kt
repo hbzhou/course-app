@@ -27,7 +27,7 @@ abstract class EntityCrudService<T : BaseEntity> {
     private fun create(entity: T, eventProvider: EventProvider<T>): T {
         val prepared = prepareForCreate(entity)
         val saved = repository.save(prepared)
-        val event = eventProvider.toEvent(entity, nameExtractor(entity), currentUser())
+        val event = eventProvider.toEvent(saved, nameExtractor(saved), currentUser())
         eventPublisher.publish(event)
         return saved
     }
@@ -41,7 +41,7 @@ abstract class EntityCrudService<T : BaseEntity> {
         }
         val prepared = prepareForUpdate(existing, entity, id)
         val saved = repository.save(prepared)
-        val event = eventProvider.toEvent(entity, nameExtractor(entity), currentUser())
+        val event = eventProvider.toEvent(saved, nameExtractor(saved), currentUser())
         eventPublisher.publish(event)
         return saved
     }
