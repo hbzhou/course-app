@@ -3,25 +3,6 @@ import { render, screen } from "@testing-library/react";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import ProtectedRoute from "./ProtectedRoute";
 import { AuthProvider } from "@/context/AuthContext";
-import type { ReactNode } from "react";
-
-// Mock AuthContext with test values
-const MockAuthProvider = ({ children, hasToken }: { children: ReactNode; hasToken: boolean }) => {
-  const mockContextValue = {
-    currentUser: hasToken ? { username: "test", email: "test@example.com" } : null,
-    token: hasToken ? "test-token" : null,
-    login: vi.fn(),
-    logout: vi.fn(),
-    setToken: vi.fn(),
-  };
-
-  return (
-    <AuthProvider>
-      {/* We use the actual provider, but control it via localStorage mock */}
-      {children}
-    </AuthProvider>
-  );
-};
 
 describe("ProtectedRoute", () => {
   it("redirects to /login when unauthenticated", () => {
