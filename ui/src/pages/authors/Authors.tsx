@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useRef, useState, useCallback } from "react";
 import { Button } from "@/common/Button";
 import Modal from "@/common/Modal";
 import AddAuthor, { AddAuthorHandle, AddAuthorFormValues } from "./AddAuthor";
@@ -24,35 +24,35 @@ const Authors = () => {
   const isSaving = createAuthorMutation.isPending || updateAuthorMutation.isPending;
   const isRemoving = deleteAuthorMutation.isPending ? activeAuthor?.id ?? null : null;
 
-  const resetModalState = () => {
+  const resetModalState = useCallback(() => {
     setShowModal(false);
     setModalMode("add");
     setActiveAuthor(null);
     setSubmitError(null);
     formRef.current?.reset();
-  };
+  }, []);
 
-  const handleModalClose = () => {
+  const handleModalClose = useCallback(() => {
     if (isSaving) return;
     resetModalState();
-  };
+  }, [isSaving, resetModalState]);
 
-  const handleAddClick = () => {
+  const handleAddClick = useCallback(() => {
     setModalMode("add");
     setActiveAuthor(null);
     setShowModal(true);
-  };
+  }, []);
 
-  const handleEditAuthor = (author: Author) => {
+  const handleEditAuthor = useCallback((author: Author) => {
     setModalMode("edit");
     setActiveAuthor(author);
     setShowModal(true);
-  };
+  }, []);
 
-  const handleRemoveAuthor = (author: Author) => {
+  const handleRemoveAuthor = useCallback((author: Author) => {
     setActiveAuthor(author);
     setShowDeleteModal(true);
-  };
+  }, []);
 
   const handleSaveAuthor = () => {
     formRef.current?.submit();

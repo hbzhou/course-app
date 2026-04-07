@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { Button } from "@/common/Button";
 import { Tag } from "@/types/tag";
 import { Edit, Trash2 } from "lucide-react";
@@ -47,4 +48,4 @@ const TagItem = ({ id, name, color, onEdit, onRemove, isRemoving = false }: TagI
   );
 };
 
-export default TagItem;
+export default memo(TagItem);

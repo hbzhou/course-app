@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useRef, useState, useCallback } from "react";
 import { Button } from "@/common/Button";
 import Modal from "@/common/Modal";
 import AddTag, { AddTagHandle, AddTagFormValues } from "./AddTag";
@@ -24,35 +24,35 @@ const Tags = () => {
   const isSaving = createTagMutation.isPending || updateTagMutation.isPending;
   const isRemoving = deleteTagMutation.isPending ? activeTag?.id ?? null : null;
 
-  const resetModalState = () => {
+  const resetModalState = useCallback(() => {
     setShowModal(false);
     setModalMode("add");
     setActiveTag(null);
     setSubmitError(null);
     formRef.current?.reset();
-  };
+  }, []);
 
-  const handleModalClose = () => {
+  const handleModalClose = useCallback(() => {
     if (isSaving) return;
     resetModalState();
-  };
+  }, [isSaving, resetModalState]);
 
-  const handleAddClick = () => {
+  const handleAddClick = useCallback(() => {
     setModalMode("add");
     setActiveTag(null);
     setShowModal(true);
-  };
+  }, []);
 
-  const handleEditTag = (tag: Tag) => {
+  const handleEditTag = useCallback((tag: Tag) => {
     setModalMode("edit");
     setActiveTag(tag);
     setShowModal(true);
-  };
+  }, []);
 
-  const handleRemoveTag = (tag: Tag) => {
+  const handleRemoveTag = useCallback((tag: Tag) => {
     setActiveTag(tag);
     setShowDeleteModal(true);
-  };
+  }, []);
 
   const handleSaveTag = () => {
     formRef.current?.submit();
