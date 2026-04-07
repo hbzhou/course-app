@@ -1,10 +1,10 @@
 import { createContext, useContext, useState, ReactNode, useCallback } from "react";
-import { NotificationMessage } from "@/types/notification";
+import { Notification } from "@/types/notification";
 
 interface NotificationContextType {
-  notifications: NotificationMessage[];
+  notifications: Notification[];
   unreadCount: number;
-  addNotification: (notification: NotificationMessage) => void;
+  addNotification: (notification: Notification) => void;
   markAsRead: (id: string) => void;
   markAllAsRead: () => void;
   clearAll: () => void;
@@ -13,11 +13,11 @@ interface NotificationContextType {
 const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
 
 export function NotificationProvider({ children }: { children: ReactNode }) {
-  const [notifications, setNotifications] = useState<NotificationMessage[]>([]);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
 
   const unreadCount = notifications.filter((n) => !n.read).length;
 
-  const addNotification = useCallback((notification: NotificationMessage) => {
+  const addNotification = useCallback((notification: Notification) => {
     setNotifications((prev) => [notification, ...prev]);
   }, []);
 
