@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { Button } from "@/common/Button";
 import { ManagedUser } from "@/types/managed-user";
 import { Edit, Trash2, Mail, User } from "lucide-react";
@@ -57,4 +58,4 @@ const UserItem = ({ id, username, email, roles, onEdit, onRemove, isRemoving = f
   );
 };
 
-export default UserItem;
+export default memo(UserItem);

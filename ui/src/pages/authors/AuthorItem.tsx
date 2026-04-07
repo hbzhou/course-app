@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { Button } from "@/common/Button";
 import { Author } from "@/types/author";
 import { Edit, Trash2 } from "lucide-react";
@@ -37,4 +38,4 @@ const AuthorItem = ({ id, name, onEdit, onRemove, isRemoving = false }: AuthorIt
   );
 };
 
-export default AuthorItem;
+export default memo(AuthorItem);

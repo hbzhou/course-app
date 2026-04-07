@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/common/Button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/common/Card";
@@ -59,4 +60,4 @@ const CourseCard = ({ id, title, description, duration, creationDate, authors, t
   );
 };
 
-export default CourseCard;
+export default memo(CourseCard);

@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useRef, useState, useCallback } from "react";
 import { Button } from "@/common/Button";
 import Modal from "@/common/Modal";
 import AddUser, { AddUserHandle, AddUserFormValues } from "./AddUser";
@@ -25,35 +25,35 @@ const Users = () => {
   const isSaving = createUserMutation.isPending || updateUserMutation.isPending;
   const isRemoving = deleteUserMutation.isPending ? activeUser?.id ?? null : null;
 
-  const resetModalState = () => {
+  const resetModalState = useCallback(() => {
     setShowModal(false);
     setModalMode("add");
     setActiveUser(null);
     setSubmitError(null);
     formRef.current?.reset();
-  };
+  }, []);
 
-  const handleModalClose = () => {
+  const handleModalClose = useCallback(() => {
     if (isSaving) return;
     resetModalState();
-  };
+  }, [isSaving, resetModalState]);
 
-  const handleAddClick = () => {
+  const handleAddClick = useCallback(() => {
     setModalMode("add");
     setActiveUser(null);
     setShowModal(true);
-  };
+  }, []);
 
-  const handleEditUser = (user: ManagedUser) => {
+  const handleEditUser = useCallback((user: ManagedUser) => {
     setModalMode("edit");
     setActiveUser(user);
     setShowModal(true);
-  };
+  }, []);
 
-  const handleRemoveUser = (user: ManagedUser) => {
+  const handleRemoveUser = useCallback((user: ManagedUser) => {
     setActiveUser(user);
     setShowDeleteModal(true);
-  };
+  }, []);
 
   const handleSaveUser = () => {
     formRef.current?.submit();
