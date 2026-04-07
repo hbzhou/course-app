@@ -1,106 +1,27 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { authorApi } from "@/api/authorApi";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { authorApi, authorCrudApi } from "@/api/authorApi";
 import { Author } from "@/types/author";
-import { QUERY_STALE_TIME_MS } from "@/lib/queryConfig";
+import { createCrudHooks, useEntityQuery, useUpdateMutation, useDeleteMutation } from "./useCrudHooks";
 
 export const AUTHORS_QUERY_KEY = ["authors"];
 
-export const useAuthors = () => {
-  return useQuery({
-    queryKey: AUTHORS_QUERY_KEY,
-    queryFn: ({ signal }) => authorApi.getAuthors(signal),
-    staleTime: QUERY_STALE_TIME_MS,
-  });
-};
+// Use generic hooks for standard operations
+export const useAuthors = () => useEntityQuery<Author>(AUTHORS_QUERY_KEY, authorCrudApi.getAll);
+export const useUpdateAuthor = () => useUpdateMutation<Author>(AUTHORS_QUERY_KEY, authorCrudApi.update);
+export const useDeleteAuthor = () => useDeleteMutation<Author>(AUTHORS_QUERY_KEY, authorCrudApi.delete);
 
+// Custom create hook since authorApi.createAuthor takes string instead of entity
 export const useCreateAuthor = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: (name: string) => authorApi.createAuthor(name),
     onSuccess: (newAuthor) => {
-      // Update cache with the new author from server response
-      queryClient.setQueryData<Author[]>(AUTHORS_QUERY_KEY, (old) => {
-        if (!old) return [newAuthor];
-        return [...old, newAuthor];
-      });
+      queryClient.setQueryData<Author[]>(AUTHORS_QUERY_KEY, (old) =>
+        old ? [...old, newAuthor] : [newAuthor]
+      );
     },
     onError: () => {
-      // Refetch on error to ensure consistency
-      queryClient.invalidateQueries({ queryKey: AUTHORS_QUERY_KEY });
-    },
-  });
-};
-
-export const useUpdateAuthor = () => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (author: Author) => authorApi.updateAuthor(author),
-    onMutate: async (updatedAuthor: Author) => {
-      // Cancel outgoing refetches
-      await queryClient.cancelQueries({ queryKey: AUTHORS_QUERY_KEY });
-
-      // Snapshot previous value
-      const previousAuthors = queryClient.getQueryData<Author[]>(AUTHORS_QUERY_KEY);
-
-      // Optimistically update
-      if (previousAuthors) {
-        queryClient.setQueryData<Author[]>(
-          AUTHORS_QUERY_KEY,
-          previousAuthors.map((author) =>
-            author.id === updatedAuthor.id ? updatedAuthor : author
-          )
-        );
-      }
-
-      return { previousAuthors };
-    },
-    onError: (err, updatedAuthor, context) => {
-      // Rollback on error
-      if (context?.previousAuthors) {
-        queryClient.setQueryData(AUTHORS_QUERY_KEY, context.previousAuthors);
-      }
-    },
-    onSettled: () => {
-      // Always refetch to sync with server
-      queryClient.invalidateQueries({ queryKey: AUTHORS_QUERY_KEY });
-    },
-  });
-};
-
-export const useDeleteAuthor = () => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (authorId: number) => authorApi.deleteAuthor(authorId),
-    // Optimistically update the cache before server responds
-    onMutate: async (authorId: number) => {
-      // Cancel any outgoing refetches to avoid overwriting our optimistic update
-      await queryClient.cancelQueries({ queryKey: AUTHORS_QUERY_KEY });
-
-      // Snapshot the previous value
-      const previousAuthors = queryClient.getQueryData<Author[]>(AUTHORS_QUERY_KEY);
-
-      // Optimistically update to the new value
-      if (previousAuthors) {
-        queryClient.setQueryData<Author[]>(
-          AUTHORS_QUERY_KEY,
-          previousAuthors.filter((author) => author.id !== authorId)
-        );
-      }
-
-      // Return context with previous value
-      return { previousAuthors };
-    },
-    // If mutation fails, use the context returned from onMutate to roll back
-    onError: (err, authorId, context) => {
-      if (context?.previousAuthors) {
-        queryClient.setQueryData(AUTHORS_QUERY_KEY, context.previousAuthors);
-      }
-    },
-    // Always refetch after error or success to ensure sync with server
-    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: AUTHORS_QUERY_KEY });
     },
   });

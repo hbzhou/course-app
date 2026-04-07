@@ -8,14 +8,27 @@ import { ManagedUser, UpdateUserRequest } from "@/types/managed-user";
 import { COURSES_QUERY_KEY, useDeleteCourse, useUpdateCourse } from "./useCourses";
 import { USERS_QUERY_KEY, useDeleteUser, useUpdateUser } from "./useUsers";
 
-vi.mock("@/api/courseApi", () => ({
-  courseApi: {
-    getCourses: vi.fn(),
-    createCourse: vi.fn(),
-    updateCourse: vi.fn(),
-    deleteCourse: vi.fn(),
-  },
-}));
+vi.mock("@/api/courseApi", () => {
+  const getCourses = vi.fn();
+  const createCourse = vi.fn();
+  const updateCourse = vi.fn();
+  const deleteCourse = vi.fn();
+  return {
+    courseApi: {
+      getCourses,
+      createCourse,
+      updateCourse,
+      deleteCourse,
+    },
+    // Also export courseCrudApi used by generic hooks
+    courseCrudApi: {
+      getAll: getCourses,
+      create: createCourse,
+      update: updateCourse,
+      delete: deleteCourse,
+    },
+  };
+});
 
 vi.mock("@/api/userApi", () => ({
   userApi: {

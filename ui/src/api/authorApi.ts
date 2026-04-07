@@ -1,31 +1,17 @@
-import { apiClient } from "./client";
+import { createCrudApi } from "./createCrudApi";
 import { Author } from "@/types/author";
 
+// Generic CRUD API for authors
+const crudApi = createCrudApi<Author>("/api/authors");
+
+// Re-export with original naming for backward compatibility
+// Note: createAuthor has a custom signature (takes name string)
 export const authorApi = {
-  getAuthors: async (signal?: AbortSignal): Promise<Author[]> => {
-    return apiClient<Author[]>("/api/authors", {
-      method: "GET",
-      signal,
-    });
-  },
-
-  createAuthor: async (name: string): Promise<Author> => {
-    return apiClient<Author>("/api/authors", {
-      method: "POST",
-      body: JSON.stringify({ name }),
-    });
-  },
-
-  updateAuthor: async (author: Author): Promise<Author> => {
-    return apiClient<Author>(`/api/authors/${author.id}`, {
-      method: "PUT",
-      body: JSON.stringify({ name: author.name }),
-    });
-  },
-
-  deleteAuthor: async (authorId: number): Promise<void> => {
-    return apiClient<void>(`/api/authors/${authorId}`, {
-      method: "DELETE",
-    });
-  },
+  getAuthors: crudApi.getAll,
+  createAuthor: (name: string) => crudApi.create({ name } as Omit<Author, "id">),
+  updateAuthor: crudApi.update,
+  deleteAuthor: crudApi.delete,
 };
+
+// Also export the standard CRUD interface for generic hook usage
+export { crudApi as authorCrudApi };
