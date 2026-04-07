@@ -1,3 +1,5 @@
+import { memo } from "react";
+
 interface SkeletonProps {
   className?: string;
 }
@@ -6,7 +8,7 @@ export const Skeleton = ({ className = '' }: SkeletonProps) => {
   return <div className={`skeleton ${className}`} />;
 };
 
-export const CourseCardSkeleton = () => {
+export const CourseCardSkeleton = memo(() => {
   return (
     <div className="rounded-lg border border-border overflow-hidden animate-pulse">
       <div className="p-6 space-y-4">
@@ -21,9 +23,11 @@ export const CourseCardSkeleton = () => {
       </div>
     </div>
   );
-};
+});
 
-export const CourseGridSkeleton = ({ count = 6 }: { count?: number }) => {
+CourseCardSkeleton.displayName = 'CourseCardSkeleton';
+
+export const CourseGridSkeleton = memo(({ count = 6 }: { count?: number }) => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {Array.from({ length: count }).map((_, i) => (
@@ -31,4 +35,6 @@ export const CourseGridSkeleton = ({ count = 6 }: { count?: number }) => {
       ))}
     </div>
   );
-};
+});
+
+CourseGridSkeleton.displayName = 'CourseGridSkeleton';
