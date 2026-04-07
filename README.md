@@ -35,6 +35,18 @@ A full-stack web application for managing courses, authors, and users, built wit
 - Docker and Docker Compose
 - Gradle (wrapper included)
 
+### 0. Optional Local Overrides
+
+If you use a local override file, keep custom secrets in `api/src/main/resources/application-local.properties`
+and activate it with:
+
+```bash
+SPRING_PROFILES_ACTIVE=local ./gradlew api:bootRun
+```
+
+Environment variables are still supported for `DB_USERNAME`, `DB_PASSWORD`, `MYSQL_USER`,
+`MYSQL_PASSWORD`, `JWT_SECRET`, and `WEBSOCKET_ALLOWED_ORIGINS`.
+
 ### 1. Start Infrastructure
 
 ```bash
@@ -42,7 +54,7 @@ docker compose up -d
 ```
 
 This starts:
-- **MySQL 8** — database `coursedb`, user `admin` / `welcome123`, port `3306`
+- **MySQL 8** — database `coursedb`, default credentials from compose (or overridden via env), port `3306`
 - **Redis 7.2** — port `6379`
 
 ### 2. Build and Run the Backend
