@@ -10,7 +10,12 @@ import { Client } from "@stomp/stompjs";
 vi.mock("@stomp/stompjs");
 
 describe("useWebSocket", () => {
-  let mockClient: any;
+  let mockClient: {
+    activate: ReturnType<typeof vi.fn>;
+    deactivate: ReturnType<typeof vi.fn>;
+    subscribe: ReturnType<typeof vi.fn>;
+    onConnect: (() => void) | null;
+  };
   let mockActivate: ReturnType<typeof vi.fn>;
   let mockDeactivate: ReturnType<typeof vi.fn>;
   let mockSubscribe: ReturnType<typeof vi.fn>;
