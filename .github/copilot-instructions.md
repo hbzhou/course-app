@@ -31,9 +31,14 @@ cd ui && npm run build      # produces ui/dist/
 
 # 5. Tests
 ./gradlew api:test          # JVM tests
-cd ui && npm test           # Vitest with coverage (--run, no watch)
+cd ui && npm test           # Vitest with coverage (153 tests, 66.45% coverage)
+cd ui && npm run lint       # ESLint check (0 errors)
 
-# 6. Database migrations (via Flyway CLI — run setup once first)
+# 6. Git operations (dual remote setup)
+./git-push.sh               # Push to both GitHub (origin) and GitLab (origin-epam)
+git branch                  # Current: main (production) or feature branches
+
+# 7. Database migrations (via Flyway CLI — run setup once first)
 ./flyway-setup.sh           # one-time: downloads Flyway 12 + MySQL driver + creates flyway.sh
 ./flyway.sh migrate         # apply pending migrations
 ./flyway.sh create          # scaffold next versioned migration file
@@ -86,22 +91,104 @@ WebSocket endpoint: native STOMP at `/ws` (no SockJS). Channel configured via `a
 
 ## Frontend Patterns
 
-### State Management Split
-- **Redux Toolkit** (`ui/src/store/`) — auth state (`currentUser`) + notifications; token persisted in `localStorage`
-- **TanStack React Query** — all server data (courses, authors, users); 5-min stale time, optimistic updates with rollback
-- Pattern: mutations use `onMutate` → optimistic update, `onError` → rollback via context, `onSettled` → invalidate
+### State Management Architecture
+- **React Context API** (`ui/src/context/`) — auth state (`AuthContext`) + notifications (`NotificationContext`)
+  - `AuthContext` — manages user session, token (persisted in `localStorage`), login/logout
+  - `NotificationContext` — manages notification list, unread count, mark as read/clear operations
+- **TanStack React Query v5** — all server data (courses, authors, tags, users)
+  - 5-min stale time, optimistic updates with rollback on error
+  - Pattern: mutations use `onMutate` → optimistic update, `onError` → rollback via context, `onSettled` → invalidate
 
-### API Layer (`ui/src/api/`)
-`client.ts` → `apiClient<T>()` — reads JWT from `localStorage`, attaches `Authorization: Bearer` header. All API modules use this client.
+### Generic CRUD Patterns
+
+**API Layer** (`ui/src/api/`):
+- `createCrudApi<T>(endpoint)` — factory returns `{ getAll, create, update, delete }` 
+- All entity APIs use this: `courseCrudApi`, `authorCrudApi`, `tagCrudApi`, `userCrudApi`
+- `client.ts` → `apiClient<T>()` — reads JWT from `localStorage`, attaches `Authorization: Bearer` header
+
+**Hook Layer** (`ui/src/hooks/`):
+- `createCrudHooks<T>(queryKey, api)` — factory returns `{ useQuery, useCreate, useUpdate, useDelete }`
+- Entity-specific hooks: `useCourses`, `useAuthors`, `useTags`, `useUsers` (created via factory)
+- Auth hooks: `useLogin`, `useRegister`, `useLogout` (custom implementations)
+- All mutations include optimistic updates with automatic rollback on error
+
+### Project Structure
+```
+ui/src/
+├── api/              Generic CRUD API factories + entity-specific APIs
+├── common/           Reusable UI components (Button, Card, Input, Toast, etc.)
+├── context/          React Context providers (Auth, Notification)
+├── hooks/            React Query hooks (generic factories + entity-specific)
+├── layout/           Layout components (Header, Nav, Profile, NotificationBell)
+├── lib/              Utilities (cn classname merger, query config)
+├── pages/            Page components organized by feature (auth, courses, authors, tags, users)
+├── router/           React Router setup + ProtectedRoute
+├── store/            [REMOVED - migrated to Context API]
+└── types/            TypeScript type definitions
+```
 
 ### Path Alias
 `@/` maps to `ui/src/` (configured in both `vite.config.ts` and `vitest.config.mts`).
 
-### WebSocket (`useWebSocket.ts`)
-Connects to `ws://{host}/ws` using `@stomp/stompjs` `Client` (native WS, not SockJS). Activates only when `token` is present in Redux store; deactivates on logout. Dispatches to `notificationSlice`.
+### WebSocket Integration (`useWebSocket.ts`)
+Connects to `ws://{host}/ws` using `@stomp/stompjs` `Client` (native WS, not SockJS). 
+- Activates when `token` exists in `AuthContext`
+- Subscribes to `/topic/notifications` on connection
+- Dispatches received notifications to `NotificationContext`
+- Auto-deactivates on logout or unmount
 
-### UI Components
-Custom shadcn/ui-style components live in `ui/src/common/` (Button, Card, Input, Toast, etc.). Feature components in `ui/src/components/`. Form validation uses `react-hook-form` + `zod` + `@hookform/resolvers`.
+### Form Validation
+Uses `react-hook-form` + custom validation (no Zod). Forms in `pages/*/AddAuthor.tsx`, `AddTag.tsx`, etc.
+
+### UI Components & Styling
+- Custom shadcn/ui-style components in `ui/src/common/` (Button, Card, Input, Label, Textarea, Badge, Toast, etc.)
+- Tailwind CSS with custom theme configuration
+- All components support className composition via `cn()` utility
+- **100% test coverage** on all common components
+
+---
+
+## Testing Strategy
+
+### Frontend Tests (`ui/src/`)
+**Test Framework:** Vitest v1.6.1 + @testing-library/react + @testing-library/user-event
+
+**Coverage:** 66.45% overall (153 tests across 29 test files)
+
+**Test Organization:**
+```
+├── api/              API client + CRUD factory tests (100% coverage)
+├── common/           Component tests (97.42% coverage - Button, Card, Input, Badge, Toast, etc.)
+├── context/          Context provider tests (100% coverage - Auth, Notification)
+├── hooks/            React Query hook tests (82.47% coverage - CRUD hooks, auth hooks)
+├── layout/           Layout component tests (68.9% coverage - Header, Nav, Profile)
+├── lib/              Utility tests (100% coverage - cn classname merger)
+├── pages/            Page integration tests (73% average - Auth, Authors, Courses, Tags)
+└── router/           ProtectedRoute tests (100% coverage)
+```
+
+**Testing Patterns:**
+- **Unit Tests:** Components, hooks, utilities tested in isolation with mocked dependencies
+- **Integration Tests:** Pages tested with QueryClient + Context providers
+- **Mocking Strategy:**
+  - `vi.mock()` for API modules (e.g., `authApi`, `courseCrudApi`)
+  - `vi.stubGlobal()` for localStorage with proper mock object
+  - QueryClient with `retry: false` for deterministic tests
+  - Wrapper pattern: `QueryClientProvider` + `AuthProvider` + `NotificationProvider`
+
+**Coverage Goals:**
+- Context/Lib/Router: 100% ✓
+- Common Components: 97%+ ✓
+- Hooks: 80%+ ✓
+- Pages: 70%+ ✓
+
+**Run Tests:**
+```bash
+cd ui
+npm test              # Run all tests with coverage report
+npm test -- --watch   # Watch mode (not default)
+npm run lint          # ESLint check
+```
 
 ---
 
@@ -115,11 +202,32 @@ Custom shadcn/ui-style components live in `ui/src/common/` (Button, Card, Input,
 - Health probes: `/actuator/health/liveness` (liveness) and `/actuator/health/readiness` (readiness, includes DB check)
 - SPA routing handled server-side in `WebConfig.kt` — unknown paths return `index.html`
 
+## Git Workflow (Dual Remote Setup)
+**Remotes configured:**
+- `origin` → GitHub: `hbzhou/course-app`
+- `origin-epam` → GitLab: `jeremy_zhou/course-app`
+
+**Push to both remotes:**
+```bash
+./git-push.sh               # Pushes current branch to both remotes
+git push -u origin branch   # Push to GitHub only
+git push origin-epam branch # Push to GitLab only
+```
+
+**Branch Strategy:**
+- `main` — production-ready code
+- `phase*-*` — feature branches (e.g., `phase7-ui-test-coverage`)
+- Each phase merged via PR after testing
+
 ## Key Config
 | Property | Value |
 |---|---|
 | API port | `8081` |
+| UI dev port | `3000` |
 | DB | MySQL `coursedb` @ `localhost:3306` |
 | Redis | `localhost:6379` |
 | JWT expiry | 10 hours |
+| Test coverage | 66.45% (153 tests) |
+| Lint status | 0 errors, 10 warnings |
+| State management | React Context + React Query |
 | Kotlin compiler flag | `-Xannotation-default-target=param-property` (required for Spring annotations on data class constructors) |
