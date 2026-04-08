@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
-import { userEvent } from "@testing-library/user-event";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import CourseInfo from "./CourseInfo";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -17,19 +16,6 @@ describe("CourseInfo", () => {
     });
     vi.clearAllMocks();
   });
-
-  const renderCourseInfo = (courseId: string) => {
-    return render(
-      <QueryClientProvider client={queryClient}>
-        <BrowserRouter>
-          <Routes>
-            <Route path="/courses/:id" element={<CourseInfo />} />
-          </Routes>
-        </BrowserRouter>
-      </QueryClientProvider>,
-      { hydrate: false, initialEntries: [`/courses/${courseId}`] } as never
-    );
-  };
 
   it("renders loading state", () => {
     vi.mocked(courseApi.courseCrudApi.getAll).mockImplementation(
