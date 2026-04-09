@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useAuthContext } from "@/context/AuthContext";
+import { useAuthContext } from "@/context/auth-context";
 import { authApi, LoginRequest, RegisterRequest, AuthResponse } from "@/api/authApi";
 
 export const useLogin = () => {

@@ -1,4 +1,4 @@
-import { useNotificationContext } from "@/context/NotificationContext";
+import { useNotificationContext } from "@/context/notification-context";
 import {
   ToastProvider,
   ToastViewport,

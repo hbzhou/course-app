@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { renderHook, act } from "@testing-library/react";
-import { NotificationProvider, useNotificationContext } from "../NotificationContext";
+import { NotificationProvider } from "../NotificationContext";
+import { useNotificationContext } from "../notification-context";
 import type { ReactNode } from "react";
 import type { Notification } from "@/types/notification";
 
