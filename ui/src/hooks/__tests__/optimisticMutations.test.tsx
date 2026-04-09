@@ -5,8 +5,8 @@ import { courseApi } from "@/api/courseApi";
 import { userApi } from "@/api/userApi";
 import { Course } from "@/types/course";
 import { ManagedUser, UpdateUserRequest } from "@/types/managed-user";
-import { COURSES_QUERY_KEY, useDeleteCourse, useUpdateCourse } from "./useCourses";
-import { USERS_QUERY_KEY, useDeleteUser, useUpdateUser } from "./useUsers";
+import { COURSES_QUERY_KEY, useDeleteCourse, useUpdateCourse } from "../useCourses";
+import { USERS_QUERY_KEY, useDeleteUser, useUpdateUser } from "../useUsers";
 
 vi.mock("@/api/courseApi", () => {
   const getCourses = vi.fn();

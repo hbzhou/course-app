@@ -33,6 +33,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
     "test": "vitest --coverage --run",
     "test:ui": "vitest --ui"
   },

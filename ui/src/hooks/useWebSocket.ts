@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import { Client } from "@stomp/stompjs";
-import { useAuthContext } from "@/context/AuthContext";
-import { useNotificationContext } from "@/context/NotificationContext";
+import { useAuthContext } from "@/context/auth-context";
+import { useNotificationContext } from "@/context/notification-context";
 import { NotificationMessage, Notification } from "@/types/notification";
 
 // Native WebSocket URL — resolves to ws://host/ws in the browser

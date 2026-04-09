@@ -1,5 +1,5 @@
 import { Button } from "@/common/Button";
-import { useAuthContext } from "@/context/AuthContext";
+import { useAuthContext } from "@/context/auth-context";
 import { useLogout } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import { LogOut, User } from "lucide-react";

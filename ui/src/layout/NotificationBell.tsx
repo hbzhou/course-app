@@ -1,6 +1,6 @@
 import { Fragment } from "react";
 import { Bell } from "lucide-react";
-import { useNotificationContext } from "@/context/NotificationContext";
+import { useNotificationContext } from "@/context/notification-context";
 import { Popover, PopoverContent, PopoverTrigger } from "@/common/Popover";
 import { ScrollArea } from "@/common/ScrollArea";
 import { Badge } from "@/common/Badge";
