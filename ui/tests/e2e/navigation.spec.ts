@@ -1,5 +1,5 @@
 import { test, expect, devices } from '@playwright/test';
-import { loginUser, clearAppState, logoutUser } from '../fixtures/auth.fixture';
+import { loginUser, clearAppState } from '../fixtures/auth.fixture';
 
 test.describe('Navigation and Layout', () => {
   test.beforeEach(async ({ page }) => {

@@ -161,8 +161,8 @@ test.describe('Users Management Page', () => {
     const pagination = page.locator('[data-testid="pagination"], .pagination, [role="navigation"]').first();
     const userCount = page.locator('[data-testid="user-count"], text=/\\d+\\s*(users?|entries)/i').first();
 
-    const paginationVisible = await pagination.isVisible({ timeout: 3000 }).catch(() => false);
-    const countVisible = await userCount.isVisible({ timeout: 3000 }).catch(() => false);
+    await pagination.isVisible({ timeout: 3000 }).catch(() => false);
+    await userCount.isVisible({ timeout: 3000 }).catch(() => false);
 
     // Optional: User count or pagination may not be displayed in all layouts
     // Just verify that we can check for them gracefully

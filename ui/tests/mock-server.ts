@@ -18,17 +18,17 @@ const roles = [
   { id: 2, name: 'ROLE_USER' },
 ];
 
-let authors = [
+const authors = [
   { id: 1, name: 'John Doe' },
   { id: 2, name: 'Jane Smith' },
 ];
 
-let tags = [
+const tags = [
   { id: 1, name: 'Frontend', color: '#0ea5e9' },
   { id: 2, name: 'Backend', color: '#22c55e' },
 ];
 
-let courses = [
+const courses = [
   {
     id: 1,
     title: 'React Fundamentals',
@@ -49,7 +49,7 @@ let courses = [
   },
 ];
 
-let users = [
+const users = [
   {
     id: 1,
     username: 'admin',
@@ -373,7 +373,6 @@ const server = http.createServer(async (req: http.IncomingMessage, res: http.Ser
 });
 
 server.listen(PORT, '127.0.0.1', () => {
-  // eslint-disable-next-line no-console
   console.log(`[mock-api] running on http://127.0.0.1:${PORT}`);
 });
 

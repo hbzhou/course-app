@@ -1,4 +1,4 @@
-import { test, expect, Page } from '@playwright/test';
+import { test, expect } from '@playwright/test';
 import { TEST_USER, loginUser, logoutUser, isLoggedIn, clearAppState } from '../fixtures/auth.fixture';
 
 test.describe('Authentication Pages', () => {

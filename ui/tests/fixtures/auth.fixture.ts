@@ -29,7 +29,7 @@ export async function loginUser(page: Page, username = TEST_USER.username, passw
   // Expect to be redirected away from /login
   try {
     await page.waitForURL(url => !url.pathname.includes('/login'), { timeout: 10000 });
-  } catch (e) {
+  } catch {
     // If URL doesn't change, still proceed and check token
     // Some apps might redirect after token is set
     await page.waitForLoadState('networkidle').catch(() => {});
@@ -73,7 +73,7 @@ export async function logoutUser(page: Page) {
   // Wait for redirect to login (with fallback)
   try {
     await page.waitForURL('**/login', { timeout: 5000 });
-  } catch (e) {
+  } catch {
     // If redirect doesn't happen, just proceed
     await page.waitForLoadState('networkidle').catch(() => {});
   }

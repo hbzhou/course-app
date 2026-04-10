@@ -9,7 +9,7 @@ cache:
     policy: pull
 
 .base-ui:
-  image: node:20-slim
+  image: node:22-slim
   before_script:
     - cd ui
     - npm install
@@ -86,7 +86,6 @@ ui-e2e-test:
     - compile-ui
   before_script:
     - cd ui
-    - npm install
     - npx playwright install --with-deps
   script:
     - npm run e2e
