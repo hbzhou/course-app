@@ -10,20 +10,22 @@ A full-stack web application for managing courses, authors, and users, built wit
 | Frontend | React 19, TypeScript, Vite, Redux Toolkit, TanStack React Query |
 | Database | MySQL 8 |
 | Cache / Messaging | Redis 7.2 |
-| Auth | JWT (stateless, 10-hour expiry) |
+| Auth | **OAuth2 Authorization Code Flow (Keycloak)** + Legacy JWT (backward compatible) |
+| Identity Provider | Keycloak 26 (dockerized) |
 | Migrations | Flyway 12 |
 | Build | Gradle (Kotlin DSL), monorepo |
 | Deployment | Docker Compose (dev), Kubernetes / Helm (prod) |
 
 ## Features
 
-- **User Management**: Authentication and authorization with JWT
+- **OAuth2 Authentication**: Secure authentication using OAuth2 Authorization Code flow with Keycloak (see [OAuth2 Setup Guide](./OAUTH2_SETUP_GUIDE.md))
+- **User Management**: Authentication and authorization with JWT (legacy support maintained)
 - **Role-Based Access Control**: `ROLE_ADMIN` (full access) and `ROLE_USER` (view-only) with fine-grained permissions (`COURSE_VIEW`, `COURSE_EDIT`, `USER_MANAGE`, `ROLE_MANAGE`)
 - **Course Management**: Create, read, update, and delete courses
 - **Author Management**: Manage course authors and relationships
 - **Real-Time Notifications**: Every DB change is pushed to connected clients via Redis Pub/Sub → STOMP WebSocket (`/topic/notifications`)
 - **Database Migrations**: Flyway for versioned database schema management
-- **Docker Support**: Docker Compose for MySQL and Redis
+- **Docker Support**: Docker Compose for MySQL, Redis, and Keycloak
 - **Health Probes**: Kubernetes-ready liveness (`/actuator/health/liveness`) and readiness (`/actuator/health/readiness`) endpoints
 - **Comprehensive Testing**: 153 unit tests (66.45% coverage) + 53 E2E tests covering all workflows
 
@@ -57,6 +59,9 @@ docker compose up -d
 This starts:
 - **MySQL 8** — database `coursedb`, default credentials from compose (or overridden via env), port `3306`
 - **Redis 7.2** — port `6379`
+- **Keycloak 26** — OAuth2/OIDC identity provider, admin console on http://localhost:8080
+
+> **Note**: For OAuth2 authentication setup, see the complete [OAuth2 Setup Guide](./OAUTH2_SETUP_GUIDE.md) or the [Migration Summary](./OAUTH2_MIGRATION_SUMMARY.md) for a quick overview.
 
 ### 2. Build and Run the Backend
 
@@ -82,8 +87,15 @@ In dev mode, Vite proxies `/api` and `/ws` to `localhost:8081`.
 
 ### Default Credentials
 
+**Legacy JWT Login** (traditional username/password):
 - **Username**: `admin`
 - **Password**: `admin123`
+
+**OAuth2 Login** (via Keycloak):
+1. Click "Login with OAuth2 (Keycloak)" on login page
+2. First-time setup required (see [OAuth2 Setup Guide](./OAUTH2_SETUP_GUIDE.md))
+3. Default Keycloak admin: `admin` / `admin123`
+4. Create test user in Keycloak (e.g., `testuser` / `test123`)
 
 ## Production Build
 

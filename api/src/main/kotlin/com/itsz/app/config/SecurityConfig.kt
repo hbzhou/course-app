@@ -1,6 +1,7 @@
 package com.itsz.app.config
 
 import com.itsz.app.auth.jwt.JwtAuthFilter
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.security.authentication.AuthenticationManager
@@ -12,6 +13,8 @@ import org.springframework.security.config.http.SessionCreationPolicy
 import org.springframework.security.core.userdetails.UserDetailsService
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.security.crypto.password.PasswordEncoder
+import org.springframework.security.oauth2.jwt.JwtDecoder
+import org.springframework.security.oauth2.jwt.NimbusJwtDecoder
 import org.springframework.security.web.SecurityFilterChain
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
 
@@ -20,7 +23,9 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableMethodSecurity(prePostEnabled = true)
 class SecurityConfig(
     private val userDetailsService: UserDetailsService,
-    private val jwtAuthFilter: JwtAuthFilter
+    private val jwtAuthFilter: JwtAuthFilter,
+    @Value("\${spring.security.oauth2.resourceserver.jwt.jwk-set-uri}")
+    private val jwkSetUri: String
 ) {
 
     @Bean
@@ -31,6 +36,16 @@ class SecurityConfig(
         val builder = http.getSharedObject(AuthenticationManagerBuilder::class.java)
         builder.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder())
         return builder.build()
+    }
+
+    @Bean
+    fun keycloakJwtDecoder(): JwtDecoder {
+        return NimbusJwtDecoder.withJwkSetUri(jwkSetUri).build()
+    }
+
+    @Bean
+    fun keycloakJwtConverter(): KeycloakJwtAuthenticationConverter {
+        return KeycloakJwtAuthenticationConverter()
     }
 
     @Bean
@@ -55,6 +70,13 @@ class SecurityConfig(
                     .anyRequest().authenticated()
             }
             .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }
+            // OAuth2 Resource Server - validates JWT tokens from Keycloak
+            .oauth2ResourceServer { oauth2 ->
+                oauth2.jwt { jwt ->
+                    jwt.jwtAuthenticationConverter(keycloakJwtConverter())
+                }
+            }
+            // Keep legacy JWT filter for backwards compatibility during migration
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter::class.java)
 
         return http.build()
