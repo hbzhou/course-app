@@ -1,7 +1,8 @@
+/// <reference types="node" />
 import type { UserConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import path from 'path'
-import type { InlineConfig } from 'vitest'
+import type { InlineConfig } from 'vitest/node'
 
 // https://vitejs.dev/config/
 export default {
@@ -15,12 +16,12 @@ export default {
     port: 3000,
     proxy: {
       '/api': {
-        target: 'http://localhost:8081',
+        target: process.env.VITE_API_PROXY_TARGET || 'http://localhost:8081',
         changeOrigin: false,
         secure: false
       },
       '/ws': {
-        target: 'http://localhost:8081',
+        target: process.env.VITE_WS_PROXY_TARGET || process.env.VITE_API_PROXY_TARGET || 'http://localhost:8081',
         changeOrigin: false,
         secure: false,
         ws: true,
@@ -31,6 +32,8 @@ export default {
     globals: true,
     environment: 'jsdom',
     setupFiles: ['./src/test/setup.ts'],
+    include: ['src/**/*.{test,spec}.{ts,tsx}'],
+    exclude: ['tests/e2e/**', 'node_modules', 'dist'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'lcov', 'html'],
