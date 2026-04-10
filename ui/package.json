@@ -36,6 +36,7 @@
     "lint:fix": "eslint . --fix",
     "test": "vitest --coverage --run",
     "test:ui": "vitest --ui",
+    "e2e:mock-server": "node --experimental-strip-types tests/mock-server.ts",
     "e2e": "playwright test",
     "e2e:debug": "playwright test --debug",
     "e2e:ui": "playwright test --ui",

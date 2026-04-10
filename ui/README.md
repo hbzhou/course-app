@@ -25,6 +25,7 @@ Launches the Vitest UI to visualize tests.\
 ### `npm run e2e`
 
 Runs the end-to-end (E2E) tests using Playwright.\
+E2E runs start an in-memory mock API server automatically (no real backend required).\
 All 53 tests across the entire application will execute.\
 See [E2E Testing Guide](../E2E_TESTING_GUIDE.md) for detailed instructions.
 

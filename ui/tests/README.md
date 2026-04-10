@@ -79,7 +79,7 @@ npm run e2e:report       # View HTML report
 
 ## Writing Tests
 
-Use the `/e2e/*.spec.ts` files as templates. See [E2E_TESTING_GUIDE.md](../../E2E_TESTING_GUIDE.md) for complete guide.
+Use the `/e2e/*.spec.ts` files as templates and keep test setup in `beforeEach` with `clearAppState()` + `loginUser()`.
 
 ```typescript
 import { test, expect } from '@playwright/test';
@@ -102,6 +102,4 @@ test.describe('Feature', () => {
 ## Documentation
 
 - [ui/README.md](../README.md) — How to run tests and debugging
-- [E2E_TESTING_GUIDE.md](../../E2E_TESTING_GUIDE.md) — Complete testing guide
-- [DATA_TESTID_GUIDE.md](../DATA_TESTID_GUIDE.md) — Adding test IDs to components
 - [Playwright Docs](https://playwright.dev/) — Official documentation

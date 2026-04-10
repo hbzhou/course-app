@@ -1,3 +1,4 @@
+/// <reference types="node" />
 import { defineConfig, devices } from '@playwright/test';
 
 /**
@@ -39,10 +40,10 @@ export default defineConfig({
     screenshot: 'only-on-failure',
 
     /* Record video on failure */
-    video: 'retain-on-failure',
-
-    /* Video dimensions */
-    videoSize: { width: 1280, height: 720 },
+    video: {
+      mode: 'retain-on-failure',
+      size: { width: 1280, height: 720 },
+    },
   },
 
   /* Configure projects for major browsers */
@@ -74,13 +75,21 @@ export default defineConfig({
         },
       ],
 
-  /* Run your local dev server before starting the tests */
-  webServer: {
-    command: 'npm run dev',
-    url: 'http://localhost:3000',
-    reuseExistingServer: !process.env.CI,
-    timeout: 120000,
-  },
+  /* Run mock API and local dev server before starting tests */
+  webServer: [
+    {
+      command: 'npm run e2e:mock-server',
+      url: 'http://127.0.0.1:18081/health',
+      reuseExistingServer: !process.env.CI,
+      timeout: 30000,
+    },
+    {
+      command: 'VITE_API_PROXY_TARGET=http://127.0.0.1:18081 VITE_WS_PROXY_TARGET=ws://127.0.0.1:18081 npm run dev',
+      url: 'http://localhost:3000',
+      reuseExistingServer: !process.env.CI,
+      timeout: 120000,
+    },
+  ],
 
   /* Timeouts */
   timeout: 30000,
