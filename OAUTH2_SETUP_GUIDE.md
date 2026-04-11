@@ -2,41 +2,22 @@
 
 ## Overview
 
-This guide explains the OAuth2 Authorization Code flow implementation using Keycloak as the authorization server. The implementation provides enhanced security by:
+This guide explains the Spring Security OAuth2 Authorization Code flow using Keycloak as the authorization server. The backend owns authorization-code exchange and session establishment.
 
 - **No password handling in frontend**: Users authenticate directly with Keycloak
-- **Short-lived access tokens**: Reduces risk of token theft
-- **Refresh token rotation**: Automatic token refresh without re-authentication
+- **Framework-managed callback and state**: Spring Security handles callback, state, and code exchange
+- **Server-managed session**: Frontend does not perform manual code exchange
 - **Centralized authentication**: Single sign-on capability across multiple applications
-- **PKCE support**: Protection against authorization code interception attacks (via Keycloak)
 
 ## Architecture
 
 ```
-┌─────────┐      1. Login        ┌──────────────┐
-│  React  │─────────────────────>│    Backend   │
-│   UI    │                       │  (Port 8081) │
-└─────────┘                       └──────────────┘
-     │                                    │
-     │ 2. Redirect to Keycloak            │ 2. Redirect URL
-     │                                    │
-     v                                    v
-┌──────────────────────────────────────────────┐
-│         Keycloak (Port 8080)                 │
-│  - User login page                           │
-│  - User authentication                       │
-│  - Authorization code generation             │
-└──────────────────────────────────────────────┘
-     │
-     │ 3. Callback with code
-     v
-┌─────────┐      4. Exchange       ┌──────────────┐
-│  React  │─────────────────────>  │    Backend   │
-│   UI    │       code for tokens  │              │
-│         │<─────────────────────  │              │
-└─────────┘   5. Access token      └──────────────┘
-                 Refresh token
-                 ID token
+Browser (UI)
+  -> /oauth2/authorization/keycloak
+  -> Keycloak login
+  -> /login/oauth2/code/keycloak (backend callback)
+  -> Spring Security establishes session
+  -> UI calls /api/auth/me to bootstrap current user
 ```
 
 ## Prerequisites
@@ -95,8 +76,8 @@ Look for: `Keycloak 26.0 started`
 4. Login settings:
    - **Root URL**: `http://localhost:3000`
    - **Valid redirect URIs**: 
-     - `http://localhost:8081/api/auth/oauth2/callback`
-     - `http://localhost:3000/oauth2/callback`
+   - `http://localhost:8081/login/oauth2/code/keycloak`
+   - `http://localhost:3000/courses`
    - **Valid post logout redirect URIs**: `http://localhost:3000`
    - **Web origins**: `http://localhost:3000`
    - Click "Save"
@@ -175,10 +156,11 @@ Frontend will start on: http://localhost:3000
    - Password: `test123`
 5. Click "Sign in"
 6. You'll be redirected back to the application at `/courses`
-7. Check browser DevTools → Application → Local Storage:
-   - `oauth2User` - Contains user info and tokens
-   - `token` - Contains the access token
-   - `authType` - Set to "oauth2"
+7. Verify authenticated session by calling:
+
+```bash
+curl -i http://localhost:8081/api/auth/me
+```
 
 ### Test Legacy JWT Login (Backward Compatibility)
 
@@ -191,21 +173,9 @@ The legacy username/password authentication still works:
 3. Click "Login"
 4. Authenticated using legacy JWT
 
-### Test Token Refresh
+### Session Verification
 
-The system automatically refreshes OAuth2 tokens when they expire:
-
-```typescript
-// Manually trigger refresh in browser console:
-const authContext = JSON.parse(localStorage.getItem('oauth2User'));
-fetch('/api/auth/oauth2/refresh', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({ refreshToken: authContext.refreshToken })
-})
-.then(r => r.json())
-.then(console.log);
-```
+The backend now manages OAuth2 login and session. The frontend does not call token exchange or refresh endpoints.
 
 ### Test Logout
 
@@ -216,14 +186,13 @@ fetch('/api/auth/oauth2/refresh', {
 
 ## API Endpoints
 
-### OAuth2 Endpoints
+### OAuth2 Endpoints (Spring Security)
 
 | Endpoint | Method | Description |
 |----------|--------|-------------|
-| `/api/auth/oauth2/login` | GET | Initiates OAuth2 flow, redirects to Keycloak |
-| `/api/auth/oauth2/callback` | GET | Handles Keycloak callback, redirects to frontend |
-| `/api/auth/oauth2/exchange` | POST | Exchanges authorization code for tokens |
-| `/api/auth/oauth2/refresh` | POST | Refreshes access token using refresh token |
+| `/oauth2/authorization/keycloak` | GET | Initiates OAuth2 flow and redirects to Keycloak |
+| `/login/oauth2/code/keycloak` | GET | Spring Security OAuth2 callback endpoint |
+| `/api/auth/me` | GET | Returns authenticated user profile from session or bearer auth |
 
 ### Legacy Endpoints (Still Supported)
 
@@ -235,27 +204,13 @@ fetch('/api/auth/oauth2/refresh', {
 
 ## Token Storage
 
-### OAuth2 User Object (localStorage: `oauth2User`)
-
-```json
-{
-  "name": "testuser",
-  "email": "testuser@example.com",
-  "accessToken": "eyJhbGc...",
-  "idToken": "eyJhbGc...",
-  "refreshToken": "eyJhbGc...",
-  "expiresIn": 300,
-  "tokenType": "Bearer"
-}
-```
-
 ### Token (localStorage: `token`)
 
-Stores the current access token (either OAuth2 or legacy JWT)
+Stores legacy JWT token only when users sign in via the legacy login endpoint.
 
 ### Auth Type (localStorage: `authType`)
 
-- `oauth2` - User logged in via OAuth2
+- `oauth2` - User logged in via OAuth2 session
 - `legacy` - User logged in via legacy JWT
 
 ## Security Considerations
@@ -307,18 +262,18 @@ response.cookie('access_token', token, {
 
 ## Troubleshooting
 
-### Error: "Failed to exchange code for token"
+### Error: OAuth2 login redirects to 404 in dev
 
-**Solution**: 
-1. Check Keycloak client secret matches in `application.properties`
-2. Verify redirect URIs are configured correctly in Keycloak client
+**Solution**:
+1. Start frontend with Vite config that proxies `/oauth2` and `/login/oauth2` to backend `8081`
+2. Confirm redirect URL is `/oauth2/authorization/keycloak`
 
 ### Error: "Invalid redirect_uri"
 
 **Solution**: 
 Add redirect URIs in Keycloak:
-- `http://localhost:8081/api/auth/oauth2/callback`
-- `http://localhost:3000/oauth2/callback`
+- `http://localhost:8081/login/oauth2/code/keycloak`
+- `http://localhost:3000/courses`
 
 ### Keycloak not starting
 
@@ -342,14 +297,7 @@ Add web origins in Keycloak client settings:
 ### Token expired error
 
 **Solution**: 
-Implement automatic token refresh in frontend:
-```typescript
-// In axios/fetch interceptor
-if (error.response.status === 401 && oauth2User?.refreshToken) {
-  await refreshOAuth2Token();
-  // Retry original request
-}
-```
+Treat this as a session expiration and redirect users to sign in again via OAuth2.
 
 ## Migration Path
 
@@ -389,13 +337,13 @@ Option 2: **Automatic migration** - Link existing accounts to OAuth2 users by em
    - Implement MFA in Keycloak
 
 3. **User Experience**:
-   - Auto-refresh tokens before expiry
+   - Improve session-expired UX and re-login prompts
    - Remember me functionality
    - Social login integration (Google, GitHub via Keycloak)
 
 4. **Monitoring**:
    - Log authentication events
-   - Monitor token refresh rates
+   - Monitor session timeout and re-authentication rates
    - Track failed login attempts
 
 ## References

@@ -83,7 +83,7 @@ npm run dev
 
 The UI will start on http://localhost:3000
 
-In dev mode, Vite proxies `/api` and `/ws` to `localhost:8081`.
+In dev mode, Vite proxies `/api`, `/ws`, `/oauth2`, and `/login/oauth2` to `localhost:8081`.
 
 ### Default Credentials
 
@@ -96,6 +96,14 @@ In dev mode, Vite proxies `/api` and `/ws` to `localhost:8081`.
 2. First-time setup required (see [OAuth2 Setup Guide](./OAUTH2_SETUP_GUIDE.md))
 3. Default Keycloak admin: `admin` / `admin123`
 4. Create test user in Keycloak (e.g., `testuser` / `test123`)
+
+### OAuth2 Login Flow (Spring-Managed)
+
+1. Browser navigates to `/oauth2/authorization/keycloak`
+2. Spring Security redirects to Keycloak
+3. Keycloak redirects back to `/login/oauth2/code/keycloak`
+4. Spring Security exchanges the authorization code and establishes the session
+5. Frontend bootstraps authenticated user via `/api/auth/me`
 
 ## Production Build
 
