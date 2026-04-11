@@ -8,6 +8,8 @@ import org.springframework.messaging.simp.stomp.StompCommand
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor
 import org.springframework.messaging.support.ChannelInterceptor
 import org.springframework.messaging.support.MessageHeaderAccessor
+import org.springframework.security.authentication.AnonymousAuthenticationToken
+import org.springframework.security.core.Authentication
 import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.userdetails.UserDetailsService
@@ -30,8 +32,24 @@ class WebSocketAuthChannelInterceptor(
             ?: return message
 
         if (accessor.command == StompCommand.CONNECT) {
+            val existingPrincipal = accessor.user as? Authentication
+            val hasAuthenticatedNonAnonymousPrincipal =
+                existingPrincipal?.isAuthenticated == true && existingPrincipal !is AnonymousAuthenticationToken
+
+            if (hasAuthenticatedNonAnonymousPrincipal) {
+                logger.debug("WebSocket CONNECT accepted with existing authenticated principal: ${existingPrincipal.name}")
+                return message
+            }
+
             val rawHeader = accessor.getFirstNativeHeader("Authorization")
-                ?: throw BadCredentialsException("Missing Authorization header")
+            if (rawHeader == null) {
+                if (existingPrincipal is AnonymousAuthenticationToken) {
+                    throw BadCredentialsException("Anonymous CONNECT requires Authorization header")
+                }
+                logger.debug("WebSocket CONNECT without Authorization header; proceeding for session-backed authentication")
+                return message
+            }
+
             val token = rawHeader.removePrefix("Bearer ").trim()
 
             if (token.isBlank()) {

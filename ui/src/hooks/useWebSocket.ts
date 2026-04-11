@@ -37,23 +37,25 @@ function transformToNotification(msg: NotificationMessage): Notification {
 }
 
 export function useWebSocket() {
-  const { token } = useAuthContext();
+  const { isAuthenticated, token } = useAuthContext();
   const { addNotification } = useNotificationContext();
   const clientRef = useRef<Client | null>(null);
 
   useEffect(() => {
     // Only connect when authenticated
-    if (!token) {
+    if (!isAuthenticated) {
       clientRef.current?.deactivate();
       clientRef.current = null;
       return;
     }
 
+    const connectHeaders = token
+      ? { Authorization: `Bearer ${token}` }
+      : {};
+
     const client = new Client({
       brokerURL: WS_URL,
-      connectHeaders: {
-        Authorization: `Bearer ${token}`,
-      },
+      connectHeaders,
       reconnectDelay: 5000,
       onConnect: () => {
         console.log("WebSocket connected");
@@ -79,5 +81,5 @@ export function useWebSocket() {
     return () => {
       client.deactivate();
     };
-  }, [token, addNotification]);
+  }, [isAuthenticated, token, addNotification]);
 }
