@@ -1,25 +1,21 @@
-import { useState, useEffect, useCallback, ReactNode } from "react";
-import type { User, OAuth2User } from "@/types/user";
+import { useState, useEffect, useCallback, useRef, ReactNode } from "react";
+import type { User } from "@/types/user";
+import type { AuthenticatedUser, AuthStatus } from "./auth-context";
 import { AuthContext } from "./auth-context";
-import { apiClient } from "@/api/client";
-import { clearAuthBrowserState } from "@/lib/authStorage";
+import { authApi } from "@/api/authApi";
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [oauth2User, setOAuth2User] = useState<OAuth2User | null>(() => {
-    try {
-      const stored = localStorage.getItem("oauth2User");
-      return stored ? JSON.parse(stored) : null;
-    } catch {
-      return null;
-    }
-  });
+  const [user, setUser] = useState<AuthenticatedUser | null>(null);
   const [token, setTokenState] = useState<string | null>(() => {
     return localStorage.getItem("token");
   });
-  const [isOAuth2, setIsOAuth2] = useState<boolean>(() => {
-    return localStorage.getItem("authType") === "oauth2";
-  });
+  const [authStatus, setAuthStatus] = useState<AuthStatus>("loading");
+  const userRef = useRef<AuthenticatedUser | null>(null);
+  const refreshRequestIdRef = useRef(0);
+
+  useEffect(() => {
+    userRef.current = user;
+  }, [user]);
 
   // Sync token changes to localStorage
   useEffect(() => {
@@ -30,108 +26,108 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [token]);
 
-  // Sync OAuth2 user to localStorage
-  useEffect(() => {
-    if (oauth2User) {
-      localStorage.setItem("oauth2User", JSON.stringify(oauth2User));
-      localStorage.setItem("authType", "oauth2");
-    } else {
-      localStorage.removeItem("oauth2User");
-      if (!currentUser) {
-        localStorage.removeItem("authType");
-      }
-    }
-  }, [oauth2User, currentUser]);
-
   const login = (user: User) => {
-    setCurrentUser(user);
-    setOAuth2User(null);
-    setIsOAuth2(false);
+    const legacyUser: AuthenticatedUser = {
+      name: user.username,
+      email: user.email,
+      authType: "legacy",
+    };
+
+    setUser(legacyUser);
+    setAuthStatus("authenticated");
     if (user.token) {
       setTokenState(user.token);
     }
     localStorage.setItem("authType", "legacy");
+    localStorage.setItem("legacyUser", JSON.stringify(legacyUser));
   };
-
-  const loginOAuth2 = useCallback((user: OAuth2User) => {
-    setOAuth2User(user);
-    setCurrentUser(null);
-    setIsOAuth2(true);
-    setTokenState(user.accessToken);
-    localStorage.setItem("authType", "oauth2");
-  }, []);
 
   const logout = () => {
-    setCurrentUser(null);
-    setOAuth2User(null);
+    setUser(null);
     setTokenState(null);
-    setIsOAuth2(false);
-    clearAuthBrowserState();
+    setAuthStatus("anonymous");
+    localStorage.removeItem("token");
+    localStorage.removeItem("authType");
+    localStorage.removeItem("legacyUser");
   };
 
-  const setToken = (newToken: string) => {
-    setTokenState(newToken);
-  };
+  const refreshSession = useCallback(async () => {
+    const requestId = ++refreshRequestIdRef.current;
+    const authType = localStorage.getItem("authType");
+    const hasLegacyToken = Boolean(token) && (
+      authType === "legacy" || authType === null || userRef.current?.authType === "legacy"
+    );
 
-  const refreshOAuth2Token = async () => {
-    if (!oauth2User?.refreshToken) {
-      throw new Error("No refresh token available");
+    if (hasLegacyToken) {
+      let legacyUser: AuthenticatedUser = userRef.current?.authType === "legacy"
+        ? userRef.current
+        : {
+            name: "",
+            email: "",
+            authType: "legacy",
+          };
+
+      const storedLegacyUser = localStorage.getItem("legacyUser");
+      if (storedLegacyUser) {
+        try {
+          const parsed = JSON.parse(storedLegacyUser) as { name?: string; email?: string };
+          legacyUser = {
+            name: parsed.name ?? "",
+            email: parsed.email ?? "",
+            authType: "legacy",
+          };
+        } catch {
+          // Ignore malformed localStorage payload and keep fallback legacy user.
+        }
+      }
+
+      if (requestId !== refreshRequestIdRef.current) return;
+      setUser(legacyUser);
+      setAuthStatus("authenticated");
+      return;
     }
+
+    setAuthStatus("loading");
 
     try {
-      const response = await apiClient<{
-        accessToken: string;
-        idToken?: string;
-        refreshToken?: string;
-        expiresIn?: number;
-        tokenType: string;
-        user: { name: string; email: string };
-      }>("/api/auth/oauth2/refresh", {
-        method: "POST",
-        body: JSON.stringify({ refreshToken: oauth2User.refreshToken }),
-      });
+      const sessionUser = await authApi.getCurrentUser();
+      if (requestId !== refreshRequestIdRef.current) return;
 
-      const updatedUser: OAuth2User = {
-        name: response.user.name,
-        email: response.user.email,
-        accessToken: response.accessToken,
-        idToken: response.idToken,
-        refreshToken: response.refreshToken || oauth2User.refreshToken,
-        expiresIn: response.expiresIn,
-        tokenType: response.tokenType,
-      };
+      setUser(sessionUser);
+      setAuthStatus("authenticated");
 
-      loginOAuth2(updatedUser);
-    } catch (error) {
-      console.error("Failed to refresh token", error);
-      logout();
-      throw error;
+      if (token) {
+        setTokenState(null);
+      }
+      localStorage.removeItem("legacyUser");
+    } catch {
+      if (requestId !== refreshRequestIdRef.current) return;
+      setUser(null);
+      setAuthStatus("anonymous");
+
+      if (token && authType !== "legacy") {
+        setTokenState(null);
+        localStorage.removeItem("token");
+        localStorage.removeItem("authType");
+        localStorage.removeItem("legacyUser");
+      }
     }
-  };
+  }, [token]);
 
-  // Auto-refresh OAuth2 access token ~1 minute before expiry
   useEffect(() => {
-    if (!oauth2User?.expiresIn || !oauth2User?.refreshToken) return;
-    const msUntilRefresh = (oauth2User.expiresIn - 60) * 1000;
-    if (msUntilRefresh <= 0) return;
-    const timer = setTimeout(() => {
-      refreshOAuth2Token().catch(() => logout());
-    }, msUntilRefresh);
-    return () => clearTimeout(timer);
-  }, [oauth2User]); // eslint-disable-line react-hooks/exhaustive-deps
+    refreshSession();
+  }, [refreshSession]);
 
   return (
     <AuthContext
       value={{
-        currentUser,
-        oauth2User,
+        user,
         token,
-        isOAuth2,
+        authStatus,
+        isAuthenticated: authStatus === "authenticated",
         login,
-        loginOAuth2,
         logout,
-        setToken,
-        refreshOAuth2Token,
+        refreshSession,
       }}
     >
       {children}

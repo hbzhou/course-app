@@ -19,6 +19,12 @@ export interface AuthResponse {
   };
 }
 
+export interface CurrentUserResponse {
+  name: string;
+  email: string;
+  authType: "oauth2" | "bearer" | "session";
+}
+
 export const authApi = {
   login: async (credentials: LoginRequest): Promise<AuthResponse> => {
     return apiClient<AuthResponse>("/api/auth/login", {
@@ -34,12 +40,13 @@ export const authApi = {
     });
   },
 
-  logout: async (token: string): Promise<void> => {
+  getCurrentUser: async (): Promise<CurrentUserResponse> => {
+    return apiClient<CurrentUserResponse>("/api/auth/me");
+  },
+
+  logout: async (): Promise<void> => {
     return apiClient<void>("/api/auth/logout", {
       method: "DELETE",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
     });
   },
 };
