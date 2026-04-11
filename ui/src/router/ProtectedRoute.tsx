@@ -8,10 +8,13 @@ type ProtectedRouteProps = {
 
 const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   const location = useLocation();
-  const { token } = useAuthContext();
+  const { authStatus, isAuthenticated } = useAuthContext();
 
-  // Token is the app's auth signal today.
-  if (!token) {
+  if (authStatus === "loading") {
+    return <div className="p-6 text-sm text-muted-foreground">Checking authentication...</div>;
+  }
+
+  if (!isAuthenticated) {
     return <Navigate to="/login" replace state={{ from: location }} />;
   }
 

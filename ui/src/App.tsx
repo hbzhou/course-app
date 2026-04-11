@@ -19,7 +19,6 @@ const Courses = lazy(() => import("@/pages/courses/Courses"));
 const CreateCourse = lazy(() => import("@/pages/courses/CreateCourse"));
 const Login = lazy(() => import("@/pages/auth/Login"));
 const Registration = lazy(() => import("@/pages/auth/Registration"));
-const OAuth2Callback = lazy(() => import("@/pages/auth/OAuth2Callback"));
 const Users = lazy(() => import("@/pages/users/Users"));
 
 // Create a client for React Query
@@ -86,7 +85,6 @@ const App = () => {
                       </Route>
                       <Route path='/login' element={<Login />} />
                       <Route path='/register' element={<Registration />} />
-                      <Route path='/oauth2/callback' element={<OAuth2Callback />} />
                     </Routes>
                   </Suspense>
                 </ErrorBoundary>

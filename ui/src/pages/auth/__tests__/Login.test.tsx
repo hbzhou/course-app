@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
 import { userEvent } from "@testing-library/user-event";
-import { BrowserRouter } from "react-router-dom";
+import { BrowserRouter, MemoryRouter, Route, Routes } from "react-router-dom";
 import Login from "../Login";
 import { AuthProvider } from "@/context/AuthContext";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -11,6 +11,7 @@ vi.mock("@/api/authApi", () => ({
     login: vi.fn(),
     register: vi.fn(),
     logout: vi.fn(),
+    getCurrentUser: vi.fn(),
   },
 }));
 
@@ -25,6 +26,14 @@ describe("Login", () => {
     });
     vi.clearAllMocks();
     vi.stubGlobal("localStorage", {
+      getItem: vi.fn(),
+      setItem: vi.fn(),
+      removeItem: vi.fn(),
+      clear: vi.fn(),
+      length: 0,
+      key: vi.fn(),
+    });
+    vi.stubGlobal("sessionStorage", {
       getItem: vi.fn(),
       setItem: vi.fn(),
       removeItem: vi.fn(),
@@ -118,5 +127,65 @@ describe("Login", () => {
   it("renders OAuth2 login button", () => {
     renderLogin();
     expect(screen.getByRole("button", { name: /login with oauth2/i })).toBeInTheDocument();
+  });
+
+  it("redirects browser to Spring Security oauth2 authorization endpoint", async () => {
+    const user = userEvent.setup();
+    const originalLocation = window.location;
+    const locationMock = {
+      ...window.location,
+      href: "http://localhost:3000/login",
+    };
+    Object.defineProperty(window, "location", {
+      configurable: true,
+      value: locationMock,
+    });
+
+    renderLogin();
+    await user.click(screen.getByRole("button", { name: /login with oauth2/i }));
+
+    expect(window.location.href).toContain("/oauth2/authorization/keycloak");
+
+    Object.defineProperty(window, "location", {
+      configurable: true,
+      value: originalLocation,
+    });
+  });
+
+  it("stores oauth2 return path when login is opened from a protected route", async () => {
+    const user = userEvent.setup();
+    const originalLocation = window.location;
+    Object.defineProperty(window, "location", {
+      configurable: true,
+      value: { ...window.location, href: "http://localhost:3000/login" },
+    });
+
+    render(
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider>
+          <MemoryRouter
+            initialEntries={[
+              {
+                pathname: "/login",
+                state: { from: { pathname: "/courses" } },
+              },
+            ]}
+          >
+            <Routes>
+              <Route path="/login" element={<Login />} />
+            </Routes>
+          </MemoryRouter>
+        </AuthProvider>
+      </QueryClientProvider>
+    );
+
+    await user.click(screen.getByRole("button", { name: /login with oauth2/i }));
+
+    expect(sessionStorage.setItem).toHaveBeenCalledWith("oauth2_return_to", "/courses");
+
+    Object.defineProperty(window, "location", {
+      configurable: true,
+      value: originalLocation,
+    });
   });
 });

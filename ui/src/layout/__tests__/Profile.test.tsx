@@ -3,84 +3,124 @@ import { render, screen, waitFor } from "@testing-library/react";
 import { userEvent } from "@testing-library/user-event";
 import { BrowserRouter } from "react-router-dom";
 import Profile from "../Profile";
-import { AuthProvider } from "@/context/AuthContext";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { useAuthContext } from "@/context/auth-context";
+import { useLogout } from "@/hooks/useAuth";
 
-vi.mock("@/api/authApi", () => ({
-  authApi: {
-    login: vi.fn(),
-    register: vi.fn(),
-    logout: vi.fn(),
-  },
+vi.mock("@/context/auth-context", () => ({
+  useAuthContext: vi.fn(),
 }));
 
-import { authApi } from "@/api/authApi";
+vi.mock("@/hooks/useAuth", () => ({
+  useLogout: vi.fn(),
+}));
 
 describe("Profile", () => {
   let queryClient: QueryClient;
+  const mutateAsyncMock = vi.fn();
 
   beforeEach(() => {
     queryClient = new QueryClient({
       defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
     });
     vi.clearAllMocks();
-    vi.stubGlobal("localStorage", {
-      getItem: vi.fn(),
-      setItem: vi.fn(),
-      removeItem: vi.fn(),
-      clear: vi.fn(),
-      length: 0,
-      key: vi.fn(),
+    vi.mocked(useLogout).mockReturnValue({
+      mutateAsync: mutateAsyncMock,
+      isPending: false,
+    } as ReturnType<typeof useLogout>);
+    vi.mocked(useAuthContext).mockReturnValue({
+      user: null,
+      token: null,
+      authStatus: "anonymous",
+      isAuthenticated: false,
+      login: vi.fn(),
+      logout: vi.fn(),
+      refreshSession: vi.fn(),
     });
   });
 
-  const renderProfile = (hasToken = false) => {
-    if (hasToken) {
-      vi.mocked(localStorage.getItem).mockReturnValue("test-token");
-    } else {
-      vi.mocked(localStorage.getItem).mockReturnValue(null);
-    }
+  const renderProfile = () => {
 
     return render(
       <QueryClientProvider client={queryClient}>
-        <AuthProvider>
-          <BrowserRouter>
-            <Profile />
-          </BrowserRouter>
-        </AuthProvider>
+        <BrowserRouter>
+          <Profile />
+        </BrowserRouter>
       </QueryClientProvider>
     );
   };
 
   it("renders nothing when not logged in", () => {
-    const { container } = renderProfile(false);
+    const { container } = renderProfile();
     expect(container.firstChild).toBeNull();
   });
 
   it("renders user info when logged in", () => {
-    renderProfile(true);
+    vi.mocked(useAuthContext).mockReturnValue({
+      user: {
+        name: "testuser",
+        email: "test@example.com",
+        authType: "oauth2",
+      },
+      token: null,
+      authStatus: "authenticated",
+      isAuthenticated: true,
+      login: vi.fn(),
+      logout: vi.fn(),
+      refreshSession: vi.fn(),
+    });
+
+    renderProfile();
+
+    expect(screen.getByText("testuser")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /logout/i })).toBeInTheDocument();
   });
 
   it("calls logout mutation on button click", async () => {
     const user = userEvent.setup();
-    vi.mocked(authApi.logout).mockResolvedValue(undefined);
+    mutateAsyncMock.mockResolvedValue(undefined);
+    vi.mocked(useAuthContext).mockReturnValue({
+      user: {
+        name: "testuser",
+        email: "test@example.com",
+        authType: "oauth2",
+      },
+      token: null,
+      authStatus: "authenticated",
+      isAuthenticated: true,
+      login: vi.fn(),
+      logout: vi.fn(),
+      refreshSession: vi.fn(),
+    });
     
-    renderProfile(true);
+    renderProfile();
     
     const logoutButton = screen.getByRole("button", { name: /logout/i });
     await user.click(logoutButton);
     
     await waitFor(() => {
-      expect(authApi.logout).toHaveBeenCalledWith("test-token");
+      expect(mutateAsyncMock).toHaveBeenCalledTimes(1);
     });
   });
 
   it("navigates to login after logout", async () => {
     const user = userEvent.setup();
-    vi.mocked(authApi.logout).mockResolvedValue(undefined);
+    mutateAsyncMock.mockResolvedValue(undefined);
+    vi.mocked(useAuthContext).mockReturnValue({
+      user: {
+        name: "testuser",
+        email: "test@example.com",
+        authType: "oauth2",
+      },
+      token: null,
+      authStatus: "authenticated",
+      isAuthenticated: true,
+      login: vi.fn(),
+      logout: vi.fn(),
+      refreshSession: vi.fn(),
+    });
     
-    renderProfile(true);
+    renderProfile();
     
     const logoutButton = screen.getByRole("button", { name: /logout/i });
     await user.click(logoutButton);

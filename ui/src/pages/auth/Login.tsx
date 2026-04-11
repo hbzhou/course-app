@@ -32,10 +32,11 @@ const Login = () => {
 
   const handleOAuth2Login = () => {
     const fromPath = (location.state as { from?: { pathname?: string } })?.from?.pathname;
-    if (fromPath && fromPath !== '/login') {
-      sessionStorage.setItem('oauth2_return_to', fromPath);
+    if (fromPath && fromPath !== "/login") {
+      sessionStorage.setItem("oauth2_return_to", fromPath);
     }
-    window.location.href = `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8081'}/api/auth/oauth2/login`;
+
+    window.location.href = "/oauth2/authorization/keycloak";
   };
 
   return (
