@@ -18,9 +18,9 @@ class KeycloakJwtAuthenticationConverter : Converter<Jwt, AbstractAuthentication
     private val logger = LoggerFactory.getLogger(KeycloakJwtAuthenticationConverter::class.java)
     private val defaultGrantedAuthoritiesConverter = JwtGrantedAuthoritiesConverter()
 
-    // Map Keycloak roles to application permissions
+    // Match DB seed data in V2/V4 migrations: ROLE_ADMIN / ROLE_USER
     private val roleToPermissionsMap = mapOf(
-        "admin" to setOf(
+        "ROLE_ADMIN" to setOf(
             "COURSE_VIEW",
             "COURSE_EDIT",
             "TAG_VIEW",
@@ -28,11 +28,16 @@ class KeycloakJwtAuthenticationConverter : Converter<Jwt, AbstractAuthentication
             "USER_MANAGE",
             "ROLE_MANAGE"
         ),
-        "user" to setOf(
+        "ROLE_USER" to setOf(
             "COURSE_VIEW",
             "TAG_VIEW"
         )
     )
+
+    private fun normalizeRole(rawRole: String): String {
+        val trimmed = rawRole.trim().uppercase()
+        return if (trimmed.startsWith("ROLE_")) trimmed else "ROLE_$trimmed"
+    }
 
     override fun convert(jwt: Jwt): AbstractAuthenticationToken {
         val authorities = mutableSetOf<GrantedAuthority>()
@@ -50,10 +55,9 @@ class KeycloakJwtAuthenticationConverter : Converter<Jwt, AbstractAuthentication
         val keycloakRoles = mutableSetOf<String>()
         
         realmRoles?.forEach { role ->
-            val roleName = role.toString().lowercase()
+            val roleName = normalizeRole(role.toString())
             keycloakRoles.add(roleName)
-            // Add the role itself (with ROLE_ prefix for Spring Security)
-            authorities.add(SimpleGrantedAuthority("ROLE_${role.toString().uppercase()}"))
+            authorities.add(SimpleGrantedAuthority(roleName))
         }
 
         // Extract client roles from Keycloak token
@@ -64,9 +68,9 @@ class KeycloakJwtAuthenticationConverter : Converter<Jwt, AbstractAuthentication
             val resourceMap = resource as? Map<*, *>
             val roles = resourceMap?.get("roles") as? List<*>
             roles?.forEach { role ->
-                val roleName = role.toString().lowercase()
+                val roleName = normalizeRole(role.toString())
                 keycloakRoles.add(roleName)
-                authorities.add(SimpleGrantedAuthority("ROLE_${role.toString().uppercase()}"))
+                authorities.add(SimpleGrantedAuthority(roleName))
             }
         }
 
@@ -80,11 +84,8 @@ class KeycloakJwtAuthenticationConverter : Converter<Jwt, AbstractAuthentication
             }
         }
 
-        // If no recognized roles found, grant basic view permissions by default
         if (keycloakRoles.none { it in roleToPermissionsMap.keys }) {
-            logger.warn("No recognized Keycloak roles found, granting default view permissions")
-            authorities.add(SimpleGrantedAuthority("COURSE_VIEW"))
-            authorities.add(SimpleGrantedAuthority("TAG_VIEW"))
+            logger.warn("No recognized Keycloak roles found, no permissions granted")
         }
 
         logger.info("Final authorities: ${authorities.map { it.authority }}")

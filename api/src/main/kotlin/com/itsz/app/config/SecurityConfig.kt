@@ -14,6 +14,7 @@ import org.springframework.security.core.userdetails.UserDetailsService
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.security.oauth2.jwt.JwtDecoder
+import org.springframework.security.oauth2.jwt.JwtValidators
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder
 import org.springframework.security.web.SecurityFilterChain
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
@@ -25,7 +26,9 @@ class SecurityConfig(
     private val userDetailsService: UserDetailsService,
     private val jwtAuthFilter: JwtAuthFilter,
     @Value("\${spring.security.oauth2.resourceserver.jwt.jwk-set-uri}")
-    private val jwkSetUri: String
+    private val jwkSetUri: String,
+    @Value("\${spring.security.oauth2.resourceserver.jwt.issuer-uri}")
+    private val issuerUri: String
 ) {
 
     @Bean
@@ -40,7 +43,9 @@ class SecurityConfig(
 
     @Bean
     fun keycloakJwtDecoder(): JwtDecoder {
-        return NimbusJwtDecoder.withJwkSetUri(jwkSetUri).build()
+        val decoder = NimbusJwtDecoder.withJwkSetUri(jwkSetUri).build()
+        decoder.setJwtValidator(JwtValidators.createDefaultWithIssuer(issuerUri))
+        return decoder
     }
 
     @Bean

@@ -52,7 +52,7 @@ describe("Login", () => {
     expect(screen.getByRole("heading", { name: /login/i })).toBeInTheDocument();
     expect(screen.getByLabelText(/username/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/password/i)).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /login/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /^login$/i })).toBeInTheDocument();
   });
 
   it("shows link to registration", () => {
@@ -73,7 +73,7 @@ describe("Login", () => {
     
     await user.type(screen.getByLabelText(/username/i), "testuser");
     await user.type(screen.getByLabelText(/password/i), "password123");
-    await user.click(screen.getByRole("button", { name: /login/i }));
+    await user.click(screen.getByRole("button", { name: /^login$/i }));
     
     await waitFor(() => {
       expect(authApi.login).toHaveBeenCalledWith({
@@ -91,7 +91,7 @@ describe("Login", () => {
     
     await user.type(screen.getByLabelText(/username/i), "wronguser");
     await user.type(screen.getByLabelText(/password/i), "wrongpass");
-    await user.click(screen.getByRole("button", { name: /login/i }));
+    await user.click(screen.getByRole("button", { name: /^login$/i }));
     
     await waitFor(() => {
       expect(screen.getByText(/invalid credentials/i)).toBeInTheDocument();
@@ -109,9 +109,14 @@ describe("Login", () => {
     await user.type(screen.getByLabelText(/username/i), "testuser");
     await user.type(screen.getByLabelText(/password/i), "password123");
     
-    const submitButton = screen.getByRole("button", { name: /login/i });
+    const submitButton = screen.getByRole("button", { name: /^login$/i });
     await user.click(submitButton);
     
     expect(submitButton).toBeDisabled();
+  });
+
+  it("renders OAuth2 login button", () => {
+    renderLogin();
+    expect(screen.getByRole("button", { name: /login with oauth2/i })).toBeInTheDocument();
   });
 });

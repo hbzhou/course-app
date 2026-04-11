@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuthContext } from "@/context/auth-context";
 import { apiClient } from "@/api/client";
@@ -11,9 +11,14 @@ const OAuth2Callback = () => {
   const { loginOAuth2 } = useAuthContext();
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const exchangedRef = useRef(false);
 
   useEffect(() => {
+    if (exchangedRef.current) return;
+
     const handleCallback = async () => {
+      if (exchangedRef.current) return;
+      exchangedRef.current = true;
       const code = searchParams.get("code");
       const errorParam = searchParams.get("error");
       const errorDescription = searchParams.get("error_description");
@@ -57,8 +62,9 @@ const OAuth2Callback = () => {
         // Login with OAuth2 user
         loginOAuth2(oauth2User);
 
-        // Redirect to courses page
-        navigate("/courses", { replace: true });
+        const returnTo = sessionStorage.getItem('oauth2_return_to') || '/courses';
+        sessionStorage.removeItem('oauth2_return_to');
+        navigate(returnTo, { replace: true });
       } catch (err) {
         console.error("Failed to exchange code for token:", err);
         setError(err instanceof Error ? err.message : "Failed to complete OAuth2 login");

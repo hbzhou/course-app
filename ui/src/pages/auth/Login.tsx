@@ -31,9 +31,11 @@ const Login = () => {
   };
 
   const handleOAuth2Login = () => {
-    // Redirect to backend OAuth2 login endpoint
-    const redirectUri = encodeURIComponent(window.location.origin);
-    window.location.href = `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8081'}/api/auth/oauth2/login?redirectUri=${redirectUri}`;
+    const fromPath = (location.state as { from?: { pathname?: string } })?.from?.pathname;
+    if (fromPath && fromPath !== '/login') {
+      sessionStorage.setItem('oauth2_return_to', fromPath);
+    }
+    window.location.href = `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8081'}/api/auth/oauth2/login`;
   };
 
   return (

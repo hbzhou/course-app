@@ -24,7 +24,9 @@ class OAuth2AuthController(
     @Value("\${spring.security.oauth2.client.registration.keycloak.scope}")
     private val scope: String,
     @Value("\${server.port:8081}")
-    private val serverPort: String
+    private val serverPort: String,
+    @Value("\${app.oauth2.frontend-url:http://localhost:3000}")
+    private val frontendUrl: String
 ) {
 
     private val logger = LoggerFactory.getLogger(OAuth2AuthController::class.java)
@@ -33,23 +35,17 @@ class OAuth2AuthController(
      * Initiates OAuth2 authorization code flow by redirecting to Keycloak login page
      */
     @GetMapping("/login")
-    fun oauth2Login(
-        @RequestParam(required = false, defaultValue = "http://localhost:3000") redirectUri: String,
-        response: HttpServletResponse
-    ) {
-        @Suppress("UNUSED_VARIABLE")
-        val clientRegistration = clientRegistrationRepository.findByRegistrationId("keycloak")
-        
+    fun oauth2Login(response: HttpServletResponse) {
         // Convert comma-separated scopes to space-separated (OAuth2 spec)
         val formattedScope = scope.replace(",", " ")
-        
+
         val authorizationRequestUri = UriComponentsBuilder
             .fromUriString(authorizationUri)
             .queryParam(OAuth2ParameterNames.RESPONSE_TYPE, "code")
             .queryParam(OAuth2ParameterNames.CLIENT_ID, clientId)
             .queryParam(OAuth2ParameterNames.SCOPE, formattedScope)
             .queryParam(OAuth2ParameterNames.REDIRECT_URI, "http://localhost:$serverPort/api/auth/oauth2/callback")
-            .queryParam(OAuth2ParameterNames.STATE, redirectUri) // Store frontend redirect URI in state
+            .queryParam(OAuth2ParameterNames.STATE, frontendUrl)
             .build()
             .toUriString()
 
@@ -108,22 +104,19 @@ class OAuth2AuthController(
         val tokenUri = clientRegistration.providerDetails.tokenUri
         val restTemplate = RestTemplate()
         
-        // Build token request
-        val tokenRequestBody = mapOf(
-            OAuth2ParameterNames.GRANT_TYPE to "authorization_code",
-            OAuth2ParameterNames.CODE to request.code,
-            OAuth2ParameterNames.REDIRECT_URI to "http://localhost:$serverPort/api/auth/oauth2/callback",
-            OAuth2ParameterNames.CLIENT_ID to clientId,
-            OAuth2ParameterNames.CLIENT_SECRET to clientRegistration.clientSecret
-        )
-        
+        // Build token request with proper URL encoding
+        val tokenRequestBody = org.springframework.util.LinkedMultiValueMap<String, String>().apply {
+            add(OAuth2ParameterNames.GRANT_TYPE, "authorization_code")
+            add(OAuth2ParameterNames.CODE, request.code)
+            add(OAuth2ParameterNames.REDIRECT_URI, "http://localhost:$serverPort/api/auth/oauth2/callback")
+            add(OAuth2ParameterNames.CLIENT_ID, clientId)
+            add(OAuth2ParameterNames.CLIENT_SECRET, clientRegistration.clientSecret)
+        }
+
         val headers = org.springframework.http.HttpHeaders()
         headers.contentType = org.springframework.http.MediaType.APPLICATION_FORM_URLENCODED
-        
-        val httpEntity = org.springframework.http.HttpEntity(
-            tokenRequestBody.entries.joinToString("&") { "${it.key}=${it.value}" },
-            headers
-        )
+
+        val httpEntity = org.springframework.http.HttpEntity(tokenRequestBody, headers)
         
         try {
             val tokenResponse = restTemplate.postForEntity(
@@ -189,20 +182,17 @@ class OAuth2AuthController(
         val tokenUri = clientRegistration.providerDetails.tokenUri
         val restTemplate = RestTemplate()
         
-        val tokenRequestBody = mapOf(
-            OAuth2ParameterNames.GRANT_TYPE to "refresh_token",
-            OAuth2ParameterNames.REFRESH_TOKEN to request.refreshToken,
-            OAuth2ParameterNames.CLIENT_ID to clientId,
-            OAuth2ParameterNames.CLIENT_SECRET to clientRegistration.clientSecret
-        )
-        
+        val tokenRequestBody = org.springframework.util.LinkedMultiValueMap<String, String>().apply {
+            add(OAuth2ParameterNames.GRANT_TYPE, "refresh_token")
+            add(OAuth2ParameterNames.REFRESH_TOKEN, request.refreshToken)
+            add(OAuth2ParameterNames.CLIENT_ID, clientId)
+            add(OAuth2ParameterNames.CLIENT_SECRET, clientRegistration.clientSecret)
+        }
+
         val headers = org.springframework.http.HttpHeaders()
         headers.contentType = org.springframework.http.MediaType.APPLICATION_FORM_URLENCODED
-        
-        val httpEntity = org.springframework.http.HttpEntity(
-            tokenRequestBody.entries.joinToString("&") { "${it.key}=${it.value}" },
-            headers
-        )
+
+        val httpEntity = org.springframework.http.HttpEntity(tokenRequestBody, headers)
         
         try {
             val tokenResponse = restTemplate.postForEntity(
