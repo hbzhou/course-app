@@ -2,6 +2,7 @@ package com.itsz.app.config
 
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.assertj.core.api.Assertions.assertThat
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.security.web.FilterChainProxy
@@ -21,6 +22,9 @@ class SecurityConfigSessionAuthTest {
 
     @Autowired
     lateinit var springSecurityFilterChain: FilterChainProxy
+
+    @Autowired
+    lateinit var keycloakAuthorityMapper: KeycloakAuthorityMapper
 
     private lateinit var mockMvc: MockMvc
 
@@ -60,6 +64,37 @@ class SecurityConfigSessionAuthTest {
             with(jwt().jwt { token ->
                 token.subject("admin")
             })
+        }.andExpect {
+            status { isOk() }
+        }
+    }
+
+    @Test
+    fun `keycloak authority mapper grants application permissions for admin role`() {
+        val authorities = keycloakAuthorityMapper.mapClaims(
+            mapOf("realm_access" to mapOf("roles" to listOf("ROLE_ADMIN")))
+        )
+
+        assertThat(authorities.map { it.authority })
+            .contains("ROLE_ADMIN", "COURSE_VIEW", "COURSE_EDIT", "TAG_VIEW", "TAG_EDIT", "USER_MANAGE", "ROLE_MANAGE")
+    }
+
+    @Test
+    fun `oauth2 session with mapped admin authorities can access course endpoints`() {
+        val authorities = keycloakAuthorityMapper.mapClaims(
+            mapOf("realm_access" to mapOf("roles" to listOf("ROLE_ADMIN")))
+        )
+
+        mockMvc.get("/api/courses") {
+            with(
+                oauth2Login()
+                    .authorities(authorities)
+                    .attributes {
+                        it["preferred_username"] = "admin"
+                        it["email"] = "admin@course-app.local"
+                        it["realm_access"] = mapOf("roles" to listOf("ROLE_ADMIN"))
+                    }
+            )
         }.andExpect {
             status { isOk() }
         }

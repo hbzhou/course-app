@@ -15,6 +15,8 @@ import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.security.oauth2.jwt.JwtDecoder
 import org.springframework.security.oauth2.jwt.JwtValidators
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder
+import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserRequest
+import org.springframework.security.oauth2.core.oidc.user.OidcUser
 import org.springframework.security.web.SecurityFilterChain
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
@@ -52,12 +54,28 @@ class SecurityConfig(
     }
 
     @Bean
-    fun keycloakJwtConverter(): KeycloakJwtAuthenticationConverter {
-        return KeycloakJwtAuthenticationConverter()
+    fun keycloakAuthorityMapper(): KeycloakAuthorityMapper = KeycloakAuthorityMapper()
+
+    @Bean
+    fun keycloakJwtConverter(keycloakAuthorityMapper: KeycloakAuthorityMapper): KeycloakJwtAuthenticationConverter {
+        return KeycloakJwtAuthenticationConverter(keycloakAuthorityMapper)
     }
 
     @Bean
-    fun securityFilterChain(http: HttpSecurity): SecurityFilterChain {
+    fun keycloakOidcUserService(
+        keycloakJwtDecoder: JwtDecoder,
+        keycloakAuthorityMapper: KeycloakAuthorityMapper
+    ): org.springframework.security.oauth2.client.userinfo.OAuth2UserService<OidcUserRequest, OidcUser> {
+        return KeycloakOidcUserService(keycloakJwtDecoder, keycloakAuthorityMapper)
+    }
+
+    @Bean
+    fun securityFilterChain(
+        http: HttpSecurity,
+        keycloakAuthorityMapper: KeycloakAuthorityMapper,
+        keycloakJwtConverter: KeycloakJwtAuthenticationConverter,
+        keycloakOidcUserService: org.springframework.security.oauth2.client.userinfo.OAuth2UserService<OidcUserRequest, OidcUser>
+    ): SecurityFilterChain {
         http
             .csrf { it.disable() }
             .authorizeHttpRequests {
@@ -79,6 +97,10 @@ class SecurityConfig(
                     .anyRequest().authenticated()
             }
             .oauth2Login { oauth2 ->
+                oauth2.userInfoEndpoint { userInfo ->
+                    userInfo.userAuthoritiesMapper(keycloakAuthorityMapper)
+                    userInfo.oidcUserService(keycloakOidcUserService)
+                }
                 oauth2.defaultSuccessUrl(successUrl, true)
             }
             .exceptionHandling { exceptions ->
@@ -92,7 +114,7 @@ class SecurityConfig(
             // OAuth2 Resource Server - validates JWT tokens from Keycloak
             .oauth2ResourceServer { oauth2 ->
                 oauth2.jwt { jwt ->
-                    jwt.jwtAuthenticationConverter(keycloakJwtConverter())
+                    jwt.jwtAuthenticationConverter(keycloakJwtConverter)
                 }
             }
             // Keep legacy JWT filter for backwards compatibility during migration
