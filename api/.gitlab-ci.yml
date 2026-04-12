@@ -46,17 +46,38 @@ api-unit-test:
       alias: mysql
     - name: redis:7.2
       alias: redis
+    - name: quay.io/keycloak/keycloak:26.0
+      alias: keycloak
+      command: ["start-dev", "--http-port=8080"]
+      variables:
+        KEYCLOAK_ADMIN: ${CI_KEYCLOAK_ADMIN}
+        KEYCLOAK_ADMIN_PASSWORD: ${CI_KEYCLOAK_ADMIN_PASSWORD}
   variables:
     MYSQL_ROOT_PASSWORD: ${CI_MYSQL_ROOT_PASSWORD}
     MYSQL_DATABASE: coursedb
     MYSQL_USER: ${CI_MYSQL_USER}
     MYSQL_PASSWORD: ${CI_MYSQL_PASSWORD}
+    KEYCLOAK_ADMIN: ${CI_KEYCLOAK_ADMIN}
+    KEYCLOAK_ADMIN_PASSWORD: ${CI_KEYCLOAK_ADMIN_PASSWORD}
     SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/coursedb
     SPRING_DATASOURCE_USERNAME: ${CI_MYSQL_USER}
     SPRING_DATASOURCE_PASSWORD: ${CI_MYSQL_PASSWORD}
     SPRING_DATA_REDIS_HOST: redis
     SPRING_DATA_REDIS_PORT: 6379
   script:
+    - |
+      READY=0
+      for i in {1..60}; do
+        if curl -fsS http://keycloak:8080/ > /dev/null; then
+          READY=1
+          break
+        fi
+        sleep 2
+      done
+      if [ "$READY" -ne 1 ]; then
+        echo "Keycloak failed to start in time"
+        exit 1
+      fi
     - ./gradlew -g ${GRADLE_HOME} :api:test
   artifacts:
     when: on_success
