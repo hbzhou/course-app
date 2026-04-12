@@ -64,11 +64,17 @@ api-unit-test:
     SPRING_DATASOURCE_PASSWORD: ${CI_MYSQL_PASSWORD}
     SPRING_DATA_REDIS_HOST: redis
     SPRING_DATA_REDIS_PORT: 6379
+    SPRING_DOCKER_COMPOSE_ENABLED: "false"
+    KEYCLOAK_ISSUER_URI: http://keycloak:8080/realms/course-app
+    KEYCLOAK_AUTH_URI: http://keycloak:8080/realms/course-app/protocol/openid-connect/auth
+    KEYCLOAK_TOKEN_URI: http://keycloak:8080/realms/course-app/protocol/openid-connect/token
+    KEYCLOAK_USERINFO_URI: http://keycloak:8080/realms/course-app/protocol/openid-connect/userinfo
+    KEYCLOAK_JWK_SET_URI: http://keycloak:8080/realms/course-app/protocol/openid-connect/certs
   script:
     - |
       READY=0
       for i in {1..60}; do
-        if curl -fsS http://keycloak:8080/ > /dev/null; then
+        if (echo > /dev/tcp/keycloak/8080) >/dev/null 2>&1; then
           READY=1
           break
         fi
