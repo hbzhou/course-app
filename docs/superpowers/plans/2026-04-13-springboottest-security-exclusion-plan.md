@@ -281,7 +281,7 @@ Upon successful completion:
 
 ## Sign-Off Checklist
 
-- [ ] Task 1 completed: Properties file created with correct exclusions
+- [x] Task 1 completed: Properties file created with correct exclusions
 - [ ] Task 2 completed: CourseAppTests passes without external dependencies
 - [ ] Task 3 completed: Security tests remain intact and pass
 - [ ] Task 4 completed: Full suite passes; documentation updated
