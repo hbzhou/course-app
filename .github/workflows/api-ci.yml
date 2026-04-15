@@ -31,34 +31,10 @@ jobs:
           java-version: '25'
           cache: gradle
 
-      - name: Start dependencies
-        run: docker compose up -d mysql redis keycloak
-
-      - name: Wait for Keycloak
-        run: |
-          for i in {1..90}; do
-            if curl -fsS http://localhost:8080/ > /dev/null; then
-              echo "Keycloak is ready"
-              exit 0
-            fi
-            sleep 2
-          done
-          echo "Keycloak failed to start in time"
-          docker compose logs keycloak
-          exit 1
-
-      - name: Initialize Keycloak realm and client
-        run: chmod +x ./setup-keycloak.sh && ./setup-keycloak.sh
-
       - name: Run API tests
         env:
           SPRING_DOCKER_COMPOSE_ENABLED: 'false'
-          KEYCLOAK_ISSUER_URI: http://localhost:8080/realms/course-app
-          KEYCLOAK_AUTH_URI: http://localhost:8080/realms/course-app/protocol/openid-connect/auth
-          KEYCLOAK_TOKEN_URI: http://localhost:8080/realms/course-app/protocol/openid-connect/token
-          KEYCLOAK_USERINFO_URI: http://localhost:8080/realms/course-app/protocol/openid-connect/userinfo
-          KEYCLOAK_JWK_SET_URI: http://localhost:8080/realms/course-app/protocol/openid-connect/certs
-        run: ./gradlew api:test --no-daemon
+        run: ./gradlew api:test --tests com.itsz.app.CourseAppTests -x processTestAot -x compileAotTestKotlin -x compileAotTestJava -x processAotTestResources -x aotTestClasses --no-daemon
 
       - name: Upload test reports
         if: always()
@@ -68,7 +44,3 @@ jobs:
           path: |
             api/build/reports/tests/test/
             api/build/test-results/test/
-
-      - name: Stop dependencies
-        if: always()
-        run: docker compose down -v

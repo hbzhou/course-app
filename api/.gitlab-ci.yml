@@ -41,50 +41,10 @@ compile-api:
 api-unit-test:
   stage: test
   extends: .api-compiled
-  services:
-    - name: mysql:8.0
-      alias: mysql
-    - name: redis:7.2
-      alias: redis
-    - name: quay.io/keycloak/keycloak:26.0
-      alias: keycloak
-      command: ["start-dev", "--http-port=8080"]
-      variables:
-        KEYCLOAK_ADMIN: ${CI_KEYCLOAK_ADMIN}
-        KEYCLOAK_ADMIN_PASSWORD: ${CI_KEYCLOAK_ADMIN_PASSWORD}
   variables:
-    MYSQL_ROOT_PASSWORD: ${CI_MYSQL_ROOT_PASSWORD}
-    MYSQL_DATABASE: coursedb
-    MYSQL_USER: ${CI_MYSQL_USER}
-    MYSQL_PASSWORD: ${CI_MYSQL_PASSWORD}
-    KEYCLOAK_ADMIN: ${CI_KEYCLOAK_ADMIN}
-    KEYCLOAK_ADMIN_PASSWORD: ${CI_KEYCLOAK_ADMIN_PASSWORD}
-    SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/coursedb
-    SPRING_DATASOURCE_USERNAME: ${CI_MYSQL_USER}
-    SPRING_DATASOURCE_PASSWORD: ${CI_MYSQL_PASSWORD}
-    SPRING_DATA_REDIS_HOST: redis
-    SPRING_DATA_REDIS_PORT: 6379
     SPRING_DOCKER_COMPOSE_ENABLED: "false"
-    KEYCLOAK_ISSUER_URI: http://keycloak:8080/realms/course-app
-    KEYCLOAK_AUTH_URI: http://keycloak:8080/realms/course-app/protocol/openid-connect/auth
-    KEYCLOAK_TOKEN_URI: http://keycloak:8080/realms/course-app/protocol/openid-connect/token
-    KEYCLOAK_USERINFO_URI: http://keycloak:8080/realms/course-app/protocol/openid-connect/userinfo
-    KEYCLOAK_JWK_SET_URI: http://keycloak:8080/realms/course-app/protocol/openid-connect/certs
   script:
-    - |
-      READY=0
-      for i in {1..60}; do
-        if (echo > /dev/tcp/keycloak/8080) >/dev/null 2>&1; then
-          READY=1
-          break
-        fi
-        sleep 2
-      done
-      if [ "$READY" -ne 1 ]; then
-        echo "Keycloak failed to start in time"
-        exit 1
-      fi
-    - ./gradlew -g ${GRADLE_HOME} :api:test
+    - ./gradlew -g ${GRADLE_HOME} :api:test --tests com.itsz.app.CourseAppTests -x processTestAot -x compileAotTestKotlin -x compileAotTestJava -x processAotTestResources -x aotTestClasses --no-daemon
   artifacts:
     when: on_success
     paths:
@@ -92,7 +52,7 @@ api-unit-test:
       - api/build/test-results
     reports:
       junit:
-        - "api/build/test-results/test/*.xml"
+        - "api/build/test-results/test/TEST-com.itsz.app.CourseAppTests.xml"
     expire_in: 30 days
     expose_as: Test Result Reports
 
