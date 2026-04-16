@@ -14,7 +14,7 @@ import org.springframework.context.annotation.Import
     "spring.jpa.database-platform=org.hibernate.dialect.H2Dialect",
     "spring.jpa.hibernate.ddl-auto=create-drop",
     "jwt.secret=test-jwt-secret-with-at-least-32-characters-length",
-    "app.notification.redis-channel=course-app-notifications"
+    "spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration"
 ])
 @Import(TestSecurityConfigDisabler::class)
 class CourseAppTests {
