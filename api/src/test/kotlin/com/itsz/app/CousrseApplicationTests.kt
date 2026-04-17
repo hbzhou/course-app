@@ -1,15 +1,10 @@
 package com.itsz.app
 
+import com.itsz.app.config.EmbeddedRedisSupport
 import com.itsz.app.config.TestSecurityConfigDisabler
-import com.redis.testcontainers.RedisContainer
 import org.junit.jupiter.api.Test
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.annotation.Import
-import org.springframework.test.context.DynamicPropertyRegistry
-import org.springframework.test.context.DynamicPropertySource
-import org.testcontainers.junit.jupiter.Container
-import org.testcontainers.junit.jupiter.Testcontainers
-import org.testcontainers.utility.DockerImageName
 
 @SpringBootTest(properties = [
     "spring.security.oauth2.resourceserver.jwt.jwk-set-uri=http://localhost:8080/realms/course-app/protocol/openid-connect/certs",
@@ -22,21 +17,7 @@ import org.testcontainers.utility.DockerImageName
     "jwt.secret=test-jwt-secret-with-at-least-32-characters-length"
 ])
 @Import(TestSecurityConfigDisabler::class)
-@Testcontainers
-class CourseAppTests {
-
-    companion object {
-        @Container
-        @JvmStatic
-        val redis: RedisContainer = RedisContainer(DockerImageName.parse("redis:7.2.6"))
-
-        @JvmStatic
-        @DynamicPropertySource
-        fun redisProperties(registry: DynamicPropertyRegistry) {
-            registry.add("spring.data.redis.host") { redis.host }
-            registry.add("spring.data.redis.port") { redis.firstMappedPort }
-        }
-    }
+class CourseAppTests : EmbeddedRedisSupport() {
 
     @Test
     fun contextLoads() {

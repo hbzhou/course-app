@@ -1,5 +1,6 @@
 package com.itsz.app.auth.controller
 
+import com.itsz.app.config.EmbeddedRedisSupport
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -14,7 +15,7 @@ import org.springframework.security.web.FilterChainProxy
 import org.junit.jupiter.api.BeforeEach
 
 @SpringBootTest
-class AuthControllerSessionTest {
+class AuthControllerSessionTest : EmbeddedRedisSupport() {
 
     @Autowired
     lateinit var webApplicationContext: WebApplicationContext
