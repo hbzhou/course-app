@@ -54,3 +54,4 @@ blob-report/
 playwright/.cache/
 .auth/
 
+.worktrees/
