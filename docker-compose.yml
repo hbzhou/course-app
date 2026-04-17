@@ -9,10 +9,12 @@ services:
       MYSQL_DATABASE: coursedb
       MYSQL_USER: ${MYSQL_USER:-admin}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD:-welcome123}
+    command: --default-authentication-plugin=mysql_native_password
     ports:
       - "3306:3306"
     volumes:
       - mysql_data:/var/lib/mysql
+      - ./init-keycloak-db.sql:/docker-entrypoint-initdb.d/init-keycloak-db.sql
     healthcheck:
       test: ["CMD-SHELL", "mysqladmin ping -h localhost -u root -p$${MYSQL_ROOT_PASSWORD}"]
       interval: 10s
@@ -31,6 +33,36 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - course-app-network
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.0
+    container_name: course-app-keycloak
+    environment:
+      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN:-admin}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-admin123}
+      KC_DB: mysql
+      KC_DB_URL: jdbc:mysql://mysql:3306/keycloak
+      KC_DB_USERNAME: ${MYSQL_USER:-admin}
+      KC_DB_PASSWORD: ${MYSQL_PASSWORD:-welcome123}
+      KC_HOSTNAME: localhost
+      KC_HOSTNAME_STRICT: false
+      KC_HTTP_ENABLED: true
+      KC_HEALTH_ENABLED: true
+    ports:
+      - "8080:8080"
+    command:
+      - start-dev
+    depends_on:
+      mysql:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/localhost/8080 && echo -e 'GET /health/ready HTTP/1.1\\r\\nHost: localhost\\r\\n\\r\\n' >&3 && cat <&3 | grep -q '200 OK'"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 60s
     networks:
       - course-app-network
 

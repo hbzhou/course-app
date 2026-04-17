@@ -29,6 +29,16 @@ const Login = () => {
       setErrorMessage(error instanceof Error ? error.message : "Login failed");
     }
   };
+
+  const handleOAuth2Login = () => {
+    const fromPath = (location.state as { from?: { pathname?: string } })?.from?.pathname;
+    if (fromPath && fromPath !== "/login") {
+      sessionStorage.setItem("oauth2_return_to", fromPath);
+    }
+
+    window.location.href = "/oauth2/authorization/keycloak";
+  };
+
   return (
     <div className="flex justify-center items-center min-h-[calc(100vh-200px)] p-4">
       <Card className="w-full max-w-md">
@@ -43,6 +53,7 @@ const Login = () => {
                 {errorMessage}
               </div>
             )}
+
             <div className="space-y-2">
               <Label htmlFor="username">Username</Label>
               <Input
@@ -68,6 +79,32 @@ const Login = () => {
             <Button type="submit" className="w-full" disabled={loginMutation.isPending}>
               {loginMutation.isPending ? "Logging in..." : "Login"}
             </Button>
+
+            {/* OAuth2 Login Option */}
+            <div className="w-full space-y-2">
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-background px-2 text-muted-foreground">
+                    Or continue with
+                  </span>
+                </div>
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full"
+                onClick={handleOAuth2Login}
+              >
+                <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"/>
+                </svg>
+                Login with OAuth2 (Keycloak)
+              </Button>
+            </div>
+
             <p className="text-sm text-center text-muted-foreground">
               Don't have an account?{" "}
               <Link className="text-primary hover:underline font-medium" to="/register">

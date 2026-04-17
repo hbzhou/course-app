@@ -1,0 +1,46 @@
+name: API CI
+
+on:
+  push:
+    branches: [ main, 'phase*' ]
+    paths:
+      - 'api/**'
+      - 'docker-compose.yml'
+      - 'setup-keycloak.sh'
+      - '.github/workflows/api-ci.yml'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'api/**'
+      - 'docker-compose.yml'
+      - 'setup-keycloak.sh'
+      - '.github/workflows/api-ci.yml'
+
+jobs:
+  api-unit-tests:
+    name: API Unit Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 25
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '25'
+          cache: gradle
+
+      - name: Run API tests
+        env:
+          SPRING_DOCKER_COMPOSE_ENABLED: 'false'
+        run: ./gradlew api:test --tests com.itsz.app.CourseAppTests -x processTestAot -x compileAotTestKotlin -x compileAotTestJava -x processAotTestResources -x aotTestClasses --no-daemon
+
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: api-test-reports
+          path: |
+            api/build/reports/tests/test/
+            api/build/test-results/test/

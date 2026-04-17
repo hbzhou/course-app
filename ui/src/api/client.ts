@@ -38,6 +38,7 @@ export const apiClient = async <T>(
 
   const response = await fetch(url, {
     ...options,
+    credentials: "include",
     headers: {
       ...(hasBody ? { "Content-Type": "application/json" } : {}),
       ...getAuthHeaders(),

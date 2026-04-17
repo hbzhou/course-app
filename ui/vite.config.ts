@@ -20,6 +20,16 @@ export default {
         changeOrigin: false,
         secure: false
       },
+      '/oauth2': {
+        target: process.env.VITE_API_PROXY_TARGET || 'http://localhost:8081',
+        changeOrigin: false,
+        secure: false,
+      },
+      '/login/oauth2': {
+        target: process.env.VITE_API_PROXY_TARGET || 'http://localhost:8081',
+        changeOrigin: false,
+        secure: false,
+      },
       '/ws': {
         target: process.env.VITE_WS_PROXY_TARGET || process.env.VITE_API_PROXY_TARGET || 'http://localhost:8081',
         changeOrigin: false,

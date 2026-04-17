@@ -32,7 +32,7 @@ export const useLogout = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (token: string) => authApi.logout(token),
+    mutationFn: () => authApi.logout(),
     onSuccess: () => {
       // Clear auth context (which clears localStorage)
       logout();

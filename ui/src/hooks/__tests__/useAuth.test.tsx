@@ -33,6 +33,7 @@ describe("useAuth hooks", () => {
       clear: vi.fn(),
     };
     vi.stubGlobal("localStorage", localStorageMock);
+    vi.spyOn(authApiModule.authApi, "getCurrentUser").mockRejectedValue(new Error("Unauthorized"));
   });
 
   describe("useLogin", () => {
@@ -81,7 +82,7 @@ describe("useAuth hooks", () => {
       const { result } = renderHook(() => useRegister(), { wrapper });
 
       result.current.mutate({
-        username: "newuser",
+        name: "newuser",
         email: "new@example.com",
         password: "password",
       });
@@ -90,7 +91,11 @@ describe("useAuth hooks", () => {
         expect(result.current.isSuccess).toBe(true);
       });
 
-      expect(authApiModule.authApi.register).toHaveBeenCalled();
+      expect(authApiModule.authApi.register).toHaveBeenCalledWith({
+        name: "newuser",
+        email: "new@example.com",
+        password: "password",
+      });
     });
   });
 
@@ -101,13 +106,13 @@ describe("useAuth hooks", () => {
       const wrapper = createWrapper();
       const { result } = renderHook(() => useLogout(), { wrapper });
 
-      result.current.mutate("test-token");
+      result.current.mutate();
 
       await waitFor(() => {
         expect(result.current.isSuccess).toBe(true);
       });
 
-      expect(authApiModule.authApi.logout).toHaveBeenCalledWith("test-token");
+      expect(authApiModule.authApi.logout).toHaveBeenCalledWith();
     });
   });
 });

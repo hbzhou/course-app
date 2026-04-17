@@ -1,12 +1,22 @@
 import { createContext, useContext } from "react";
 import type { User } from "@/types/user";
 
+export interface AuthenticatedUser {
+  name: string;
+  email: string;
+  authType: "legacy" | "oauth2" | "bearer" | "session";
+}
+
+export type AuthStatus = "loading" | "authenticated" | "anonymous";
+
 export interface AuthContextType {
-  currentUser: User | null;
+  user: AuthenticatedUser | null;
   token: string | null;
+  authStatus: AuthStatus;
+  isAuthenticated: boolean;
   login: (user: User) => void;
   logout: () => void;
-  setToken: (token: string) => void;
+  refreshSession: () => Promise<void>;
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
