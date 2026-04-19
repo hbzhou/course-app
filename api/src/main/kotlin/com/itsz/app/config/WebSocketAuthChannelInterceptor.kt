@@ -1,5 +1,6 @@
 package com.itsz.app.config
 
+import com.itsz.app.auth.oauth2.ProviderAwareJwtAuthenticationConverter
 import com.itsz.app.auth.jwt.JwtService
 import org.slf4j.LoggerFactory
 import org.springframework.messaging.Message
@@ -22,7 +23,7 @@ class WebSocketAuthChannelInterceptor(
     private val jwtService: JwtService,
     private val userDetailsService: UserDetailsService,
     private val keycloakJwtDecoder: JwtDecoder,
-    private val keycloakJwtConverter: KeycloakJwtAuthenticationConverter
+    private val jwtAuthenticationConverter: ProviderAwareJwtAuthenticationConverter
 ) : ChannelInterceptor {
 
     private val logger = LoggerFactory.getLogger(WebSocketAuthChannelInterceptor::class.java)
@@ -70,7 +71,7 @@ class WebSocketAuthChannelInterceptor(
                 // Try as OAuth2 JWT (RS256 from Keycloak)
                 try {
                     val jwt = keycloakJwtDecoder.decode(token)
-                    val auth = keycloakJwtConverter.convert(jwt)
+                    val auth = jwtAuthenticationConverter.convert(jwt)
                     logger.debug("WebSocket authenticated with OAuth2 JWT: ${jwt.subject}")
                     auth
                 } catch (oauth2Error: Exception) {

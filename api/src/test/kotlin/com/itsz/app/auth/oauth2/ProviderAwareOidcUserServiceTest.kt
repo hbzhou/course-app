@@ -1,4 +1,4 @@
-package com.itsz.app.config
+package com.itsz.app.auth.oauth2
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
@@ -14,18 +14,16 @@ import org.springframework.security.oauth2.core.oidc.OidcIdToken
 import org.springframework.security.oauth2.core.oidc.OidcUserInfo
 import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser
 import org.springframework.security.oauth2.core.oidc.user.OidcUser
-import org.springframework.security.oauth2.jwt.Jwt
-import org.springframework.security.oauth2.jwt.JwtDecoder
 import java.time.Instant
 
-class KeycloakOidcUserServiceTest {
+class ProviderAwareOidcUserServiceTest {
 
     @Test
-    fun `loadUser maps application permissions from access token roles`() {
+    fun `normalizes keycloak claims and maps application permissions`() {
         val now = Instant.now()
         val registration = ClientRegistration.withRegistrationId("keycloak")
             .clientId("course-app")
-            .clientSecret("course-app-secret")
+            .clientSecret("secret")
             .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
             .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
             .redirectUri("http://localhost/login/oauth2/code/keycloak")
@@ -37,54 +35,33 @@ class KeycloakOidcUserServiceTest {
             .userNameAttributeName("preferred_username")
             .build()
 
-        val accessToken = OAuth2AccessToken(
-            OAuth2AccessToken.TokenType.BEARER,
-            "access-token",
-            now,
-            now.plusSeconds(300)
+        val request = OidcUserRequest(
+            registration,
+            OAuth2AccessToken(OAuth2AccessToken.TokenType.BEARER, "access-token", now, now.plusSeconds(300)),
+            OidcIdToken("id-token", now, now.plusSeconds(300), mapOf(IdTokenClaimNames.SUB to "admin-id", "preferred_username" to "admin"))
         )
 
-        val idToken = OidcIdToken(
-            "id-token",
-            now,
-            now.plusSeconds(300),
-            mapOf(
-                IdTokenClaimNames.SUB to "admin-id",
-                "preferred_username" to "admin",
-                "email" to "admin@course-app.local"
-            )
-        )
-
-        val oidcUser = DefaultOidcUser(
+        val delegateUser = DefaultOidcUser(
             listOf(SimpleGrantedAuthority("OIDC_USER")),
-            idToken,
-            OidcUserInfo(mapOf("preferred_username" to "admin", "email" to "admin@course-app.local")),
+            request.idToken,
+            OidcUserInfo(mapOf("email" to "admin@course-app.local")),
             "preferred_username"
         )
 
-        val request = OidcUserRequest(registration, accessToken, idToken)
-
-        val jwtDecoder = JwtDecoder { tokenValue ->
-            Jwt.withTokenValue(tokenValue)
-                .header("alg", "RS256")
-                .claim("sub", "admin-id")
-                .claim("preferred_username", "admin")
-                .claim("email", "admin@course-app.local")
-                .claim("realm_access", mapOf("roles" to listOf("ROLE_ADMIN")))
-                .issuedAt(now)
-                .expiresAt(now.plusSeconds(300))
-                .build()
-        }
-
-        val service = KeycloakOidcUserService(
-            jwtDecoder,
-            KeycloakAuthorityMapper(),
-            OAuth2UserService<OidcUserRequest, OidcUser> { oidcUser }
+        val service = ProviderAwareOidcUserService(
+            providerResolver = OAuth2ProviderResolver(
+                defaultProvider = "azure",
+                profiles = listOf(OAuth2ProviderProfile("keycloak", "Keycloak", "http://localhost/realms/course-app"))
+            ),
+            adapters = listOf(KeycloakClaimsAdapter()).associateBy { it.providerId },
+            authorityMapper = OAuth2AuthorityMapper(),
+            delegate = OAuth2UserService<OidcUserRequest, OidcUser> { delegateUser },
+            accessTokenClaimsLoader = { mapOf("realm_access" to mapOf("roles" to listOf("ROLE_ADMIN")), "sub" to "admin-id") }
         )
 
         val loadedUser = service.loadUser(request)
 
-        assertThat(loadedUser.authorities.map { it.authority })
-            .contains("ROLE_ADMIN", "COURSE_VIEW", "COURSE_EDIT", "TAG_VIEW", "TAG_EDIT", "USER_MANAGE", "ROLE_MANAGE")
+        assertThat(loadedUser.getAttribute<String>("provider")).isEqualTo("keycloak")
+        assertThat(loadedUser.authorities.map { it.authority }).contains("ROLE_ADMIN", "COURSE_EDIT")
     }
 }

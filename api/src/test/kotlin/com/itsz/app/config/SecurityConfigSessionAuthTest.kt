@@ -1,5 +1,7 @@
 package com.itsz.app.config
 
+import com.itsz.app.auth.oauth2.NormalizedOAuth2Principal
+import com.itsz.app.auth.oauth2.OAuth2AuthorityMapper
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.assertj.core.api.Assertions.assertThat
@@ -24,7 +26,7 @@ class SecurityConfigSessionAuthTest : EmbeddedRedisSupport() {
     lateinit var springSecurityFilterChain: FilterChainProxy
 
     @Autowired
-    lateinit var keycloakAuthorityMapper: KeycloakAuthorityMapper
+    lateinit var oauth2AuthorityMapper: OAuth2AuthorityMapper
 
     private lateinit var mockMvc: MockMvc
 
@@ -40,7 +42,7 @@ class SecurityConfigSessionAuthTest : EmbeddedRedisSupport() {
         mockMvc.get("/courses")
             .andExpect {
                 status { is3xxRedirection() }
-                redirectedUrlPattern("**/oauth2/authorization/keycloak")
+                redirectedUrlPattern("**/oauth2/authorization/azure")
             }
     }
 
@@ -70,9 +72,16 @@ class SecurityConfigSessionAuthTest : EmbeddedRedisSupport() {
     }
 
     @Test
-    fun `keycloak authority mapper grants application permissions for admin role`() {
-        val authorities = keycloakAuthorityMapper.mapClaims(
-            mapOf("realm_access" to mapOf("roles" to listOf("ROLE_ADMIN")))
+    fun `oauth2 authority mapper grants application permissions for admin role`() {
+        val authorities = oauth2AuthorityMapper.map(
+            NormalizedOAuth2Principal(
+                provider = "keycloak",
+                subject = "admin-id",
+                username = "admin",
+                email = "admin@course-app.local",
+                groupsOrRoles = listOf("ROLE_ADMIN"),
+                rawClaims = emptyMap()
+            )
         )
 
         assertThat(authorities.map { it.authority })
@@ -81,8 +90,15 @@ class SecurityConfigSessionAuthTest : EmbeddedRedisSupport() {
 
     @Test
     fun `oauth2 session with mapped admin authorities can access course endpoints`() {
-        val authorities = keycloakAuthorityMapper.mapClaims(
-            mapOf("realm_access" to mapOf("roles" to listOf("ROLE_ADMIN")))
+        val authorities = oauth2AuthorityMapper.map(
+            NormalizedOAuth2Principal(
+                provider = "keycloak",
+                subject = "admin-id",
+                username = "admin",
+                email = "admin@course-app.local",
+                groupsOrRoles = listOf("ROLE_ADMIN"),
+                rawClaims = emptyMap()
+            )
         )
 
         mockMvc.get("/api/courses") {

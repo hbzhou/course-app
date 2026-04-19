@@ -1,5 +1,10 @@
 package com.itsz.app.config
 
+import com.itsz.app.auth.oauth2.OAuth2AuthorityMapper
+import com.itsz.app.auth.oauth2.OAuth2ProviderProfile
+import com.itsz.app.auth.oauth2.OAuth2ProviderProperties
+import com.itsz.app.auth.oauth2.OAuth2ProviderResolver
+import com.itsz.app.auth.oauth2.ProviderAwareJwtAuthenticationConverter
 import org.mockito.Mockito
 import org.springframework.boot.test.context.TestConfiguration
 import org.springframework.context.annotation.Bean
@@ -88,22 +93,33 @@ class TestSecurityConfigDisabler {
         return Mockito.mock(AuthenticationManager::class.java)
     }
 
-    /**
-     * Provides a mock KeycloakAuthorityMapper for test context.
-     */
     @Bean
     @Primary
-    fun mockKeycloakAuthorityMapper(): KeycloakAuthorityMapper {
-        return Mockito.mock(KeycloakAuthorityMapper::class.java)
+    fun mockOAuth2ProviderProperties(): OAuth2ProviderProperties {
+        return OAuth2ProviderProperties(
+            defaultProvider = "azure",
+            providers = listOf(
+                OAuth2ProviderProfile("azure", "Azure AD", "https://login.microsoftonline.com/common/v2.0")
+            )
+        )
     }
 
-    /**
-     * Provides a mock KeycloakJwtAuthenticationConverter for test context.
-     */
     @Bean
     @Primary
-    fun mockKeycloakJwtAuthenticationConverter(): KeycloakJwtAuthenticationConverter {
-        return Mockito.mock(KeycloakJwtAuthenticationConverter::class.java)
+    fun mockOAuth2ProviderResolver(): OAuth2ProviderResolver {
+        return Mockito.mock(OAuth2ProviderResolver::class.java)
+    }
+
+    @Bean
+    @Primary
+    fun mockOAuth2AuthorityMapper(): OAuth2AuthorityMapper {
+        return Mockito.mock(OAuth2AuthorityMapper::class.java)
+    }
+
+    @Bean
+    @Primary
+    fun mockProviderAwareJwtAuthenticationConverter(): ProviderAwareJwtAuthenticationConverter {
+        return Mockito.mock(ProviderAwareJwtAuthenticationConverter::class.java)
     }
 
     /**
