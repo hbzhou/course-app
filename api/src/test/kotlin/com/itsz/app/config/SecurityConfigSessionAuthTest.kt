@@ -52,11 +52,14 @@ class SecurityConfigSessionAuthTest : EmbeddedRedisSupport() {
             with(oauth2Login().attributes {
                 it["preferred_username"] = "testuser"
                 it["email"] = "test@example.com"
+                it["provider"] = "azure"
             })
         }.andExpect {
             status { isOk() }
             jsonPath("$.name") { value("testuser") }
             jsonPath("$.email") { value("test@example.com") }
+            jsonPath("$.provider") { value("azure") }
+            jsonPath("$.authType") { value("session") }
         }
     }
 
