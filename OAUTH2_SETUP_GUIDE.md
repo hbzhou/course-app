@@ -2,7 +2,7 @@
 
 ## Overview
 
-This guide explains the Spring Security OAuth2 Authorization Code flow using Keycloak as the authorization server. The backend owns authorization-code exchange and session establishment.
+This guide explains Spring Security OAuth2 Authorization Code flow using a multi-provider setup. Azure AD is the default provider and Keycloak remains supported for compatibility. The backend owns authorization-code exchange and session establishment.
 
 - **No password handling in frontend**: Users authenticate directly with Keycloak
 - **Framework-managed callback and state**: Spring Security handles callback, state, and code exchange
@@ -13,12 +13,30 @@ This guide explains the Spring Security OAuth2 Authorization Code flow using Key
 
 ```
 Browser (UI)
-  -> /oauth2/authorization/keycloak
-  -> Keycloak login
-  -> /login/oauth2/code/keycloak (backend callback)
+   -> /oauth2/authorization/{provider}
+   -> Provider login (Azure AD by default)
+   -> /login/oauth2/code/{provider} (backend callback)
   -> Spring Security establishes session
   -> UI calls /api/auth/me to bootstrap current user
 ```
+
+## OAuth2 Providers
+
+- Default provider is configured by `app.oauth2.default-provider` (defaults to `azure`)
+- Supported providers: `azure`, `keycloak`
+- OAuth2 login uses server-side session identity with `authType=session`
+- Legacy username/password login continues to use application JWT for backward compatibility
+
+### Azure AD Setup
+
+Set these environment variables before starting backend:
+
+- `AZURE_TENANT_ID`
+- `AZURE_CLIENT_ID`
+- `AZURE_CLIENT_SECRET`
+- `APP_OAUTH2_DEFAULT_PROVIDER=azure`
+
+For local UI development, the login button redirects to `/oauth2/authorization/azure` by default.
 
 ## Prerequisites
 
@@ -149,8 +167,8 @@ Frontend will start on: http://localhost:3000
 ### Test OAuth2 Login
 
 1. Open browser: http://localhost:3000/login
-2. Click "Login with OAuth2 (Keycloak)" button
-3. You'll be redirected to Keycloak login page
+2. Click "Continue with Azure AD" button (or the configured default provider)
+3. You'll be redirected to the provider login page
 4. Enter credentials:
    - Username: `testuser`
    - Password: `test123`
@@ -190,8 +208,8 @@ The backend now manages OAuth2 login and session. The frontend does not call tok
 
 | Endpoint | Method | Description |
 |----------|--------|-------------|
-| `/oauth2/authorization/keycloak` | GET | Initiates OAuth2 flow and redirects to Keycloak |
-| `/login/oauth2/code/keycloak` | GET | Spring Security OAuth2 callback endpoint |
+| `/oauth2/authorization/{provider}` | GET | Initiates OAuth2 flow for configured provider |
+| `/login/oauth2/code/{provider}` | GET | Spring Security OAuth2 callback endpoint |
 | `/api/auth/me` | GET | Returns authenticated user profile from session or bearer auth |
 
 ### Legacy Endpoints (Still Supported)
@@ -210,7 +228,7 @@ Stores legacy JWT token only when users sign in via the legacy login endpoint.
 
 ### Auth Type (localStorage: `authType`)
 
-- `oauth2` - User logged in via OAuth2 session
+- `session` - User logged in via OAuth2 server session
 - `legacy` - User logged in via legacy JWT
 
 ## Security Considerations
@@ -266,7 +284,7 @@ response.cookie('access_token', token, {
 
 **Solution**:
 1. Start frontend with Vite config that proxies `/oauth2` and `/login/oauth2` to backend `8081`
-2. Confirm redirect URL is `/oauth2/authorization/keycloak`
+2. Confirm redirect URL is `/oauth2/authorization/{provider}` (default: `/oauth2/authorization/azure`)
 
 ### Error: "Invalid redirect_uri"
 
