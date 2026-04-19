@@ -6,6 +6,7 @@ import { Label } from "@/common/Label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/common/Card";
 import { useLogin } from "@/hooks/useAuth";
 import { LoginRequest } from "@/api/authApi";
+import { defaultOAuth2AuthorizationPath, defaultOAuth2ProviderLabel } from "@/config/oauth2";
 import { useState } from "react";
 
 const Login = () => {
@@ -36,7 +37,7 @@ const Login = () => {
       sessionStorage.setItem("oauth2_return_to", fromPath);
     }
 
-    window.location.href = "/oauth2/authorization/keycloak";
+    window.location.href = defaultOAuth2AuthorizationPath;
   };
 
   return (
@@ -101,7 +102,7 @@ const Login = () => {
                 <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
                   <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"/>
                 </svg>
-                Login with OAuth2 (Keycloak)
+                {`Continue with ${defaultOAuth2ProviderLabel}`}
               </Button>
             </div>
 
