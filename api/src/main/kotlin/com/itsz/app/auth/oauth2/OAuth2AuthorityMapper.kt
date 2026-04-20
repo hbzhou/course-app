@@ -9,13 +9,17 @@ class OAuth2AuthorityMapper {
         "ROLE_USER" to setOf("COURSE_VIEW", "TAG_VIEW")
     )
 
+    /** Default role granted to any authenticated OAuth2 user when the provider sends no roles. */
+    private val defaultRole = "ROLE_USER"
+
     fun map(
         normalized: NormalizedOAuth2Principal,
         baseAuthorities: Collection<GrantedAuthority> = emptyList()
     ): Set<GrantedAuthority> {
         val authorities = linkedSetOf<GrantedAuthority>()
         authorities.addAll(baseAuthorities)
-        normalized.groupsOrRoles.forEach { role ->
+        val roles = normalized.groupsOrRoles.ifEmpty { listOf(defaultRole) }
+        roles.forEach { role ->
             authorities.add(SimpleGrantedAuthority(role))
             roleToPermissionsMap[role]?.forEach { permission ->
                 authorities.add(SimpleGrantedAuthority(permission))
