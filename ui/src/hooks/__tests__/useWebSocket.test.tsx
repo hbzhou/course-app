@@ -10,12 +10,6 @@ import { Client } from "@stomp/stompjs";
 vi.mock("@stomp/stompjs");
 
 describe("useWebSocket", () => {
-  let mockClient: {
-    activate: ReturnType<typeof vi.fn>;
-    deactivate: ReturnType<typeof vi.fn>;
-    subscribe: ReturnType<typeof vi.fn>;
-    onConnect: (() => void) | null;
-  };
   let mockActivate: ReturnType<typeof vi.fn>;
   let mockDeactivate: ReturnType<typeof vi.fn>;
   let mockSubscribe: ReturnType<typeof vi.fn>;
@@ -37,14 +31,17 @@ describe("useWebSocket", () => {
     mockDeactivate = vi.fn();
     mockSubscribe = vi.fn();
 
-    mockClient = {
-      activate: mockActivate,
-      deactivate: mockDeactivate,
-      subscribe: mockSubscribe,
-      onConnect: null,
-    };
-
-    vi.mocked(Client).mockImplementation(() => mockClient);
+    // Mock Client constructor to return our mockClient
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (Client as any).mockImplementation(function() {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const self = this as any;
+      self.activate = mockActivate;
+      self.deactivate = mockDeactivate;
+      self.subscribe = mockSubscribe;
+      self.onConnect = null;
+      return self;
+    });
   });
 
   afterEach(() => {

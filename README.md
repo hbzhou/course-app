@@ -25,6 +25,7 @@ A full-stack web application for managing courses, authors, and users, built wit
 - **Database Migrations**: Flyway for versioned database schema management
 - **Docker Support**: Docker Compose for MySQL and Redis
 - **Health Probes**: Kubernetes-ready liveness (`/actuator/health/liveness`) and readiness (`/actuator/health/readiness`) endpoints
+- **Comprehensive Testing**: 153 unit tests (66.45% coverage) + 53 E2E tests covering all workflows
 
 ## Quick Start
 
@@ -146,10 +147,24 @@ For detailed information, see [api/FLYWAY_GUIDE.md](api/FLYWAY_GUIDE.md)
 
 ## Tests
 
+### Unit Tests
+
 ```bash
-./gradlew api:test          # JVM tests
-cd ui && npm test           # Vitest with coverage (no watch)
+./gradlew api:test          # JVM tests (Spring Boot)
+cd ui && npm test           # Vitest unit tests (153 tests, 66.45% coverage)
 ```
+
+### End-to-End Tests
+
+```bash
+cd ui
+npm run e2e                 # Run all 53 E2E tests
+npm run e2e:ui              # Visual test runner
+npm run e2e:debug           # Debug mode with Playwright Inspector
+npm run e2e:report          # View HTML report
+```
+
+See [E2E Testing Guide](E2E_TESTING_GUIDE.md) for detailed documentation.
 
 ## Kubernetes / Production
 
