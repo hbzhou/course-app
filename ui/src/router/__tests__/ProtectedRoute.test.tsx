@@ -2,64 +2,104 @@ import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import ProtectedRoute from "../ProtectedRoute";
-import { AuthProvider } from "@/context/AuthContext";
+import { useAuthContext } from "@/context/auth-context";
+
+vi.mock("@/context/auth-context", () => ({
+  useAuthContext: vi.fn(),
+}));
 
 describe("ProtectedRoute", () => {
   it("redirects to /login when unauthenticated", () => {
-    // Mock localStorage to return no token
-    vi.stubGlobal("localStorage", {
-      getItem: vi.fn(() => null),
-      setItem: vi.fn(),
-      removeItem: vi.fn(),
+    vi.mocked(useAuthContext).mockReturnValue({
+      user: null,
+      token: null,
+      authStatus: "anonymous",
+      isAuthenticated: false,
+      login: vi.fn(),
+      logout: vi.fn(),
+      refreshSession: vi.fn(),
     });
 
     render(
-      <AuthProvider>
-        <MemoryRouter initialEntries={["/courses"]}>
-          <Routes>
-            <Route
-              path="/courses"
-              element={
-                <ProtectedRoute>
-                  <div>Courses Page</div>
-                </ProtectedRoute>
-              }
-            />
-            <Route path="/login" element={<div>Login Page</div>} />
-          </Routes>
-        </MemoryRouter>
-      </AuthProvider>
+      <MemoryRouter initialEntries={["/courses"]}>
+        <Routes>
+          <Route
+            path="/courses"
+            element={
+              <ProtectedRoute>
+                <div>Courses Page</div>
+              </ProtectedRoute>
+            }
+          />
+          <Route path="/login" element={<div>Login Page</div>} />
+        </Routes>
+      </MemoryRouter>
     );
 
     expect(screen.getByText("Login Page")).toBeInTheDocument();
   });
 
   it("renders children when authenticated", () => {
-    // Mock localStorage to return a token
-    vi.stubGlobal("localStorage", {
-      getItem: vi.fn(() => "test-token"),
-      setItem: vi.fn(),
-      removeItem: vi.fn(),
+    vi.mocked(useAuthContext).mockReturnValue({
+      user: {
+        name: "testuser",
+        email: "test@example.com",
+        authType: "oauth2",
+      },
+      token: null,
+      authStatus: "authenticated",
+      isAuthenticated: true,
+      login: vi.fn(),
+      logout: vi.fn(),
+      refreshSession: vi.fn(),
     });
 
     render(
-      <AuthProvider>
-        <MemoryRouter initialEntries={["/courses"]}>
-          <Routes>
-            <Route
-              path="/courses"
-              element={
-                <ProtectedRoute>
-                  <div>Courses Page</div>
-                </ProtectedRoute>
-              }
-            />
-            <Route path="/login" element={<div>Login Page</div>} />
-          </Routes>
-        </MemoryRouter>
-      </AuthProvider>
+      <MemoryRouter initialEntries={["/courses"]}>
+        <Routes>
+          <Route
+            path="/courses"
+            element={
+              <ProtectedRoute>
+                <div>Courses Page</div>
+              </ProtectedRoute>
+            }
+          />
+          <Route path="/login" element={<div>Login Page</div>} />
+        </Routes>
+      </MemoryRouter>
     );
 
     expect(screen.getByText("Courses Page")).toBeInTheDocument();
+  });
+
+  it("shows loading UI while auth bootstrap is in progress", () => {
+    vi.mocked(useAuthContext).mockReturnValue({
+      user: null,
+      token: null,
+      authStatus: "loading",
+      isAuthenticated: false,
+      login: vi.fn(),
+      logout: vi.fn(),
+      refreshSession: vi.fn(),
+    });
+
+    render(
+      <MemoryRouter initialEntries={["/courses"]}>
+        <Routes>
+          <Route
+            path="/courses"
+            element={
+              <ProtectedRoute>
+                <div>Courses Page</div>
+              </ProtectedRoute>
+            }
+          />
+          <Route path="/login" element={<div>Login Page</div>} />
+        </Routes>
+      </MemoryRouter>
+    );
+
+    expect(screen.getByText(/checking authentication/i)).toBeInTheDocument();
   });
 });

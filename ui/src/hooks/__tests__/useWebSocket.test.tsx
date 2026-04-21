@@ -1,78 +1,84 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { renderHook, waitFor } from "@testing-library/react";
-import { ReactNode } from "react";
-import { AuthProvider } from "@/context/AuthContext";
-import { NotificationProvider } from "@/context/NotificationContext";
 import { useWebSocket } from "../useWebSocket";
 import { Client } from "@stomp/stompjs";
+import { useAuthContext } from "@/context/auth-context";
+import { useNotificationContext } from "@/context/notification-context";
 
-// Mock @stomp/stompjs
-vi.mock("@stomp/stompjs");
+vi.mock("@stomp/stompjs", () => ({
+  Client: vi.fn(),
+}));
+
+vi.mock("@/context/auth-context", () => ({
+  useAuthContext: vi.fn(),
+}));
+
+vi.mock("@/context/notification-context", () => ({
+  useNotificationContext: vi.fn(),
+}));
 
 describe("useWebSocket", () => {
   let mockActivate: ReturnType<typeof vi.fn>;
   let mockDeactivate: ReturnType<typeof vi.fn>;
   let mockSubscribe: ReturnType<typeof vi.fn>;
+  let mockAddNotification: ReturnType<typeof vi.fn>;
 
   beforeEach(() => {
     vi.clearAllMocks();
 
-    // Mock localStorage
-    vi.stubGlobal("localStorage", {
-      getItem: vi.fn(),
-      setItem: vi.fn(),
-      removeItem: vi.fn(),
-      clear: vi.fn(),
-      length: 0,
-      key: vi.fn(),
-    });
-
     mockActivate = vi.fn();
     mockDeactivate = vi.fn();
     mockSubscribe = vi.fn();
+    mockAddNotification = vi.fn();
 
-    // Mock Client constructor to return our mockClient
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (Client as any).mockImplementation(function() {
+    vi.mocked(useNotificationContext).mockReturnValue({
+      notifications: [],
+      unreadCount: 0,
+      addNotification: mockAddNotification,
+      markAsRead: vi.fn(),
+      markAllAsRead: vi.fn(),
+      clearAll: vi.fn(),
+    });
+
+    vi.mocked(Client).mockImplementation(function(this: unknown) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const self = this as any;
       self.activate = mockActivate;
       self.deactivate = mockDeactivate;
       self.subscribe = mockSubscribe;
-      self.onConnect = null;
       return self;
     });
   });
 
-  afterEach(() => {
-    vi.unstubAllGlobals();
-  });
-
-  const createWrapper = (token: string | null) => {
-    vi.mocked(localStorage.getItem).mockReturnValue(token);
-
-    return ({ children }: { children: ReactNode }) => (
-      <AuthProvider>
-        <NotificationProvider>
-          {children}
-        </NotificationProvider>
-      </AuthProvider>
-    );
-  };
-
   it("does not activate connection when no token", () => {
-    const wrapper = createWrapper(null);
+    vi.mocked(useAuthContext).mockReturnValue({
+      user: null,
+      token: null,
+      authStatus: "anonymous",
+      isAuthenticated: false,
+      login: vi.fn(),
+      logout: vi.fn(),
+      refreshSession: vi.fn(),
+    });
 
-    renderHook(() => useWebSocket(), { wrapper });
+    renderHook(() => useWebSocket());
 
     expect(Client).not.toHaveBeenCalled();
     expect(mockActivate).not.toHaveBeenCalled();
   });
 
   it("activates connection when token exists", async () => {
-    const wrapper = createWrapper("test-token");
+    vi.mocked(useAuthContext).mockReturnValue({
+      user: { name: "admin", email: "admin@test.com", authType: "legacy" },
+      token: "test-token",
+      authStatus: "authenticated",
+      isAuthenticated: true,
+      login: vi.fn(),
+      logout: vi.fn(),
+      refreshSession: vi.fn(),
+    });
 
-    renderHook(() => useWebSocket(), { wrapper });
+    renderHook(() => useWebSocket());
 
     await waitFor(() => {
       expect(Client).toHaveBeenCalledWith(
@@ -87,10 +93,42 @@ describe("useWebSocket", () => {
     });
   });
 
-  it("deactivates connection on unmount", async () => {
-    const wrapper = createWrapper("test-token");
+  it("activates session-backed connection with empty connect headers", async () => {
+    vi.mocked(useAuthContext).mockReturnValue({
+      user: { name: "testuser", email: "test@example.com", authType: "oauth2" },
+      token: null,
+      authStatus: "authenticated",
+      isAuthenticated: true,
+      login: vi.fn(),
+      logout: vi.fn(),
+      refreshSession: vi.fn(),
+    });
 
-    const { unmount } = renderHook(() => useWebSocket(), { wrapper });
+    renderHook(() => useWebSocket());
+
+    await waitFor(() => {
+      expect(Client).toHaveBeenCalledWith(
+        expect.objectContaining({
+          brokerURL: expect.stringContaining("ws://"),
+          connectHeaders: {},
+        })
+      );
+      expect(mockActivate).toHaveBeenCalled();
+    });
+  });
+
+  it("deactivates connection on unmount", async () => {
+    vi.mocked(useAuthContext).mockReturnValue({
+      user: { name: "admin", email: "admin@test.com", authType: "legacy" },
+      token: "test-token",
+      authStatus: "authenticated",
+      isAuthenticated: true,
+      login: vi.fn(),
+      logout: vi.fn(),
+      refreshSession: vi.fn(),
+    });
+
+    const { unmount } = renderHook(() => useWebSocket());
 
     await waitFor(() => {
       expect(mockActivate).toHaveBeenCalled();
@@ -102,9 +140,17 @@ describe("useWebSocket", () => {
   });
 
   it("connects with proper configuration", async () => {
-    const wrapper = createWrapper("test-token");
+    vi.mocked(useAuthContext).mockReturnValue({
+      user: { name: "admin", email: "admin@test.com", authType: "legacy" },
+      token: "test-token",
+      authStatus: "authenticated",
+      isAuthenticated: true,
+      login: vi.fn(),
+      logout: vi.fn(),
+      refreshSession: vi.fn(),
+    });
 
-    renderHook(() => useWebSocket(), { wrapper });
+    renderHook(() => useWebSocket());
 
     await waitFor(() => {
       expect(Client).toHaveBeenCalledWith(

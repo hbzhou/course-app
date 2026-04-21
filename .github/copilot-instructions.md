@@ -43,9 +43,16 @@ git branch                  # Current: main (production) or feature branches
 ./flyway.sh migrate         # apply pending migrations
 ./flyway.sh create          # scaffold next versioned migration file
 ./flyway.sh info            # check migration status
+
+# 8. OAuth2 with Keycloak (optional authentication method)
+docker compose up -d        # Starts Keycloak on port 8080
+# Then configure via http://localhost:8080 (admin/admin123)
+# See oauth2-setup skill for complete setup guide
 ```
 
-**Default login:** `admin` / `admin123`
+**Default login:** 
+- Legacy JWT: `admin` / `admin123`
+- OAuth2 (Keycloak): `testuser` / `test123` (after setup)
 
 ---
 
@@ -82,7 +89,15 @@ Service.create/update/delete()
 WebSocket endpoint: native STOMP at `/ws` (no SockJS). Channel configured via `app.notification.redis-channel`.
 
 ### Security Model
-- Stateless JWT (`JwtAuthFilter` before `UsernamePasswordAuthenticationFilter`)
+**Dual Authentication Support:**
+- **OAuth2 with Keycloak** (recommended) — Authorization Code flow via `/api/auth/oauth2/*` endpoints
+  - Keycloak on port 8080 (docker-compose), realm: `course-app`, client: `course-app`
+  - Access tokens (5 min), refresh tokens (30 min), auto-refresh support
+  - See `.github/skills/oauth2-setup/SKILL.md` for complete setup & troubleshooting
+- **Legacy JWT** (backward compatible) — Stateless JWT (`JwtAuthFilter` before `UsernamePasswordAuthenticationFilter`)
+  - Username/password via `/api/auth/login`
+  
+**Authorization:**
 - Permission-based `@PreAuthorize`: `COURSE_VIEW`, `COURSE_EDIT`, `USER_MANAGE`, `ROLE_MANAGE`
 - `ROLE_ADMIN` gets all permissions; `ROLE_USER` gets `COURSE_VIEW` only (see `V2__insert_seed_data.sql`)
 - Public routes: `/api/auth/**`, `/ws/**`, `/actuator/health/**`, static assets

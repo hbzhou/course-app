@@ -27,6 +27,7 @@ describe("apiClient", () => {
       "/api/courses",
       expect.objectContaining({
         method: "GET",
+        credentials: "include",
         headers: expect.objectContaining({
           Authorization: "Bearer test-token",
         }),
@@ -36,6 +37,30 @@ describe("apiClient", () => {
     const [, requestInit] = vi.mocked(fetch).mock.calls[0];
     const headers = requestInit?.headers as Record<string, string>;
     expect(headers["Content-Type"]).toBeUndefined();
+  });
+
+  it("sends credentials include even when no bearer token exists", async () => {
+    vi.mocked(localStorage.getItem).mockReturnValue(null);
+    vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      new Response(JSON.stringify({ ok: true }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      })
+    );
+
+    await apiClient<{ ok: boolean }>("/api/auth/me", { method: "GET" });
+
+    expect(fetch).toHaveBeenCalledWith(
+      "/api/auth/me",
+      expect.objectContaining({
+        method: "GET",
+        credentials: "include",
+      })
+    );
+
+    const [, requestInit] = vi.mocked(fetch).mock.calls[0];
+    const headers = requestInit?.headers as Record<string, string>;
+    expect(headers.Authorization).toBeUndefined();
   });
 
   it("adds json content-type when request body is present", async () => {

@@ -86,7 +86,7 @@ ui-e2e-test:
     - compile-ui
   before_script:
     - cd ui
-    - npx playwright install --with-deps
+    - npx playwright install --with-deps chromium webkit
   script:
     - npm run e2e
   artifacts:
