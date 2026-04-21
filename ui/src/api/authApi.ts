@@ -1,4 +1,5 @@
 import { apiClient } from "./client";
+import type { OAuth2Provider } from "@/types/oauth2-provider";
 
 export interface LoginRequest {
   username: string;
@@ -49,5 +50,9 @@ export const authApi = {
     return apiClient<void>("/api/auth/logout", {
       method: "DELETE",
     });
+  },
+
+  getProviders: async (): Promise<OAuth2Provider[]> => {
+    return apiClient<OAuth2Provider[]>("/api/auth/providers");
   },
 };

@@ -1,4 +1,4 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuthContext } from "@/context/auth-context";
 import { authApi, LoginRequest, RegisterRequest, AuthResponse } from "@/api/authApi";
 
@@ -39,5 +39,13 @@ export const useLogout = () => {
       // Clear all cached queries on logout
       queryClient.clear();
     },
+  });
+};
+
+export const useProviders = () => {
+  return useQuery({
+    queryKey: ["oauth2-providers"],
+    queryFn: () => authApi.getProviders(),
+    staleTime: 5 * 60 * 1000,
   });
 };
