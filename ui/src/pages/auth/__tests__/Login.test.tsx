@@ -12,6 +12,7 @@ vi.mock("@/api/authApi", () => ({
     register: vi.fn(),
     logout: vi.fn(),
     getCurrentUser: vi.fn(),
+    getProviders: vi.fn(),
   },
 }));
 
@@ -25,6 +26,10 @@ describe("Login", () => {
       defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
     });
     vi.clearAllMocks();
+    vi.mocked(authApi.getProviders).mockResolvedValue([
+      { providerId: "azure", displayName: "Azure AD" },
+      { providerId: "keycloak", displayName: "Keycloak" },
+    ]);
     vi.stubGlobal("localStorage", {
       getItem: vi.fn(),
       setItem: vi.fn(),
@@ -124,27 +129,51 @@ describe("Login", () => {
     expect(submitButton).toBeDisabled();
   });
 
-  it("renders the default Azure AD button label", () => {
+  it("renders both provider buttons from API", async () => {
     renderLogin();
-    expect(screen.getByRole("button", { name: /continue with azure ad/i })).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: /continue with azure ad/i })).toBeInTheDocument();
+    });
+    expect(screen.getByRole("button", { name: /continue with keycloak/i })).toBeInTheDocument();
   });
 
-  it("redirects browser to the configured provider authorization endpoint", async () => {
+  it("redirects to Azure AD authorization endpoint when Azure button clicked", async () => {
     const user = userEvent.setup();
     const originalLocation = window.location;
-    const locationMock = {
-      ...window.location,
-      href: "http://localhost:3000/login",
-    };
     Object.defineProperty(window, "location", {
       configurable: true,
-      value: locationMock,
+      value: { ...window.location, href: "http://localhost:3000/login" },
     });
 
     renderLogin();
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: /continue with azure ad/i })).toBeInTheDocument();
+    });
     await user.click(screen.getByRole("button", { name: /continue with azure ad/i }));
 
     expect(window.location.href).toContain("/oauth2/authorization/azure");
+
+    Object.defineProperty(window, "location", {
+      configurable: true,
+      value: originalLocation,
+    });
+  });
+
+  it("redirects to Keycloak authorization endpoint when Keycloak button clicked", async () => {
+    const user = userEvent.setup();
+    const originalLocation = window.location;
+    Object.defineProperty(window, "location", {
+      configurable: true,
+      value: { ...window.location, href: "http://localhost:3000/login" },
+    });
+
+    renderLogin();
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: /continue with keycloak/i })).toBeInTheDocument();
+    });
+    await user.click(screen.getByRole("button", { name: /continue with keycloak/i }));
+
+    expect(window.location.href).toContain("/oauth2/authorization/keycloak");
 
     Object.defineProperty(window, "location", {
       configurable: true,
@@ -179,6 +208,9 @@ describe("Login", () => {
       </QueryClientProvider>
     );
 
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: /continue with azure ad/i })).toBeInTheDocument();
+    });
     await user.click(screen.getByRole("button", { name: /continue with azure ad/i }));
 
     expect(sessionStorage.setItem).toHaveBeenCalledWith("oauth2_return_to", "/courses");
@@ -187,5 +219,26 @@ describe("Login", () => {
       configurable: true,
       value: originalLocation,
     });
+  });
+
+  it("hides OAuth2 section when providers fetch fails", async () => {
+    vi.mocked(authApi.getProviders).mockRejectedValue(new Error("Network error"));
+
+    renderLogin();
+
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: /^login$/i })).toBeInTheDocument();
+    });
+    expect(screen.queryByRole("button", { name: /continue with/i })).not.toBeInTheDocument();
+  });
+
+  it("shows loading state while providers are being fetched", () => {
+    vi.mocked(authApi.getProviders).mockImplementation(
+      () => new Promise(() => {})
+    );
+
+    renderLogin();
+
+    expect(screen.getByText(/loading providers/i)).toBeInTheDocument();
   });
 });
