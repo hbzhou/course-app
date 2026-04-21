@@ -73,6 +73,10 @@ tasks.withType<Test> {
     useJUnitPlatform()
 }
 
+// Disable Spring Boot AOT processing for tests — speeds up test runs significantly
+tasks.named("processTestAot") { enabled = false }
+tasks.named("processAot") { enabled = false }
+
 tasks.bootJar{
     from("./../ui/dist") {
         into("public")

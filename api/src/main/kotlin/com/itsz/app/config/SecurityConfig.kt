@@ -97,7 +97,7 @@ class SecurityConfig(
                         "/**/*.html", "/**/*.css", "/**/*.js","/**/*.png", "/**/*.jpg", "/**/*.jpeg", "/**/*.gif", "/**/*.svg", "/**/*.ico",
                     ).permitAll()
                     .requestMatchers("/actuator/health/**").permitAll()
-                    .requestMatchers("/api/auth/login", "/api/auth/register", "/api/auth/logout").permitAll()
+                    .requestMatchers("/api/auth/login", "/api/auth/register", "/api/auth/logout", "/api/auth/providers").permitAll()
                     .requestMatchers("/oauth2/**", "/login/oauth2/**").permitAll()
                     .requestMatchers("/ws/**").permitAll()
                     .anyRequest().authenticated()
