@@ -4,7 +4,8 @@ import type { User } from "@/types/user";
 export interface AuthenticatedUser {
   name: string;
   email: string;
-  authType: "legacy" | "oauth2" | "bearer" | "session";
+  provider?: string;
+  authType: "legacy" | "bearer" | "session";
 }
 
 export type AuthStatus = "loading" | "authenticated" | "anonymous";

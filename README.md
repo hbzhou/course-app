@@ -10,15 +10,15 @@ A full-stack web application for managing courses, authors, and users, built wit
 | Frontend | React 19, TypeScript, Vite, Redux Toolkit, TanStack React Query |
 | Database | MySQL 8 |
 | Cache / Messaging | Redis 7.2 |
-| Auth | **OAuth2 Authorization Code Flow (Keycloak)** + Legacy JWT (backward compatible) |
-| Identity Provider | Keycloak 26 (dockerized) |
+| Auth | **Multi-provider OAuth2 session auth (Azure AD default, Keycloak compatible)** + Legacy JWT |
+| Identity Provider | Azure AD (default) and Keycloak 26 (compatible) |
 | Migrations | Flyway 12 |
 | Build | Gradle (Kotlin DSL), monorepo |
 | Deployment | Docker Compose (dev), Kubernetes / Helm (prod) |
 
 ## Features
 
-- **OAuth2 Authentication**: Secure authentication using OAuth2 Authorization Code flow with Keycloak (see [OAuth2 Setup Guide](./OAUTH2_SETUP_GUIDE.md))
+- **OAuth2 Authentication**: Multi-provider OAuth2 Authorization Code flow with normalized session identity (Azure AD default, Keycloak compatible)
 - **User Management**: Authentication and authorization with JWT (legacy support maintained)
 - **Role-Based Access Control**: `ROLE_ADMIN` (full access) and `ROLE_USER` (view-only) with fine-grained permissions (`COURSE_VIEW`, `COURSE_EDIT`, `USER_MANAGE`, `ROLE_MANAGE`)
 - **Course Management**: Create, read, update, and delete courses
@@ -91,17 +91,26 @@ In dev mode, Vite proxies `/api`, `/ws`, `/oauth2`, and `/login/oauth2` to `loca
 - **Username**: `admin`
 - **Password**: `admin123`
 
-**OAuth2 Login** (via Keycloak):
-1. Click "Login with OAuth2 (Keycloak)" on login page
-2. First-time setup required (see [OAuth2 Setup Guide](./OAUTH2_SETUP_GUIDE.md))
-3. Default Keycloak admin: `admin` / `admin123`
-4. Create test user in Keycloak (e.g., `testuser` / `test123`)
+**OAuth2 Login** (session-based):
+1. Click "Continue with Azure AD" (default provider) on the login page
+2. Provider is controlled by `app.oauth2.default-provider` (supported: `azure`, `keycloak`)
+3. First-time setup required (see [OAuth2 Setup Guide](./OAUTH2_SETUP_GUIDE.md))
+4. Keycloak remains compatible for local/dev migration flows
+
+## OAuth2 Providers
+
+The application supports multiple OAuth2 providers through a normalized provider layer.
+
+- Default provider is controlled by `app.oauth2.default-provider` and defaults to `azure`
+- Supported providers in phase 1: `azure`, `keycloak`
+- OAuth2 users authenticate with a server-side session and the UI reads identity from `/api/auth/me`
+- Legacy username/password login still returns application JWT for backward compatibility
 
 ### OAuth2 Login Flow (Spring-Managed)
 
-1. Browser navigates to `/oauth2/authorization/keycloak`
-2. Spring Security redirects to Keycloak
-3. Keycloak redirects back to `/login/oauth2/code/keycloak`
+1. Browser navigates to `/oauth2/authorization/{provider}`
+2. Spring Security redirects to the selected provider
+3. Provider redirects back to `/login/oauth2/code/{provider}`
 4. Spring Security exchanges the authorization code and establishes the session
 5. Frontend bootstraps authenticated user via `/api/auth/me`
 

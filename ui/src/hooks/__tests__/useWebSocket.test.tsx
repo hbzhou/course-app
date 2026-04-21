@@ -95,7 +95,7 @@ describe("useWebSocket", () => {
 
   it("activates session-backed connection with empty connect headers", async () => {
     vi.mocked(useAuthContext).mockReturnValue({
-      user: { name: "testuser", email: "test@example.com", authType: "oauth2" },
+      user: { name: "testuser", email: "test@example.com", provider: "azure", authType: "session" },
       token: null,
       authStatus: "authenticated",
       isAuthenticated: true,

@@ -22,7 +22,8 @@ export interface AuthResponse {
 export interface CurrentUserResponse {
   name: string;
   email: string;
-  authType: "oauth2" | "bearer" | "session";
+  provider: string;
+  authType: "bearer" | "session";
 }
 
 export const authApi = {
