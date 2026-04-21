@@ -33,19 +33,21 @@ class AuthControllerSessionTest : EmbeddedRedisSupport() {
     }
 
     @Test
-    fun `me returns oauth2 principal details`() {
+    fun `me returns normalized session principal details`() {
         mockMvc.get("/api/auth/me") {
             with(
                 oauth2Login().attributes {
                     it["preferred_username"] = "testuser"
                     it["email"] = "testuser@example.com"
+                    it["provider"] = "azure"
                 }
             )
         }.andExpect {
             status { isOk() }
             jsonPath("$.name") { value("testuser") }
             jsonPath("$.email") { value("testuser@example.com") }
-            jsonPath("$.authType") { value("oauth2") }
+            jsonPath("$.provider") { value("azure") }
+            jsonPath("$.authType") { value("session") }
         }
     }
 

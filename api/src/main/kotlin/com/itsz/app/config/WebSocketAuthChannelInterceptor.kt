@@ -1,5 +1,6 @@
 package com.itsz.app.config
 
+import com.itsz.app.auth.oauth2.ProviderAwareJwtAuthenticationConverter
 import com.itsz.app.auth.jwt.JwtService
 import org.slf4j.LoggerFactory
 import org.springframework.messaging.Message
@@ -14,15 +15,14 @@ import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.userdetails.UserDetailsService
 import org.springframework.security.oauth2.jwt.JwtDecoder
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken
 import org.springframework.stereotype.Component
 
 @Component
 class WebSocketAuthChannelInterceptor(
     private val jwtService: JwtService,
     private val userDetailsService: UserDetailsService,
-    private val keycloakJwtDecoder: JwtDecoder,
-    private val keycloakJwtConverter: KeycloakJwtAuthenticationConverter
+    private val jwtDecoders: List<JwtDecoder>,
+    private val jwtAuthenticationConverter: ProviderAwareJwtAuthenticationConverter
 ) : ChannelInterceptor {
 
     private val logger = LoggerFactory.getLogger(WebSocketAuthChannelInterceptor::class.java)
@@ -67,16 +67,16 @@ class WebSocketAuthChannelInterceptor(
                 logger.debug("WebSocket authenticated with legacy JWT: $username")
                 UsernamePasswordAuthenticationToken(userDetails, null, userDetails.authorities)
             } catch (e: Exception) {
-                // Try as OAuth2 JWT (RS256 from Keycloak)
-                try {
-                    val jwt = keycloakJwtDecoder.decode(token)
-                    val auth = keycloakJwtConverter.convert(jwt)
-                    logger.debug("WebSocket authenticated with OAuth2 JWT: ${jwt.subject}")
-                    auth
-                } catch (oauth2Error: Exception) {
-                    logger.error("WebSocket authentication failed for both legacy and OAuth2 JWT: ${oauth2Error.message}")
-                    throw BadCredentialsException("Invalid JWT token - not recognized as legacy or OAuth2 token")
-                }
+                // Fallback to provider-aware OAuth2 JWT decode path.
+                val oauth2Auth = jwtDecoders.asSequence().mapNotNull { decoder ->
+                    runCatching {
+                        val jwt = decoder.decode(token)
+                        logger.debug("WebSocket authenticated with OAuth2 JWT: ${jwt.subject}")
+                        jwtAuthenticationConverter.convert(jwt)
+                    }.getOrNull()
+                }.firstOrNull()
+
+                oauth2Auth ?: throw BadCredentialsException("Invalid JWT token - not recognized as legacy or OAuth2 token")
             }
 
             accessor.user = authentication

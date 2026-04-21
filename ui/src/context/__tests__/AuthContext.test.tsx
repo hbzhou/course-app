@@ -41,7 +41,8 @@ describe("AuthContext", () => {
     vi.mocked(authApi.getCurrentUser).mockResolvedValue({
       name: "testuser",
       email: "test@example.com",
-      authType: "oauth2",
+      provider: "azure",
+      authType: "session",
     });
 
     const { result } = renderHook(() => useAuthContext(), { wrapper });
@@ -125,6 +126,7 @@ describe("AuthContext", () => {
       .mockResolvedValueOnce({
         name: "session-user",
         email: "session@example.com",
+        provider: "azure",
         authType: "session",
       });
 
@@ -196,14 +198,15 @@ describe("AuthContext", () => {
   it("clears stale token when cookie session bootstrap succeeds", async () => {
     vi.mocked(localStorage.getItem).mockImplementation((key: string) => {
       if (key === "token") return "stale-token";
-      if (key === "authType") return "oauth2";
+      if (key === "authType") return "session";
       if (key === "legacyUser") return null;
       return null;
     });
     vi.mocked(authApi.getCurrentUser).mockResolvedValue({
       name: "session-user",
       email: "session@example.com",
-      authType: "oauth2",
+      provider: "azure",
+      authType: "session",
     });
 
     const { result } = renderHook(() => useAuthContext(), { wrapper });
@@ -219,7 +222,7 @@ describe("AuthContext", () => {
   it("clears stale non-legacy token when session bootstrap fails", async () => {
     vi.mocked(localStorage.getItem).mockImplementation((key: string) => {
       if (key === "token") return "stale-token";
-      if (key === "authType") return "oauth2";
+      if (key === "authType") return "session";
       if (key === "legacyUser") return null;
       return null;
     });

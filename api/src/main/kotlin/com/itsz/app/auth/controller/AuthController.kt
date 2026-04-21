@@ -73,20 +73,27 @@ class AuthController(
                 mapOf(
                     "name" to (principal.subject ?: "unknown"),
                     "email" to (principal.getClaimAsString("email") ?: "unknown@example.com"),
+                    "provider" to "legacy",
                     "authType" to "bearer"
                 )
             )
             is OAuth2User -> ResponseEntity.ok(
                 mapOf(
-                    "name" to (principal.getAttribute<String>("preferred_username") ?: principal.name),
+                    "name" to (
+                        principal.getAttribute<String>("username")
+                            ?: principal.getAttribute<String>("preferred_username")
+                            ?: principal.name
+                    ),
                     "email" to (principal.getAttribute<String>("email") ?: "unknown@example.com"),
-                    "authType" to "oauth2"
+                    "provider" to (principal.getAttribute<String>("provider") ?: "unknown"),
+                    "authType" to "session"
                 )
             )
             else -> ResponseEntity.ok(
                 mapOf(
                     "name" to authentication.name,
                     "email" to "unknown@example.com",
+                    "provider" to "legacy",
                     "authType" to "session"
                 )
             )

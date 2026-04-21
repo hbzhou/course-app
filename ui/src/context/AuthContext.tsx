@@ -93,7 +93,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const sessionUser = await authApi.getCurrentUser();
       if (requestId !== refreshRequestIdRef.current) return;
 
-      setUser(sessionUser);
+      setUser({
+        name: sessionUser.name,
+        email: sessionUser.email,
+        provider: sessionUser.provider,
+        authType: sessionUser.authType,
+      });
       setAuthStatus("authenticated");
 
       if (token) {

@@ -124,12 +124,12 @@ describe("Login", () => {
     expect(submitButton).toBeDisabled();
   });
 
-  it("renders OAuth2 login button", () => {
+  it("renders the default Azure AD button label", () => {
     renderLogin();
-    expect(screen.getByRole("button", { name: /login with oauth2/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /continue with azure ad/i })).toBeInTheDocument();
   });
 
-  it("redirects browser to Spring Security oauth2 authorization endpoint", async () => {
+  it("redirects browser to the configured provider authorization endpoint", async () => {
     const user = userEvent.setup();
     const originalLocation = window.location;
     const locationMock = {
@@ -142,9 +142,9 @@ describe("Login", () => {
     });
 
     renderLogin();
-    await user.click(screen.getByRole("button", { name: /login with oauth2/i }));
+    await user.click(screen.getByRole("button", { name: /continue with azure ad/i }));
 
-    expect(window.location.href).toContain("/oauth2/authorization/keycloak");
+    expect(window.location.href).toContain("/oauth2/authorization/azure");
 
     Object.defineProperty(window, "location", {
       configurable: true,
@@ -179,7 +179,7 @@ describe("Login", () => {
       </QueryClientProvider>
     );
 
-    await user.click(screen.getByRole("button", { name: /login with oauth2/i }));
+    await user.click(screen.getByRole("button", { name: /continue with azure ad/i }));
 
     expect(sessionStorage.setItem).toHaveBeenCalledWith("oauth2_return_to", "/courses");
 
