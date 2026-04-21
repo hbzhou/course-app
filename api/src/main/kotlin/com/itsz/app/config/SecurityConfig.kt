@@ -109,11 +109,10 @@ class SecurityConfig(
                 oauth2.defaultSuccessUrl(successUrl, true)
             }
             .exceptionHandling { exceptions ->
-                val oauth2EntryPoint = LoginUrlAuthenticationEntryPoint("/oauth2/authorization/${oauth2ProviderResolver.defaultProfile().providerId}")
-                oauth2EntryPoint.setFavorRelativeUris(false)
+                val loginEntryPoint = LoginUrlAuthenticationEntryPoint("/login")
                 exceptions.defaultAuthenticationEntryPointFor(
-                    oauth2EntryPoint,
-                    RequestMatcher { request -> request.requestURI == "/courses" }
+                    loginEntryPoint,
+                    RequestMatcher { request -> !request.requestURI.startsWith("/api/") }
                 )
             }
             .oauth2ResourceServer { oauth2 ->
