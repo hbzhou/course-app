@@ -1,8 +1,6 @@
 package com.itsz.app.config
 
 import com.itsz.app.auth.oauth2.OAuth2AuthorityMapper
-import com.itsz.app.auth.oauth2.OAuth2ProviderProfile
-import com.itsz.app.auth.oauth2.OAuth2ProviderProperties
 import com.itsz.app.auth.oauth2.OAuth2ProviderResolver
 import com.itsz.app.auth.oauth2.ProviderAwareJwtAuthenticationConverter
 import org.mockito.Mockito
@@ -91,17 +89,6 @@ class TestSecurityConfigDisabler {
     @Primary
     fun mockAuthenticationManager(): AuthenticationManager {
         return Mockito.mock(AuthenticationManager::class.java)
-    }
-
-    @Bean
-    @Primary
-    fun mockOAuth2ProviderProperties(): OAuth2ProviderProperties {
-        return OAuth2ProviderProperties(
-            defaultProvider = "azure",
-            providers = listOf(
-                OAuth2ProviderProfile("azure", "Azure AD", "https://login.microsoftonline.com/common/v2.0")
-            )
-        )
     }
 
     @Bean
