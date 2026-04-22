@@ -6,6 +6,7 @@ import { Label } from "@/common/Label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/common/Card";
 import { useLogin, useProviders } from "@/hooks/useAuth";
 import { LoginRequest } from "@/api/authApi";
+import { defaultOAuth2AuthorizationPath, defaultOAuth2ProviderLabel } from "@/config/oauth2";
 import { useState } from "react";
 
 const Login = () => {
