@@ -1,6 +1,5 @@
 package com.itsz.app.auth.controller
 
-import com.itsz.app.auth.jwt.JwtService
 import com.itsz.app.auth.model.User
 import com.itsz.app.auth.oauth2.OAuth2ProviderProperties
 import com.itsz.app.auth.repository.RoleRepository
@@ -25,7 +24,6 @@ import org.springframework.web.bind.annotation.*
 class AuthController(
     private val authenticationManager: AuthenticationManager,
     private val userDetailsService: UserDetailsService,
-    private val jwtService: JwtService,
     private val userService: UserService,
     private val roleRepository: RoleRepository,
     private val passwordEncoder: PasswordEncoder,
