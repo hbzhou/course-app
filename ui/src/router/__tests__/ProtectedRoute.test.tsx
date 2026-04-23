@@ -12,7 +12,6 @@ describe("ProtectedRoute", () => {
   it("redirects to /login when unauthenticated", () => {
     vi.mocked(useAuthContext).mockReturnValue({
       user: null,
-      token: null,
       authStatus: "anonymous",
       isAuthenticated: false,
       login: vi.fn(),
@@ -44,9 +43,8 @@ describe("ProtectedRoute", () => {
       user: {
         name: "testuser",
         email: "test@example.com",
-        authType: "oauth2",
+        authType: "session",
       },
-      token: null,
       authStatus: "authenticated",
       isAuthenticated: true,
       login: vi.fn(),
@@ -76,7 +74,6 @@ describe("ProtectedRoute", () => {
   it("shows loading UI while auth bootstrap is in progress", () => {
     vi.mocked(useAuthContext).mockReturnValue({
       user: null,
-      token: null,
       authStatus: "loading",
       isAuthenticated: false,
       login: vi.fn(),
