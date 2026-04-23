@@ -47,6 +47,19 @@ class SecurityConfigSessionAuthTest : EmbeddedRedisSupport() {
     }
 
     @Test
+    fun `POST without CSRF token is rejected`() {
+        mockMvc.perform(
+            org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+                .post("/api/courses")
+                .with(oauth2Login())
+                .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                .content("""{"name":"test"}""")
+        ).andExpect(
+            org.springframework.test.web.servlet.result.MockMvcResultMatchers.status().isForbidden
+        )
+    }
+
+    @Test
     fun `oauth2 login session can access protected api`() {
         mockMvc.get("/api/auth/me") {
             with(oauth2Login().attributes {

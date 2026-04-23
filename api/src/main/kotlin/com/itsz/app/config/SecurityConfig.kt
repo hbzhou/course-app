@@ -83,7 +83,15 @@ class SecurityConfig(
         providerAwareJwtAuthenticationConverter: ProviderAwareJwtAuthenticationConverter
     ): SecurityFilterChain {
         http
-            .csrf { it.disable() }
+            .csrf { csrf ->
+                csrf.csrfTokenRepository(
+                    org.springframework.security.web.csrf.CookieCsrfTokenRepository.withHttpOnlyFalse()
+                )
+                csrf.csrfTokenRequestHandler(
+                    org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler()
+                )
+                csrf.ignoringRequestMatchers("/api/auth/login", "/api/auth/register", "/ws/**")
+            }
             .authorizeHttpRequests {
                 it
                     // Swagger UI / OpenAPI
