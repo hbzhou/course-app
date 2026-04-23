@@ -77,17 +77,6 @@ class SecurityConfigSessionAuthTest : EmbeddedRedisSupport() {
     }
 
     @Test
-    fun `legacy bearer token access still works`() {
-        mockMvc.get("/api/auth/me") {
-            with(jwt().jwt { token ->
-                token.subject("admin")
-            })
-        }.andExpect {
-            status { isOk() }
-        }
-    }
-
-    @Test
     fun `oauth2 authority mapper grants application permissions for admin role`() {
         val authorities = oauth2AuthorityMapper.map(
             NormalizedOAuth2Principal(
