@@ -90,7 +90,7 @@ class SecurityConfig(
                 csrf.csrfTokenRequestHandler(
                     org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler()
                 )
-                csrf.ignoringRequestMatchers("/api/auth/login", "/api/auth/register", "/ws/**")
+                csrf.ignoringRequestMatchers("/api/auth/login", "/api/auth/register", "/api/auth/logout", "/ws/**")
             }
             .authorizeHttpRequests {
                 it

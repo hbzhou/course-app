@@ -33,21 +33,21 @@ class AuthController(
 ) {
 
     @PostMapping("/login")
-    fun login(@RequestBody loginRequest: LoginRequest): LoginResponse {
+    fun login(@RequestBody loginRequest: LoginRequest, request: HttpServletRequest): SessionLoginResponse {
         authenticationManager.authenticate(
             UsernamePasswordAuthenticationToken(loginRequest.username, loginRequest.password)
         )
         val user = userService.getUserByUsername(loginRequest.username)
             ?: throw ResourceNotFoundException("User not found")
-        val userDetails = userDetailsService.loadUserByUsername(loginRequest.username)
-        val token = jwtService.generateToken(userDetails)
 
-        return LoginResponse(
-            token = token,
-            user = UserInfo(
-                name = user.username,
-                email = user.email
-            )
+        // Establish session-based authentication
+        val userDetails = userDetailsService.loadUserByUsername(loginRequest.username)
+        val authToken = UsernamePasswordAuthenticationToken(userDetails, null, userDetails.authorities)
+        SecurityContextHolder.getContext().authentication = authToken
+        request.getSession(true) // Force session creation
+
+        return SessionLoginResponse(
+            user = UserInfo(name = user.username, email = user.email)
         )
     }
 
@@ -123,8 +123,7 @@ class AuthController(
 
 data class LoginRequest(val username: String, val password: String)
 
-data class LoginResponse(
-    val token: String,  // JWT token
+data class SessionLoginResponse(
     val user: UserInfo
 )
 
