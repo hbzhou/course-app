@@ -2,6 +2,7 @@ package com.itsz.app.auth.controller
 
 import com.itsz.app.auth.jwt.JwtService
 import com.itsz.app.auth.model.User
+import com.itsz.app.auth.oauth2.OAuth2ProviderProperties
 import com.itsz.app.auth.repository.RoleRepository
 import com.itsz.app.auth.service.UserService
 import com.itsz.app.exception.ResourceNotFoundException
@@ -27,7 +28,8 @@ class AuthController(
     private val jwtService: JwtService,
     private val userService: UserService,
     private val roleRepository: RoleRepository,
-    private val passwordEncoder: PasswordEncoder
+    private val passwordEncoder: PasswordEncoder,
+    private val oauth2ProviderProperties: OAuth2ProviderProperties
 ) {
 
     @PostMapping("/login")
@@ -106,6 +108,15 @@ class AuthController(
         SecurityContextHolder.clearContext()
         response.setHeader("Clear-Site-Data", "\"cookies\"")
         return ResponseEntity.ok().build()
+    }
+
+    data class ProviderInfo(val providerId: String, val displayName: String)
+
+    @GetMapping("/providers")
+    fun providers(): List<ProviderInfo> {
+        return oauth2ProviderProperties.providers.map {
+            ProviderInfo(providerId = it.providerId, displayName = it.displayName)
+        }
     }
 }
 

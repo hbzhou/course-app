@@ -97,7 +97,7 @@ class SecurityConfig(
                         "/**/*.html", "/**/*.css", "/**/*.js","/**/*.png", "/**/*.jpg", "/**/*.jpeg", "/**/*.gif", "/**/*.svg", "/**/*.ico",
                     ).permitAll()
                     .requestMatchers("/actuator/health/**").permitAll()
-                    .requestMatchers("/api/auth/login", "/api/auth/register", "/api/auth/logout").permitAll()
+                    .requestMatchers("/api/auth/login", "/api/auth/register", "/api/auth/logout", "/api/auth/providers").permitAll()
                     .requestMatchers("/oauth2/**", "/login/oauth2/**").permitAll()
                     .requestMatchers("/ws/**").permitAll()
                     .anyRequest().authenticated()
@@ -109,11 +109,10 @@ class SecurityConfig(
                 oauth2.defaultSuccessUrl(successUrl, true)
             }
             .exceptionHandling { exceptions ->
-                val oauth2EntryPoint = LoginUrlAuthenticationEntryPoint("/oauth2/authorization/${oauth2ProviderResolver.defaultProfile().providerId}")
-                oauth2EntryPoint.setFavorRelativeUris(false)
+                val loginEntryPoint = LoginUrlAuthenticationEntryPoint("/login")
                 exceptions.defaultAuthenticationEntryPointFor(
-                    oauth2EntryPoint,
-                    RequestMatcher { request -> request.requestURI == "/courses" }
+                    loginEntryPoint,
+                    RequestMatcher { request -> !request.requestURI.startsWith("/api/") }
                 )
             }
             .oauth2ResourceServer { oauth2 ->

@@ -38,11 +38,11 @@ class SecurityConfigSessionAuthTest : EmbeddedRedisSupport() {
     }
 
     @Test
-    fun `oauth2 protected request redirects unauthenticated users to authorization endpoint`() {
+    fun `unauthenticated page request redirects to login`() {
         mockMvc.get("/courses")
             .andExpect {
                 status { is3xxRedirection() }
-                redirectedUrlPattern("**/oauth2/authorization/azure")
+                redirectedUrl("/login")
             }
     }
 

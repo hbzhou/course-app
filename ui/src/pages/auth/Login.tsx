@@ -4,7 +4,7 @@ import { Button } from "@/common/Button";
 import { Input } from "@/common/Input";
 import { Label } from "@/common/Label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/common/Card";
-import { useLogin } from "@/hooks/useAuth";
+import { useLogin, useProviders } from "@/hooks/useAuth";
 import { LoginRequest } from "@/api/authApi";
 import { defaultOAuth2AuthorizationPath, defaultOAuth2ProviderLabel } from "@/config/oauth2";
 import { useState } from "react";
@@ -13,6 +13,7 @@ const Login = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const loginMutation = useLogin();
+  const { data: providers, isLoading: providersLoading } = useProviders();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const {
     register,
@@ -31,13 +32,13 @@ const Login = () => {
     }
   };
 
-  const handleOAuth2Login = () => {
+  const handleOAuth2Login = (providerId: string) => {
     const fromPath = (location.state as { from?: { pathname?: string } })?.from?.pathname;
     if (fromPath && fromPath !== "/login") {
       sessionStorage.setItem("oauth2_return_to", fromPath);
     }
 
-    window.location.href = defaultOAuth2AuthorizationPath;
+    window.location.href = `/oauth2/authorization/${providerId}`;
   };
 
   return (
@@ -81,30 +82,36 @@ const Login = () => {
               {loginMutation.isPending ? "Logging in..." : "Login"}
             </Button>
 
-            {/* OAuth2 Login Option */}
-            <div className="w-full space-y-2">
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <span className="w-full border-t" />
-                </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-background px-2 text-muted-foreground">
-                    Or continue with
-                  </span>
-                </div>
+            {/* OAuth2 Login Options */}
+            {providersLoading ? (
+              <div className="w-full flex justify-center py-2">
+                <span className="text-sm text-muted-foreground">Loading providers...</span>
               </div>
-              <Button
-                type="button"
-                variant="outline"
-                className="w-full"
-                onClick={handleOAuth2Login}
-              >
-                <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"/>
-                </svg>
-                {`Continue with ${defaultOAuth2ProviderLabel}`}
-              </Button>
-            </div>
+            ) : providers && providers.length > 0 ? (
+              <div className="w-full space-y-2">
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t" />
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-background px-2 text-muted-foreground">
+                      Or continue with
+                    </span>
+                  </div>
+                </div>
+                {providers.map((provider) => (
+                  <Button
+                    key={provider.providerId}
+                    type="button"
+                    variant="outline"
+                    className="w-full"
+                    onClick={() => handleOAuth2Login(provider.providerId)}
+                  >
+                    {`Continue with ${provider.displayName}`}
+                  </Button>
+                ))}
+              </div>
+            ) : null}
 
             <p className="text-sm text-center text-muted-foreground">
               Don't have an account?{" "}
