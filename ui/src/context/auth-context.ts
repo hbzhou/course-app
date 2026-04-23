@@ -12,7 +12,6 @@ export type AuthStatus = "loading" | "authenticated" | "anonymous";
 
 export interface AuthContextType {
   user: AuthenticatedUser | null;
-  token: string | null;
   authStatus: AuthStatus;
   isAuthenticated: boolean;
   login: (user: User) => void;
