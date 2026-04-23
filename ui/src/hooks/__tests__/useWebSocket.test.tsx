@@ -50,10 +50,9 @@ describe("useWebSocket", () => {
     });
   });
 
-  it("does not activate connection when no token", () => {
+  it("does not activate connection when not authenticated", () => {
     vi.mocked(useAuthContext).mockReturnValue({
       user: null,
-      token: null,
       authStatus: "anonymous",
       isAuthenticated: false,
       login: vi.fn(),
@@ -67,10 +66,9 @@ describe("useWebSocket", () => {
     expect(mockActivate).not.toHaveBeenCalled();
   });
 
-  it("activates connection when token exists", async () => {
+  it("activates connection when authenticated", async () => {
     vi.mocked(useAuthContext).mockReturnValue({
-      user: { name: "admin", email: "admin@test.com", authType: "legacy" },
-      token: "test-token",
+      user: { name: "admin", email: "admin@test.com", authType: "session" },
       authStatus: "authenticated",
       isAuthenticated: true,
       login: vi.fn(),
@@ -84,19 +82,16 @@ describe("useWebSocket", () => {
       expect(Client).toHaveBeenCalledWith(
         expect.objectContaining({
           brokerURL: expect.stringContaining("ws://"),
-          connectHeaders: expect.objectContaining({
-            Authorization: "Bearer test-token",
-          }),
+          reconnectDelay: 5000,
         })
       );
       expect(mockActivate).toHaveBeenCalled();
     });
   });
 
-  it("activates session-backed connection with empty connect headers", async () => {
+  it("does not send Authorization in connect headers", async () => {
     vi.mocked(useAuthContext).mockReturnValue({
       user: { name: "testuser", email: "test@example.com", provider: "azure", authType: "session" },
-      token: null,
       authStatus: "authenticated",
       isAuthenticated: true,
       login: vi.fn(),
@@ -107,20 +102,16 @@ describe("useWebSocket", () => {
     renderHook(() => useWebSocket());
 
     await waitFor(() => {
-      expect(Client).toHaveBeenCalledWith(
-        expect.objectContaining({
-          brokerURL: expect.stringContaining("ws://"),
-          connectHeaders: {},
-        })
-      );
-      expect(mockActivate).toHaveBeenCalled();
+      expect(Client).toHaveBeenCalled();
     });
+
+    const clientConfig = vi.mocked(Client).mock.calls[0][0] as Record<string, unknown>;
+    expect(clientConfig.connectHeaders).toBeUndefined();
   });
 
   it("deactivates connection on unmount", async () => {
     vi.mocked(useAuthContext).mockReturnValue({
-      user: { name: "admin", email: "admin@test.com", authType: "legacy" },
-      token: "test-token",
+      user: { name: "admin", email: "admin@test.com", authType: "session" },
       authStatus: "authenticated",
       isAuthenticated: true,
       login: vi.fn(),
@@ -137,31 +128,5 @@ describe("useWebSocket", () => {
     unmount();
 
     expect(mockDeactivate).toHaveBeenCalled();
-  });
-
-  it("connects with proper configuration", async () => {
-    vi.mocked(useAuthContext).mockReturnValue({
-      user: { name: "admin", email: "admin@test.com", authType: "legacy" },
-      token: "test-token",
-      authStatus: "authenticated",
-      isAuthenticated: true,
-      login: vi.fn(),
-      logout: vi.fn(),
-      refreshSession: vi.fn(),
-    });
-
-    renderHook(() => useWebSocket());
-
-    await waitFor(() => {
-      expect(Client).toHaveBeenCalledWith(
-        expect.objectContaining({
-          brokerURL: expect.stringContaining("ws://"),
-          connectHeaders: expect.objectContaining({
-            Authorization: "Bearer test-token",
-          }),
-          reconnectDelay: 5000,
-        })
-      );
-    });
   });
 });
