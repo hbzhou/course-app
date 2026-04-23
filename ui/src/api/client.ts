@@ -1,9 +1,12 @@
 // Base API client with common fetch configuration
-const getAuthHeaders = () => {
-  const token = localStorage.getItem("token");
-  return {
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
-  };
+const getCsrfToken = (): string | null => {
+  const match = document.cookie.match(/XSRF-TOKEN=([^;]+)/);
+  return match ? decodeURIComponent(match[1]) : null;
+};
+
+const isMutatingMethod = (method?: string): boolean => {
+  const m = (method ?? "GET").toUpperCase();
+  return m === "POST" || m === "PUT" || m === "PATCH" || m === "DELETE";
 };
 
 export class ApiError extends Error {
@@ -35,13 +38,16 @@ export const apiClient = async <T>(
   options?: RequestInit
 ): Promise<T> => {
   const hasBody = options?.body !== undefined && options?.body !== null;
+  const csrfHeaders = isMutatingMethod(options?.method)
+    ? { "X-XSRF-TOKEN": getCsrfToken() ?? "" }
+    : {};
 
   const response = await fetch(url, {
     ...options,
     credentials: "include",
     headers: {
       ...(hasBody ? { "Content-Type": "application/json" } : {}),
-      ...getAuthHeaders(),
+      ...csrfHeaders,
       ...options?.headers,
     },
   });
