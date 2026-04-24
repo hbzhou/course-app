@@ -33,6 +33,22 @@ class AuthControllerSessionTest : EmbeddedRedisSupport() {
     }
 
     @Test
+    fun `login returns user info without token and sets session cookie`() {
+        mockMvc.perform(
+            org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+                .post("/api/auth/login")
+                .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                .content("""{"username":"admin","password":"admin123"}""")
+        ).andExpect(
+            org.springframework.test.web.servlet.result.MockMvcResultMatchers.status().isOk
+        ).andExpect(
+            org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$.user.name").value("admin")
+        ).andExpect(
+            org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$.token").doesNotExist()
+        )
+    }
+
+    @Test
     fun `me returns normalized session principal details`() {
         mockMvc.get("/api/auth/me") {
             with(

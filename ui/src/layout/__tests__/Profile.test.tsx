@@ -30,7 +30,6 @@ describe("Profile", () => {
     } as ReturnType<typeof useLogout>);
     vi.mocked(useAuthContext).mockReturnValue({
       user: null,
-      token: null,
       authStatus: "anonymous",
       isAuthenticated: false,
       login: vi.fn(),
@@ -60,9 +59,8 @@ describe("Profile", () => {
       user: {
         name: "testuser",
         email: "test@example.com",
-        authType: "oauth2",
+        authType: "session",
       },
-      token: null,
       authStatus: "authenticated",
       isAuthenticated: true,
       login: vi.fn(),
@@ -83,9 +81,8 @@ describe("Profile", () => {
       user: {
         name: "testuser",
         email: "test@example.com",
-        authType: "oauth2",
+        authType: "session",
       },
-      token: null,
       authStatus: "authenticated",
       isAuthenticated: true,
       login: vi.fn(),
@@ -110,9 +107,8 @@ describe("Profile", () => {
       user: {
         name: "testuser",
         email: "test@example.com",
-        authType: "oauth2",
+        authType: "session",
       },
-      token: null,
       authStatus: "authenticated",
       isAuthenticated: true,
       login: vi.fn(),

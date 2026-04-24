@@ -9,11 +9,9 @@ export const useLogin = () => {
   return useMutation({
     mutationFn: (credentials: LoginRequest) => authApi.login(credentials),
     onSuccess: (data: AuthResponse) => {
-      // Update auth context (which syncs to localStorage)
       login({
         username: data.user.name,
         email: data.user.email,
-        token: data.token,
       });
       // Invalidate all queries on login to refetch with new token
       queryClient.invalidateQueries();

@@ -8,7 +8,6 @@ import com.itsz.app.auth.oauth2.OAuth2ProviderProperties
 import com.itsz.app.auth.oauth2.OAuth2ProviderResolver
 import com.itsz.app.auth.oauth2.ProviderAwareJwtAuthenticationConverter
 import com.itsz.app.auth.oauth2.ProviderAwareOidcUserService
-import com.itsz.app.auth.jwt.JwtAuthFilter
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -25,7 +24,6 @@ import org.springframework.security.oauth2.client.userinfo.OAuth2UserService
 import org.springframework.security.oauth2.core.oidc.user.OidcUser
 import org.springframework.security.web.SecurityFilterChain
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
 import org.springframework.security.web.util.matcher.RequestMatcher
 
 @Configuration
@@ -34,7 +32,6 @@ import org.springframework.security.web.util.matcher.RequestMatcher
 @EnableConfigurationProperties(OAuth2ProviderProperties::class)
 class SecurityConfig(
     private val userDetailsService: UserDetailsService,
-    private val jwtAuthFilter: JwtAuthFilter,
     private val oauth2ProviderProperties: OAuth2ProviderProperties,
     @org.springframework.beans.factory.annotation.Value("\${app.oauth2.success-url}") private val successUrl: String
 ) {
@@ -83,7 +80,15 @@ class SecurityConfig(
         providerAwareJwtAuthenticationConverter: ProviderAwareJwtAuthenticationConverter
     ): SecurityFilterChain {
         http
-            .csrf { it.disable() }
+            .csrf { csrf ->
+                csrf.csrfTokenRepository(
+                    org.springframework.security.web.csrf.CookieCsrfTokenRepository.withHttpOnlyFalse()
+                )
+                csrf.csrfTokenRequestHandler(
+                    org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler()
+                )
+                csrf.ignoringRequestMatchers("/api/auth/login", "/api/auth/register", "/api/auth/logout", "/ws/**")
+            }
             .authorizeHttpRequests {
                 it
                     // Swagger UI / OpenAPI
@@ -120,7 +125,6 @@ class SecurityConfig(
                     jwt.jwtAuthenticationConverter(providerAwareJwtAuthenticationConverter)
                 }
             }
-            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter::class.java)
 
         return http.build()
     }

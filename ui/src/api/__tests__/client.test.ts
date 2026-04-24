@@ -4,11 +4,6 @@ import { ApiError, apiClient } from "../client";
 describe("apiClient", () => {
   beforeEach(() => {
     vi.restoreAllMocks();
-    vi.stubGlobal("localStorage", {
-      getItem: vi.fn(() => "test-token"),
-      setItem: vi.fn(),
-      removeItem: vi.fn(),
-    });
   });
 
   it("returns parsed json on success", async () => {
@@ -28,19 +23,16 @@ describe("apiClient", () => {
       expect.objectContaining({
         method: "GET",
         credentials: "include",
-        headers: expect.objectContaining({
-          Authorization: "Bearer test-token",
-        }),
       })
     );
 
     const [, requestInit] = vi.mocked(fetch).mock.calls[0];
     const headers = requestInit?.headers as Record<string, string>;
     expect(headers["Content-Type"]).toBeUndefined();
+    expect(headers["Authorization"]).toBeUndefined();
   });
 
-  it("sends credentials include even when no bearer token exists", async () => {
-    vi.mocked(localStorage.getItem).mockReturnValue(null);
+  it("does not send Authorization header", async () => {
     vi.spyOn(globalThis, "fetch").mockResolvedValue(
       new Response(JSON.stringify({ ok: true }), {
         status: 200,
@@ -50,17 +42,62 @@ describe("apiClient", () => {
 
     await apiClient<{ ok: boolean }>("/api/auth/me", { method: "GET" });
 
-    expect(fetch).toHaveBeenCalledWith(
-      "/api/auth/me",
-      expect.objectContaining({
-        method: "GET",
-        credentials: "include",
+    const [, requestInit] = vi.mocked(fetch).mock.calls[0];
+    const headers = requestInit?.headers as Record<string, string>;
+    expect(headers?.Authorization).toBeUndefined();
+  });
+
+  it("sends XSRF token header on POST", async () => {
+    Object.defineProperty(document, "cookie", {
+      writable: true,
+      value: "XSRF-TOKEN=test-csrf-token",
+    });
+
+    vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      new Response(JSON.stringify({ ok: true }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
       })
     );
 
+    await apiClient<{ ok: boolean }>("/api/courses", {
+      method: "POST",
+      body: JSON.stringify({ title: "New Course" }),
+    });
+
     const [, requestInit] = vi.mocked(fetch).mock.calls[0];
     const headers = requestInit?.headers as Record<string, string>;
-    expect(headers.Authorization).toBeUndefined();
+    expect(headers["X-XSRF-TOKEN"]).toBe("test-csrf-token");
+
+    Object.defineProperty(document, "cookie", {
+      writable: true,
+      value: "",
+    });
+  });
+
+  it("does not send XSRF header on GET", async () => {
+    Object.defineProperty(document, "cookie", {
+      writable: true,
+      value: "XSRF-TOKEN=test-csrf-token",
+    });
+
+    vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      new Response(JSON.stringify({ ok: true }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      })
+    );
+
+    await apiClient<{ ok: boolean }>("/api/courses", { method: "GET" });
+
+    const [, requestInit] = vi.mocked(fetch).mock.calls[0];
+    const headers = requestInit?.headers as Record<string, string>;
+    expect(headers["X-XSRF-TOKEN"]).toBeUndefined();
+
+    Object.defineProperty(document, "cookie", {
+      writable: true,
+      value: "",
+    });
   });
 
   it("adds json content-type when request body is present", async () => {

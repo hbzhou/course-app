@@ -77,10 +77,7 @@ describe("Login", () => {
   it("submits login form with valid credentials", async () => {
     const user = userEvent.setup();
     vi.mocked(authApi.login).mockResolvedValue({
-      id: 1,
-      username: "testuser",
-      name: "Test User",
-      token: "test-token",
+      user: { name: "testuser", email: "test@example.com" },
     });
     
     renderLogin();

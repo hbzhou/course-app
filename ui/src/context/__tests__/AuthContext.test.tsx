@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { renderHook, act, waitFor } from "@testing-library/react";
 import { AuthProvider } from "../AuthContext";
 import { useAuthContext } from "../auth-context";
@@ -17,27 +17,10 @@ const wrapper = ({ children }: { children: ReactNode }) => (
 
 describe("AuthContext", () => {
   beforeEach(() => {
-    const localStorageMock = {
-      getItem: vi.fn(),
-      setItem: vi.fn(),
-      removeItem: vi.fn(),
-      clear: vi.fn(),
-    };
-    vi.stubGlobal("localStorage", localStorageMock);
     vi.clearAllMocks();
   });
 
-  afterEach(() => {
-    vi.unstubAllGlobals();
-  });
-
   it("bootstraps authenticated user from session endpoint", async () => {
-    vi.mocked(localStorage.getItem).mockImplementation((key: string) => {
-      if (key === "token") return null;
-      if (key === "authType") return null;
-      if (key === "legacyUser") return null;
-      return null;
-    });
     vi.mocked(authApi.getCurrentUser).mockResolvedValue({
       name: "testuser",
       email: "test@example.com",
@@ -54,13 +37,7 @@ describe("AuthContext", () => {
     });
   });
 
-  it("is anonymous when session bootstrap fails and no legacy token exists", async () => {
-    vi.mocked(localStorage.getItem).mockImplementation((key: string) => {
-      if (key === "token") return null;
-      if (key === "authType") return null;
-      if (key === "legacyUser") return null;
-      return null;
-    });
+  it("is anonymous when session bootstrap fails", async () => {
     vi.mocked(authApi.getCurrentUser).mockRejectedValue(new Error("Unauthorized"));
 
     const { result } = renderHook(() => useAuthContext(), { wrapper });
@@ -72,13 +49,7 @@ describe("AuthContext", () => {
     });
   });
 
-  it("sets authenticated legacy user on login", async () => {
-    vi.mocked(localStorage.getItem).mockImplementation((key: string) => {
-      if (key === "token") return null;
-      if (key === "authType") return null;
-      if (key === "legacyUser") return null;
-      return null;
-    });
+  it("sets authenticated user on login", async () => {
     vi.mocked(authApi.getCurrentUser).mockRejectedValue(new Error("Unauthorized"));
     const { result } = renderHook(() => useAuthContext(), { wrapper });
 
@@ -88,39 +59,48 @@ describe("AuthContext", () => {
 
     act(() => {
       result.current.login({
-        username: "legacy-user",
-        email: "legacy@example.com",
-        token: "legacy-token",
+        username: "session-user",
+        email: "session@example.com",
       });
     });
 
     await waitFor(() => {
-      expect(result.current.token).toBe("legacy-token");
       expect(result.current.user).toEqual({
-        name: "legacy-user",
-        email: "legacy@example.com",
-        authType: "legacy",
+        name: "session-user",
+        email: "session@example.com",
+        authType: "session",
       });
       expect(result.current.authStatus).toBe("authenticated");
       expect(result.current.isAuthenticated).toBe(true);
-      expect(localStorage.setItem).toHaveBeenCalledWith(
-        "legacyUser",
-        JSON.stringify({
-          name: "legacy-user",
-          email: "legacy@example.com",
-          authType: "legacy",
-        })
-      );
+    });
+  });
+
+  it("clears user on logout", async () => {
+    vi.mocked(authApi.getCurrentUser).mockResolvedValue({
+      name: "testuser",
+      email: "test@example.com",
+      provider: "azure",
+      authType: "session",
+    });
+
+    const { result } = renderHook(() => useAuthContext(), { wrapper });
+
+    await waitFor(() => {
+      expect(result.current.isAuthenticated).toBe(true);
+    });
+
+    act(() => {
+      result.current.logout();
+    });
+
+    await waitFor(() => {
+      expect(result.current.user).toBeNull();
+      expect(result.current.authStatus).toBe("anonymous");
+      expect(result.current.isAuthenticated).toBe(false);
     });
   });
 
   it("refreshSession updates user and status", async () => {
-    vi.mocked(localStorage.getItem).mockImplementation((key: string) => {
-      if (key === "token") return null;
-      if (key === "authType") return null;
-      if (key === "legacyUser") return null;
-      return null;
-    });
     vi.mocked(authApi.getCurrentUser)
       .mockRejectedValueOnce(new Error("Unauthorized"))
       .mockResolvedValueOnce({
@@ -145,99 +125,6 @@ describe("AuthContext", () => {
       expect(result.current.user?.name).toBe("session-user");
       expect(result.current.isAuthenticated).toBe(true);
     });
-  });
-
-  it("keeps legacy auth without calling session endpoint when token exists", async () => {
-    vi.mocked(localStorage.getItem).mockImplementation((key: string) => {
-      if (key === "token") return "legacy-token";
-      if (key === "authType") return "legacy";
-      if (key === "legacyUser") {
-        return JSON.stringify({ name: "legacy-user", email: "legacy@example.com" });
-      }
-      return null;
-    });
-
-    const { result } = renderHook(() => useAuthContext(), { wrapper });
-
-    await waitFor(() => {
-      expect(result.current.isAuthenticated).toBe(true);
-      expect(result.current.user).toEqual({
-        name: "legacy-user",
-        email: "legacy@example.com",
-        authType: "legacy",
-      });
-    });
-
-    expect(authApi.getCurrentUser).not.toHaveBeenCalled();
-  });
-
-  it("treats token-only stored state as legacy bootstrap", async () => {
-    vi.mocked(localStorage.getItem).mockImplementation((key: string) => {
-      if (key === "token") return "legacy-token";
-      if (key === "authType") return null;
-      if (key === "legacyUser") {
-        return JSON.stringify({ name: "legacy-user", email: "legacy@example.com" });
-      }
-      return null;
-    });
-
-    const { result } = renderHook(() => useAuthContext(), { wrapper });
-
-    await waitFor(() => {
-      expect(result.current.isAuthenticated).toBe(true);
-      expect(result.current.user).toEqual({
-        name: "legacy-user",
-        email: "legacy@example.com",
-        authType: "legacy",
-      });
-    });
-
-    expect(authApi.getCurrentUser).not.toHaveBeenCalled();
-  });
-
-  it("clears stale token when cookie session bootstrap succeeds", async () => {
-    vi.mocked(localStorage.getItem).mockImplementation((key: string) => {
-      if (key === "token") return "stale-token";
-      if (key === "authType") return "session";
-      if (key === "legacyUser") return null;
-      return null;
-    });
-    vi.mocked(authApi.getCurrentUser).mockResolvedValue({
-      name: "session-user",
-      email: "session@example.com",
-      provider: "azure",
-      authType: "session",
-    });
-
-    const { result } = renderHook(() => useAuthContext(), { wrapper });
-
-    await waitFor(() => {
-      expect(result.current.user?.name).toBe("session-user");
-      expect(result.current.token).toBeNull();
-    });
-
-    expect(localStorage.removeItem).toHaveBeenCalledWith("token");
-  });
-
-  it("clears stale non-legacy token when session bootstrap fails", async () => {
-    vi.mocked(localStorage.getItem).mockImplementation((key: string) => {
-      if (key === "token") return "stale-token";
-      if (key === "authType") return "session";
-      if (key === "legacyUser") return null;
-      return null;
-    });
-    vi.mocked(authApi.getCurrentUser).mockRejectedValue(new Error("Unauthorized"));
-
-    const { result } = renderHook(() => useAuthContext(), { wrapper });
-
-    await waitFor(() => {
-      expect(result.current.authStatus).toBe("anonymous");
-      expect(result.current.token).toBeNull();
-    });
-
-    expect(localStorage.removeItem).toHaveBeenCalledWith("token");
-    expect(localStorage.removeItem).toHaveBeenCalledWith("authType");
-    expect(localStorage.removeItem).toHaveBeenCalledWith("legacyUser");
   });
 
   it("throws error when used outside provider", () => {
