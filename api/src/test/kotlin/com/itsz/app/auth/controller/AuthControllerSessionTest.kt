@@ -13,6 +13,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import org.springframework.web.context.WebApplicationContext
 import org.springframework.security.web.FilterChainProxy
 import org.junit.jupiter.api.BeforeEach
+import org.springframework.mock.web.MockHttpSession
 
 @SpringBootTest
 class AuthControllerSessionTest : EmbeddedRedisSupport() {
@@ -45,6 +46,32 @@ class AuthControllerSessionTest : EmbeddedRedisSupport() {
             org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$.user.name").value("admin")
         ).andExpect(
             org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$.token").doesNotExist()
+        )
+    }
+
+    @Test
+    fun `username password login establishes session usable by me endpoint`() {
+        val loginResult = mockMvc.perform(
+            org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+                .post("/api/auth/login")
+                .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                .content("""{"username":"admin","password":"admin123"}""")
+        ).andExpect(
+            org.springframework.test.web.servlet.result.MockMvcResultMatchers.status().isOk
+        ).andReturn()
+
+        val session = loginResult.request.session as MockHttpSession
+
+        mockMvc.perform(
+            org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+                .get("/api/auth/me")
+                .session(session)
+        ).andExpect(
+            org.springframework.test.web.servlet.result.MockMvcResultMatchers.status().isOk
+        ).andExpect(
+            org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$.name").value("admin")
+        ).andExpect(
+            org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$.authType").value("session")
         )
     }
 

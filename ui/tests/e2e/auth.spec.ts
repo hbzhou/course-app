@@ -48,8 +48,7 @@ test.describe('Authentication Pages', () => {
     });
 
     test('should successfully log in with valid credentials', async ({ page }) => {
-      const token = await loginUser(page, TEST_USER.username, TEST_USER.password);
-      expect(token).toBeTruthy();
+      await loginUser(page, TEST_USER.username, TEST_USER.password);
 
       // Verify user is on authenticated page (not login page)
       const url = page.url();
@@ -96,17 +95,16 @@ test.describe('Authentication Pages', () => {
     });
   });
 
-  test.describe('Token persistence', () => {
-    test('should persist login token in localStorage', async ({ page }) => {
+  test.describe('Session persistence', () => {
+    test('should not persist legacy token in localStorage', async ({ page }) => {
       await loginUser(page);
 
-      // Verify token is in localStorage
+      // Session auth should not rely on localStorage token.
       const token = await page.evaluate(() => localStorage.getItem('token'));
-      expect(token).toBeTruthy();
-      expect(token).toMatch(/^[A-Za-z0-9\-_.]+\.[A-Za-z0-9\-_.]+\.[A-Za-z0-9\-_.]+$/); // JWT format
+      expect(token).toBeNull();
     });
 
-    test('should access protected page directly with valid token', async ({ page }) => {
+    test('should access protected page directly with valid session', async ({ page }) => {
       // Log in first
       await loginUser(page);
 

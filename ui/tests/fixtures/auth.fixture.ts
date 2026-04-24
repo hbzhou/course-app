@@ -30,22 +30,17 @@ export async function loginUser(page: Page, username = TEST_USER.username, passw
   try {
     await page.waitForURL(url => !url.pathname.includes('/login'), { timeout: 10000 });
   } catch {
-    // If URL doesn't change, still proceed and check token
-    // Some apps might redirect after token is set
+    // If URL doesn't change immediately, continue with session verification.
     await page.waitForLoadState('networkidle').catch(() => {});
   }
-  
-  // Wait a bit for localStorage to be updated
-  await page.waitForFunction(
-    () => localStorage.getItem('token'),
-    { timeout: 5000 }
-  );
-  
-  // Verify login was successful by checking localStorage
-  const token = await page.evaluate(() => localStorage.getItem('token'));
-  expect(token).toBeTruthy();
-  
-  return token;
+
+  // Session auth is cookie-based; verify by calling protected identity endpoint.
+  await expect
+    .poll(async () => {
+      const response = await page.request.get('/api/auth/me');
+      return response.status();
+    }, { timeout: 10000 })
+    .toBe(200);
 }
 
 /**
@@ -77,24 +72,25 @@ export async function logoutUser(page: Page) {
     // If redirect doesn't happen, just proceed
     await page.waitForLoadState('networkidle').catch(() => {});
   }
-  
-  // Verify token is cleared
-  const token = await page.evaluate(() => localStorage.getItem('token'));
-  expect(token).toBeNull();
+
+  const meResponse = await page.request.get('/api/auth/me');
+  expect(meResponse.status()).toBe(401);
 }
 
 /**
  * Helper to check if user is logged in
  */
 export async function isLoggedIn(page: Page): Promise<boolean> {
-  const token = await page.evaluate(() => localStorage.getItem('token'));
-  return !!token;
+  const response = await page.request.get('/api/auth/me');
+  return response.status() === 200;
 }
 
 /**
  * Helper to clear storage and reset app state
  */
 export async function clearAppState(page: Page) {
+  await page.context().clearCookies();
+
   // Navigate to app first to establish origin context for localStorage
   await page.goto('/').catch(() => {});
   

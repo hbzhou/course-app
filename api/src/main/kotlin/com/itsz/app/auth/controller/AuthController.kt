@@ -17,6 +17,7 @@ import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.security.oauth2.core.user.OAuth2User
 import org.springframework.security.oauth2.jwt.Jwt
+import org.springframework.security.web.context.HttpSessionSecurityContextRepository
 import org.springframework.web.bind.annotation.*
 
 @RestController
@@ -30,8 +31,14 @@ class AuthController(
     private val oauth2ProviderProperties: OAuth2ProviderProperties
 ) {
 
+    private val securityContextRepository = HttpSessionSecurityContextRepository()
+
     @PostMapping("/login")
-    fun login(@RequestBody loginRequest: LoginRequest, request: HttpServletRequest): SessionLoginResponse {
+    fun login(
+        @RequestBody loginRequest: LoginRequest,
+        request: HttpServletRequest,
+        response: HttpServletResponse
+    ): SessionLoginResponse {
         authenticationManager.authenticate(
             UsernamePasswordAuthenticationToken(loginRequest.username, loginRequest.password)
         )
@@ -42,6 +49,7 @@ class AuthController(
         val userDetails = userDetailsService.loadUserByUsername(loginRequest.username)
         val authToken = UsernamePasswordAuthenticationToken(userDetails, null, userDetails.authorities)
         SecurityContextHolder.getContext().authentication = authToken
+        securityContextRepository.saveContext(SecurityContextHolder.getContext(), request, response)
         request.getSession(true) // Force session creation
 
         return SessionLoginResponse(

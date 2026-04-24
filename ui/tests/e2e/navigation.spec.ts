@@ -72,14 +72,16 @@ test.describe('Navigation and Layout', () => {
     await loginUser(page);
     await page.goto('/courses');
 
-    // Look for profile menu or logout button
-    const profileMenu = page.locator('[data-testid="profile-menu"], button:has-text("Profile"), button:has-text("admin")').first();
-    const logoutBtn = page.locator('button:has-text("Logout")').first();
+    // Under heavy parallelism, allow a short settling window for header/auth hydration.
+    await expect
+      .poll(async () => {
+        const me = await page.request.get('/api/auth/me');
+        return me.status();
+      }, { timeout: 10000 })
+      .toBe(200);
 
-    const profileVisible = await profileMenu.isVisible({ timeout: 3000 }).catch(() => false);
-    const logoutVisible = await logoutBtn.isVisible({ timeout: 3000 }).catch(() => false);
-
-    expect(profileVisible || logoutVisible).toBeTruthy();
+    const logoutBtn = page.getByRole('button', { name: /logout|logging out/i });
+    await expect(logoutBtn).toBeVisible({ timeout: 10000 });
   });
 
   test('should have responsive design for mobile', async ({ browser }) => {
