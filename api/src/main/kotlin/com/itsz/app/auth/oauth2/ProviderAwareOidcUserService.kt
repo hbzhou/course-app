@@ -41,7 +41,7 @@ class ProviderAwareOidcUserService(
             putAll(accessTokenClaimsLoader(userRequest))
         }
         val normalized = adapters.getValue(profile.providerId).normalize(mergedClaims, profile)
-        val mappedAuthorities = authorityMapper.map(normalized, oidcUser.authorities)
+        val mappedAuthorities = authorityMapper.map(normalized, oidcUser.authorities, profile)
 
         return DefaultOidcUser(mappedAuthorities, oidcUser.idToken, OidcUserInfo(normalized.toAttributes()), "username")
     }

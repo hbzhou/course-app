@@ -29,6 +29,7 @@ describe("Login", () => {
     vi.mocked(authApi.getProviders).mockResolvedValue([
       { providerId: "azure", displayName: "Azure AD" },
       { providerId: "keycloak", displayName: "Keycloak" },
+      { providerId: "google", displayName: "Google" },
     ]);
     vi.stubGlobal("localStorage", {
       getItem: vi.fn(),
@@ -126,12 +127,40 @@ describe("Login", () => {
     expect(submitButton).toBeDisabled();
   });
 
-  it("renders both provider buttons from API", async () => {
+  it("renders provider buttons for all returned providers", async () => {
     renderLogin();
     await waitFor(() => {
-      expect(screen.getByRole("button", { name: /continue with azure ad/i })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /microsoft/i })).toBeInTheDocument();
     });
-    expect(screen.getByRole("button", { name: /continue with keycloak/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /keycloak/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /google/i })).toBeInTheDocument();
+  });
+
+  it("renders brand logo inside Google provider button", async () => {
+    renderLogin();
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: /google/i })).toBeInTheDocument();
+    });
+    const googleBtn = screen.getByRole("button", { name: /google/i });
+    expect(googleBtn.querySelector("svg")).toBeInTheDocument();
+  });
+
+  it("renders brand logo inside Microsoft provider button", async () => {
+    renderLogin();
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: /microsoft/i })).toBeInTheDocument();
+    });
+    const msBtn = screen.getByRole("button", { name: /microsoft/i });
+    expect(msBtn.querySelector("svg")).toBeInTheDocument();
+  });
+
+  it("renders brand logo inside Keycloak provider button", async () => {
+    renderLogin();
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: /keycloak/i })).toBeInTheDocument();
+    });
+    const keycloakBtn = screen.getByRole("button", { name: /keycloak/i });
+    expect(keycloakBtn.querySelector("svg")).toBeInTheDocument();
   });
 
   it("redirects to Azure AD authorization endpoint when Azure button clicked", async () => {
@@ -144,9 +173,9 @@ describe("Login", () => {
 
     renderLogin();
     await waitFor(() => {
-      expect(screen.getByRole("button", { name: /continue with azure ad/i })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /microsoft/i })).toBeInTheDocument();
     });
-    await user.click(screen.getByRole("button", { name: /continue with azure ad/i }));
+    await user.click(screen.getByRole("button", { name: /microsoft/i }));
 
     expect(window.location.href).toContain("/oauth2/authorization/azure");
 
@@ -166,9 +195,9 @@ describe("Login", () => {
 
     renderLogin();
     await waitFor(() => {
-      expect(screen.getByRole("button", { name: /continue with keycloak/i })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /keycloak/i })).toBeInTheDocument();
     });
-    await user.click(screen.getByRole("button", { name: /continue with keycloak/i }));
+    await user.click(screen.getByRole("button", { name: /keycloak/i }));
 
     expect(window.location.href).toContain("/oauth2/authorization/keycloak");
 
@@ -206,9 +235,9 @@ describe("Login", () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByRole("button", { name: /continue with azure ad/i })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /microsoft/i })).toBeInTheDocument();
     });
-    await user.click(screen.getByRole("button", { name: /continue with azure ad/i }));
+    await user.click(screen.getByRole("button", { name: /microsoft/i }));
 
     expect(sessionStorage.setItem).toHaveBeenCalledWith("oauth2_return_to", "/courses");
 
