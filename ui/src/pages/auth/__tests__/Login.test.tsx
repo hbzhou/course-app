@@ -30,6 +30,7 @@ describe("Login", () => {
       { providerId: "azure", displayName: "Azure AD" },
       { providerId: "keycloak", displayName: "Keycloak" },
       { providerId: "google", displayName: "Google" },
+      { providerId: "github", displayName: "GitHub" },
     ]);
     vi.stubGlobal("localStorage", {
       getItem: vi.fn(),
@@ -134,6 +135,7 @@ describe("Login", () => {
     });
     expect(screen.getByRole("button", { name: /keycloak/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /google/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /github/i })).toBeInTheDocument();
   });
 
   it("renders brand logo inside Google provider button", async () => {
@@ -161,6 +163,15 @@ describe("Login", () => {
     });
     const keycloakBtn = screen.getByRole("button", { name: /keycloak/i });
     expect(keycloakBtn.querySelector("svg")).toBeInTheDocument();
+  });
+
+  it("renders brand logo inside GitHub provider button", async () => {
+    renderLogin();
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: /github/i })).toBeInTheDocument();
+    });
+    const githubBtn = screen.getByRole("button", { name: /github/i });
+    expect(githubBtn.querySelector("svg")).toBeInTheDocument();
   });
 
   it("redirects to Azure AD authorization endpoint when Azure button clicked", async () => {
@@ -200,6 +211,28 @@ describe("Login", () => {
     await user.click(screen.getByRole("button", { name: /keycloak/i }));
 
     expect(window.location.href).toContain("/oauth2/authorization/keycloak");
+
+    Object.defineProperty(window, "location", {
+      configurable: true,
+      value: originalLocation,
+    });
+  });
+
+  it("redirects to GitHub authorization endpoint when GitHub button clicked", async () => {
+    const user = userEvent.setup();
+    const originalLocation = window.location;
+    Object.defineProperty(window, "location", {
+      configurable: true,
+      value: { ...window.location, href: "http://localhost:3000/login" },
+    });
+
+    renderLogin();
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: /github/i })).toBeInTheDocument();
+    });
+    await user.click(screen.getByRole("button", { name: /github/i }));
+
+    expect(window.location.href).toContain("/oauth2/authorization/github");
 
     Object.defineProperty(window, "location", {
       configurable: true,
