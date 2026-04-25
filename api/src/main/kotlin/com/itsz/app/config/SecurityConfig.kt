@@ -1,12 +1,14 @@
 package com.itsz.app.config
 
 import com.itsz.app.auth.oauth2.AzureAdClaimsAdapter
+import com.itsz.app.auth.oauth2.GitHubClaimsAdapter
 import com.itsz.app.auth.oauth2.GoogleClaimsAdapter
 import com.itsz.app.auth.oauth2.KeycloakClaimsAdapter
 import com.itsz.app.auth.oauth2.OAuth2AuthorityMapper
 import com.itsz.app.auth.oauth2.OAuth2ClaimsAdapter
 import com.itsz.app.auth.oauth2.OAuth2ProviderProperties
 import com.itsz.app.auth.oauth2.OAuth2ProviderResolver
+import com.itsz.app.auth.oauth2.ProviderAwareOAuth2UserService
 import com.itsz.app.auth.oauth2.ProviderAwareJwtAuthenticationConverter
 import com.itsz.app.auth.oauth2.ProviderAwareOidcUserService
 import org.springframework.boot.context.properties.EnableConfigurationProperties
@@ -22,6 +24,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserRequest
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserService
+import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest
+import org.springframework.security.oauth2.core.user.OAuth2User
 import org.springframework.security.oauth2.core.oidc.user.OidcUser
 import org.springframework.security.web.SecurityFilterChain
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint
@@ -53,7 +57,7 @@ class SecurityConfig(
 
     @Bean
     fun oauth2ClaimsAdapters(): Map<String, OAuth2ClaimsAdapter> =
-        listOf(AzureAdClaimsAdapter(), KeycloakClaimsAdapter(), GoogleClaimsAdapter()).associateBy { it.providerId }
+        listOf(AzureAdClaimsAdapter(), KeycloakClaimsAdapter(), GoogleClaimsAdapter(), GitHubClaimsAdapter()).associateBy { it.providerId }
 
     @Bean
     fun oauth2AuthorityMapper(): OAuth2AuthorityMapper = OAuth2AuthorityMapper()
@@ -67,6 +71,14 @@ class SecurityConfig(
         ProviderAwareOidcUserService(oauth2ProviderResolver, oauth2ClaimsAdapters, oauth2AuthorityMapper)
 
     @Bean
+    fun providerAwareOAuth2UserService(
+        oauth2ProviderResolver: OAuth2ProviderResolver,
+        oauth2ClaimsAdapters: Map<String, OAuth2ClaimsAdapter>,
+        oauth2AuthorityMapper: OAuth2AuthorityMapper
+    ): OAuth2UserService<OAuth2UserRequest, OAuth2User> =
+        ProviderAwareOAuth2UserService(oauth2ProviderResolver, oauth2ClaimsAdapters, oauth2AuthorityMapper)
+
+    @Bean
     fun providerAwareJwtAuthenticationConverter(
         oauth2ProviderResolver: OAuth2ProviderResolver,
         oauth2ClaimsAdapters: Map<String, OAuth2ClaimsAdapter>,
@@ -78,6 +90,7 @@ class SecurityConfig(
         http: HttpSecurity,
         oauth2ProviderResolver: OAuth2ProviderResolver,
         providerAwareOidcUserService: OAuth2UserService<OidcUserRequest, OidcUser>,
+        providerAwareOAuth2UserService: OAuth2UserService<OAuth2UserRequest, OAuth2User>,
         providerAwareJwtAuthenticationConverter: ProviderAwareJwtAuthenticationConverter
     ): SecurityFilterChain {
         http
@@ -111,6 +124,7 @@ class SecurityConfig(
             .oauth2Login { oauth2 ->
                 oauth2.userInfoEndpoint { userInfo ->
                     userInfo.oidcUserService(providerAwareOidcUserService)
+                    userInfo.userService(providerAwareOAuth2UserService)
                 }
                 oauth2.defaultSuccessUrl(successUrl, true)
             }
