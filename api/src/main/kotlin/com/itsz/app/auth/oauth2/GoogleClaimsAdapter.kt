@@ -4,6 +4,11 @@ class GoogleClaimsAdapter : OAuth2ClaimsAdapter {
     override val providerId: String = "google"
 
     override fun normalize(claims: Map<String, Any?>, profile: OAuth2ProviderProfile): NormalizedOAuth2Principal {
+        val subject = (claims["sub"] as? String)
+            ?.trim()
+            ?.takeIf { it.isNotBlank() }
+            ?: throw IllegalArgumentException("Google sub claim is required")
+
         val email = (claims["email"] as? String)
             ?.trim()
             ?.takeIf { it.isNotBlank() }
@@ -13,14 +18,17 @@ class GoogleClaimsAdapter : OAuth2ClaimsAdapter {
             throw IllegalArgumentException("Google account must use gmail.com domain")
         }
 
-        val username = (claims["name"] as? String)
-            ?.trim()
-            ?.takeIf { it.isNotBlank() }
-            ?: email
+        val username = profile.usernameClaims
+            .firstNotNullOfOrNull { claim ->
+                (claims[claim] as? String)
+                    ?.trim()
+                    ?.takeIf { it.isNotBlank() }
+            }
+            ?: subject
 
         return NormalizedOAuth2Principal(
             provider = providerId,
-            subject = claims["sub"].toString(),
+            subject = subject,
             username = username,
             email = email,
             groupsOrRoles = emptyList(),
