@@ -130,7 +130,7 @@ describe("Login", () => {
   it("renders provider buttons for all returned providers", async () => {
     renderLogin();
     await waitFor(() => {
-      expect(screen.getByRole("button", { name: /azure ad/i })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /microsoft/i })).toBeInTheDocument();
     });
     expect(screen.getByRole("button", { name: /keycloak/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /google/i })).toBeInTheDocument();
@@ -145,13 +145,13 @@ describe("Login", () => {
     expect(googleBtn.querySelector("svg")).toBeInTheDocument();
   });
 
-  it("renders brand logo inside Azure AD provider button", async () => {
+  it("renders brand logo inside Microsoft provider button", async () => {
     renderLogin();
     await waitFor(() => {
-      expect(screen.getByRole("button", { name: /azure ad/i })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /microsoft/i })).toBeInTheDocument();
     });
-    const azureBtn = screen.getByRole("button", { name: /azure ad/i });
-    expect(azureBtn.querySelector("svg")).toBeInTheDocument();
+    const msBtn = screen.getByRole("button", { name: /microsoft/i });
+    expect(msBtn.querySelector("svg")).toBeInTheDocument();
   });
 
   it("renders brand logo inside Keycloak provider button", async () => {
@@ -173,9 +173,9 @@ describe("Login", () => {
 
     renderLogin();
     await waitFor(() => {
-      expect(screen.getByRole("button", { name: /azure ad/i })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /microsoft/i })).toBeInTheDocument();
     });
-    await user.click(screen.getByRole("button", { name: /azure ad/i }));
+    await user.click(screen.getByRole("button", { name: /microsoft/i }));
 
     expect(window.location.href).toContain("/oauth2/authorization/azure");
 
@@ -235,9 +235,9 @@ describe("Login", () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByRole("button", { name: /azure ad/i })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /microsoft/i })).toBeInTheDocument();
     });
-    await user.click(screen.getByRole("button", { name: /azure ad/i }));
+    await user.click(screen.getByRole("button", { name: /microsoft/i }));
 
     expect(sessionStorage.setItem).toHaveBeenCalledWith("oauth2_return_to", "/courses");
 

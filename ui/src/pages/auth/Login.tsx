@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { useLogin, useProviders } from "@/hooks/useAuth";
 import { LoginRequest } from "@/api/authApi";
 import { useState } from "react";
-import { providerLogos } from "@/config/oauth2";
+import { providerLogos, providerLabels } from "@/config/oauth2";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -88,7 +88,7 @@ const Login = () => {
                 <span className="text-sm text-muted-foreground">Loading providers...</span>
               </div>
             ) : providers && providers.length > 0 ? (
-              <div className="w-full space-y-2">
+              <div className="w-full space-y-3">
                 <div className="relative">
                   <div className="absolute inset-0 flex items-center">
                     <span className="w-full border-t" />
@@ -99,19 +99,24 @@ const Login = () => {
                     </span>
                   </div>
                 </div>
-                {providers.map((provider) => (
-                  <Button
-                    key={provider.providerId}
-                    type="button"
-                    variant="outline"
-                    className="w-full flex items-center justify-center gap-2"
-                    aria-label={provider.displayName}
-                    onClick={() => handleOAuth2Login(provider.providerId)}
-                  >
-                    {providerLogos[provider.providerId] ?? null}
-                    {provider.displayName}
-                  </Button>
-                ))}
+                <div className="grid grid-cols-2 gap-2">
+                  {providers.map((provider) => {
+                    const label = providerLabels[provider.providerId] ?? provider.displayName;
+                    return (
+                      <Button
+                        key={provider.providerId}
+                        type="button"
+                        variant="outline"
+                        className="flex items-center justify-center gap-2 py-5"
+                        aria-label={label}
+                        onClick={() => handleOAuth2Login(provider.providerId)}
+                      >
+                        {providerLogos[provider.providerId] ?? null}
+                        <span className="text-sm font-medium">{label}</span>
+                      </Button>
+                    );
+                  })}
+                </div>
               </div>
             ) : null}
 

@@ -1,7 +1,7 @@
 import React from "react";
 
-const providerLabels: Record<string, string> = {
-  azure: "Azure AD",
+export const providerLabels: Record<string, string> = {
+  azure: "Microsoft",
   keycloak: "Keycloak",
   google: "Google",
 };
@@ -18,8 +18,11 @@ export const providerLogos: Record<string, React.ReactElement> = {
     </svg>
   ),
   azure: (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
-      <path d="M13.05 4.24 7.4 17.67l-4.17.01 5.04-8.65-3.31-3.84zm.7-.56 4.04.01 4.18 14.3-3.6.01-1.1-3.74H11.9l-2.69-2.89z" fill="#0078D4"/>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 21 21" width="18" height="18" aria-hidden="true">
+      <rect x="1" y="1" width="9" height="9" fill="#F25022"/>
+      <rect x="11" y="1" width="9" height="9" fill="#7FBA00"/>
+      <rect x="1" y="11" width="9" height="9" fill="#00A4EF"/>
+      <rect x="11" y="11" width="9" height="9" fill="#FFB900"/>
     </svg>
   ),
   keycloak: (
