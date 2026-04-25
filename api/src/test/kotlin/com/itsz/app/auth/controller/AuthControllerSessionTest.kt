@@ -2,6 +2,7 @@ package com.itsz.app.auth.controller
 
 import com.itsz.app.config.EmbeddedRedisSupport
 import org.junit.jupiter.api.Test
+import org.hamcrest.Matchers.hasItem
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.oauth2Login
@@ -92,6 +93,34 @@ class AuthControllerSessionTest : EmbeddedRedisSupport() {
             jsonPath("$.provider") { value("azure") }
             jsonPath("$.authType") { value("session") }
         }
+    }
+
+    @Test
+    fun `me endpoint returns permissions for authenticated user`() {
+        val loginResult = mockMvc.perform(
+            org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+                .post("/api/auth/login")
+                .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                .content("""{"username":"admin","password":"admin123"}""")
+        ).andExpect(
+            org.springframework.test.web.servlet.result.MockMvcResultMatchers.status().isOk
+        ).andReturn()
+
+        val session = loginResult.request.session as MockHttpSession
+
+        mockMvc.perform(
+            org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+                .get("/api/auth/me")
+                .session(session)
+        ).andExpect(
+            org.springframework.test.web.servlet.result.MockMvcResultMatchers.status().isOk
+        ).andExpect(
+            org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$.permissions").isArray
+        ).andExpect(
+            org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$.permissions", hasItem("COURSE_VIEW"))
+        ).andExpect(
+            org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$.permissions", hasItem("COURSE_EDIT"))
+        )
     }
 
     @Test

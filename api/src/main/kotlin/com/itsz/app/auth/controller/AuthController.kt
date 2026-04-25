@@ -70,10 +70,16 @@ class AuthController(
     }
 
     @GetMapping("/me")
-    fun me(authentication: Authentication?): ResponseEntity<Map<String, String>> {
+    fun me(authentication: Authentication?): ResponseEntity<Map<String, Any>> {
         if (authentication == null || !authentication.isAuthenticated) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build()
         }
+
+        val permissions = authentication.authorities
+            .mapNotNull { it.authority }
+            .filter { !it.startsWith("ROLE_") }
+            .distinct()
+            .sorted()
 
         val principal = authentication.principal
         return when (principal) {
@@ -82,7 +88,8 @@ class AuthController(
                     "name" to (principal.subject ?: "unknown"),
                     "email" to (principal.getClaimAsString("email") ?: "unknown@example.com"),
                     "provider" to "legacy",
-                    "authType" to "bearer"
+                    "authType" to "bearer",
+                    "permissions" to permissions
                 )
             )
             is OAuth2User -> ResponseEntity.ok(
@@ -94,7 +101,8 @@ class AuthController(
                     ),
                     "email" to (principal.getAttribute<String>("email") ?: "unknown@example.com"),
                     "provider" to (principal.getAttribute<String>("provider") ?: "unknown"),
-                    "authType" to "session"
+                    "authType" to "session",
+                    "permissions" to permissions
                 )
             )
             else -> ResponseEntity.ok(
@@ -102,7 +110,8 @@ class AuthController(
                     "name" to authentication.name,
                     "email" to "unknown@example.com",
                     "provider" to "legacy",
-                    "authType" to "session"
+                    "authType" to "session",
+                    "permissions" to permissions
                 )
             )
         }
