@@ -12,6 +12,7 @@ type CrudEntity = {
 } & AnyRecord;
 
 const fakeJwt = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.mock-signature.mock-payload';
+const SESSION_COOKIE = 'MOCK_SESSION_ID';
 
 const roles = [
   { id: 1, name: 'ROLE_ADMIN' },
@@ -63,6 +64,26 @@ const users = [
     roles: [roles[1]],
   },
 ];
+
+const sessions = new Map<string, { name: string; email: string }>();
+
+const parseCookies = (cookieHeader?: string): Record<string, string> => {
+  if (!cookieHeader) return {};
+  return cookieHeader.split(';').reduce<Record<string, string>>((acc, part) => {
+    const [rawKey, ...rawValue] = part.trim().split('=');
+    if (!rawKey || rawValue.length === 0) return acc;
+    acc[rawKey] = decodeURIComponent(rawValue.join('='));
+    return acc;
+  }, {});
+};
+
+const getSessionFromRequest = (req: http.IncomingMessage) => {
+  const cookieHeader = Array.isArray(req.headers.cookie) ? req.headers.cookie.join('; ') : req.headers.cookie;
+  const cookies = parseCookies(cookieHeader);
+  const sessionId = cookies[SESSION_COOKIE];
+  if (!sessionId) return undefined;
+  return sessions.get(sessionId);
+};
 
 const parseJsonBody = async <T extends AnyRecord = AnyRecord>(
   req: http.IncomingMessage
@@ -290,12 +311,17 @@ const server = http.createServer(async (req: http.IncomingMessage, res: http.Ser
       return;
     }
 
+    const sessionId = crypto.randomUUID();
+    const user = {
+      name: 'Admin User',
+      email: 'admin@example.com',
+    };
+    sessions.set(sessionId, user);
+    res.setHeader('Set-Cookie', `${SESSION_COOKIE}=${encodeURIComponent(sessionId)}; Path=/; HttpOnly; SameSite=Lax`);
+
     json(res, 200, {
       token: fakeJwt,
-      user: {
-        name: 'Admin User',
-        email: 'admin@example.com',
-      },
+      user,
     });
     return;
   }
@@ -313,8 +339,31 @@ const server = http.createServer(async (req: http.IncomingMessage, res: http.Ser
   }
 
   if (pathname === '/api/auth/logout' && req.method === 'DELETE') {
+    const cookieHeader = Array.isArray(req.headers.cookie) ? req.headers.cookie.join('; ') : req.headers.cookie;
+    const cookies = parseCookies(cookieHeader);
+    const sessionId = cookies[SESSION_COOKIE];
+    if (sessionId) {
+      sessions.delete(sessionId);
+    }
+    res.setHeader('Set-Cookie', `${SESSION_COOKIE}=; Path=/; HttpOnly; Max-Age=0; SameSite=Lax`);
     res.writeHead(204);
     res.end();
+    return;
+  }
+
+  if (pathname === '/api/auth/me' && req.method === 'GET') {
+    const sessionUser = getSessionFromRequest(req);
+    if (!sessionUser) {
+      json(res, 401, { message: 'Unauthorized' });
+      return;
+    }
+
+    json(res, 200, {
+      name: sessionUser.name,
+      email: sessionUser.email,
+      provider: 'legacy',
+      authType: 'session',
+    });
     return;
   }
 
