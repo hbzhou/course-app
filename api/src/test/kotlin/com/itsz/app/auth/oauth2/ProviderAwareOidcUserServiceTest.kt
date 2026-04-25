@@ -64,4 +64,62 @@ class ProviderAwareOidcUserServiceTest {
         assertThat(loadedUser.getAttribute<String>("provider")).isEqualTo("keycloak")
         assertThat(loadedUser.authorities.map { it.authority }).contains("ROLE_ADMIN", "COURSE_EDIT")
     }
+
+    @Test
+    fun `uses provider default role when normalized roles are empty`() {
+        val now = Instant.now()
+        val registration = ClientRegistration.withRegistrationId("keycloak")
+            .clientId("course-app")
+            .clientSecret("secret")
+            .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
+            .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
+            .redirectUri("http://localhost/login/oauth2/code/keycloak")
+            .authorizationUri("http://localhost/auth")
+            .tokenUri("http://localhost/token")
+            .jwkSetUri("http://localhost/jwks")
+            .issuerUri("http://localhost/realms/course-app")
+            .userInfoUri("http://localhost/userinfo")
+            .userNameAttributeName("preferred_username")
+            .build()
+
+        val request = OidcUserRequest(
+            registration,
+            OAuth2AccessToken(OAuth2AccessToken.TokenType.BEARER, "access-token", now, now.plusSeconds(300)),
+            OidcIdToken("id-token", now, now.plusSeconds(300), mapOf(IdTokenClaimNames.SUB to "guest-id", "preferred_username" to "guest"))
+        )
+
+        val delegateUser = DefaultOidcUser(
+            listOf(SimpleGrantedAuthority("OIDC_USER")),
+            request.idToken,
+            OidcUserInfo(mapOf("email" to "guest@course-app.local")),
+            "preferred_username"
+        )
+
+        val service = ProviderAwareOidcUserService(
+            providerResolver = OAuth2ProviderResolver(
+                defaultProvider = "keycloak",
+                profiles = listOf(
+                    OAuth2ProviderProfile(
+                        providerId = "keycloak",
+                        displayName = "Keycloak",
+                        issuerUri = "http://localhost/realms/course-app",
+                        defaultRole = "ROLE_GUEST"
+                    )
+                )
+            ),
+            adapters = listOf(KeycloakClaimsAdapter()).associateBy { it.providerId },
+            authorityMapper = OAuth2AuthorityMapper(),
+            delegate = OAuth2UserService<OidcUserRequest, OidcUser> { delegateUser },
+            accessTokenClaimsLoader = { emptyMap() }
+        )
+
+        val loadedUser = service.loadUser(request)
+
+        assertThat(loadedUser.authorities.map { it.authority }).contains(
+            "ROLE_GUEST",
+            "COURSE_VIEW",
+            "TAG_VIEW",
+            "AUTHOR_VIEW"
+        )
+    }
 }

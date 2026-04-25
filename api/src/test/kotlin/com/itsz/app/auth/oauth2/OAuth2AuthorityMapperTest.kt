@@ -65,4 +65,34 @@ class OAuth2AuthorityMapperTest {
             "AUTHOR_VIEW"
         )
     }
+
+    @Test
+    fun `normalizes provider default role when normalized roles are empty`() {
+        val principal = NormalizedOAuth2Principal(
+            provider = "google",
+            subject = "subject-3",
+            username = "guest.user@gmail.com",
+            email = "guest.user@gmail.com",
+            groupsOrRoles = emptyList(),
+            rawClaims = emptyMap()
+        )
+        val googleProfile = OAuth2ProviderProfile(
+            providerId = "google",
+            displayName = "Google",
+            issuerUri = "https://accounts.google.com",
+            defaultRole = " guest "
+        )
+
+        val mapped = OAuth2AuthorityMapper().map(
+            normalized = principal,
+            profile = googleProfile
+        )
+
+        assertThat(mapped.map { it.authority }).contains(
+            "ROLE_GUEST",
+            "COURSE_VIEW",
+            "TAG_VIEW",
+            "AUTHOR_VIEW"
+        )
+    }
 }

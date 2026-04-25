@@ -20,7 +20,9 @@ class OAuth2AuthorityMapper {
     ): Set<GrantedAuthority> {
         val authorities = linkedSetOf<GrantedAuthority>()
         authorities.addAll(baseAuthorities)
-        val providerDefaultRole = profile?.defaultRole?.takeIf { it.isNotBlank() }
+        val providerDefaultRole = profile?.defaultRole
+            ?.let(::normalizeRole)
+            ?.takeIf { it.isNotBlank() }
         val roles = normalized.groupsOrRoles.ifEmpty { listOf(providerDefaultRole ?: defaultRole) }
         roles.forEach { role ->
             authorities.add(SimpleGrantedAuthority(role))
@@ -29,5 +31,11 @@ class OAuth2AuthorityMapper {
             }
         }
         return authorities
+    }
+
+    private fun normalizeRole(role: String): String {
+        val normalizedRole = role.trim().uppercase()
+        if (normalizedRole.isBlank()) return normalizedRole
+        return if (normalizedRole.startsWith("ROLE_")) normalizedRole else "ROLE_$normalizedRole"
     }
 }
