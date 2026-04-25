@@ -4,6 +4,7 @@ export const providerLabels: Record<string, string> = {
   azure: "Microsoft",
   keycloak: "Keycloak",
   google: "Google",
+  github: "GitHub",
 };
 
 // SVG brand logos keyed by provider ID.
@@ -29,6 +30,14 @@ export const providerLogos: Record<string, React.ReactElement> = {
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
       <path d="M12 1 3 6v12l9 5 9-5V6zm0 2.18 7 3.89v7.86L12 18.82 5 14.93V7.07z" fill="#4D9FFF"/>
       <circle cx="12" cy="12" r="3" fill="#4D9FFF"/>
+    </svg>
+  ),
+  github: (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+      <path
+        fill="currentColor"
+        d="M12 .5a12 12 0 0 0-3.79 23.39c.6.11.82-.26.82-.58v-2.23c-3.34.73-4.04-1.42-4.04-1.42-.55-1.37-1.34-1.74-1.34-1.74-1.1-.75.08-.74.08-.74 1.21.09 1.85 1.23 1.85 1.23 1.08 1.82 2.83 1.3 3.52.99.11-.77.42-1.3.76-1.6-2.67-.3-5.48-1.31-5.48-5.86 0-1.3.47-2.36 1.23-3.19-.12-.3-.53-1.52.12-3.17 0 0 1-.32 3.3 1.22a11.64 11.64 0 0 1 6 0c2.3-1.54 3.3-1.22 3.3-1.22.65 1.65.24 2.87.12 3.17.77.83 1.23 1.89 1.23 3.19 0 4.56-2.81 5.56-5.49 5.86.43.37.82 1.09.82 2.2v3.26c0 .32.22.7.83.58A12 12 0 0 0 12 .5Z"
+      />
     </svg>
   ),
 };
