@@ -39,6 +39,8 @@ class AuthControllerProvidersTest : EmbeddedRedisSupport() {
                 jsonPath("$[0].displayName") { value("Azure AD") }
                 jsonPath("$[1].providerId") { value("keycloak") }
                 jsonPath("$[1].displayName") { value("Keycloak") }
+                jsonPath("$[2].providerId") { value("google") }
+                jsonPath("$[2].displayName") { value("Google") }
             }
     }
 

@@ -1,6 +1,7 @@
 package com.itsz.app.config
 
 import com.itsz.app.auth.oauth2.AzureAdClaimsAdapter
+import com.itsz.app.auth.oauth2.GoogleClaimsAdapter
 import com.itsz.app.auth.oauth2.KeycloakClaimsAdapter
 import com.itsz.app.auth.oauth2.OAuth2AuthorityMapper
 import com.itsz.app.auth.oauth2.OAuth2ClaimsAdapter
@@ -52,7 +53,7 @@ class SecurityConfig(
 
     @Bean
     fun oauth2ClaimsAdapters(): Map<String, OAuth2ClaimsAdapter> =
-        listOf(AzureAdClaimsAdapter(), KeycloakClaimsAdapter()).associateBy { it.providerId }
+        listOf(AzureAdClaimsAdapter(), KeycloakClaimsAdapter(), GoogleClaimsAdapter()).associateBy { it.providerId }
 
     @Bean
     fun oauth2AuthorityMapper(): OAuth2AuthorityMapper = OAuth2AuthorityMapper()
