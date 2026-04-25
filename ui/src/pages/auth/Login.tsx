@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { useLogin, useProviders } from "@/hooks/useAuth";
 import { LoginRequest } from "@/api/authApi";
 import { useState } from "react";
+import { providerLogos } from "@/config/oauth2";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -103,10 +104,12 @@ const Login = () => {
                     key={provider.providerId}
                     type="button"
                     variant="outline"
-                    className="w-full"
+                    className="w-full flex items-center justify-center gap-2"
+                    aria-label={provider.displayName}
                     onClick={() => handleOAuth2Login(provider.providerId)}
                   >
-                    {`Continue with ${provider.displayName}`}
+                    {providerLogos[provider.providerId] ?? null}
+                    {provider.displayName}
                   </Button>
                 ))}
               </div>
