@@ -6,5 +6,6 @@ data class OAuth2ProviderProfile(
     val issuerUri: String,
     val usernameClaims: List<String> = emptyList(),
     val emailClaims: List<String> = emptyList(),
-    val roleClaims: List<String> = emptyList()
+    val roleClaims: List<String> = emptyList(),
+    val defaultRole: String? = null
 )
