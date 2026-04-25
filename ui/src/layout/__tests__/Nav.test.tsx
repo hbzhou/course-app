@@ -1,9 +1,18 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import Nav from "../Nav";
+import { usePermission } from "@/hooks/usePermission";
+
+vi.mock("@/hooks/usePermission", () => ({
+  usePermission: vi.fn(),
+}));
 
 describe("Nav", () => {
+  beforeEach(() => {
+    vi.mocked(usePermission).mockReturnValue(true);
+  });
+
   const renderNav = (initialRoute = "/") => {
     return render(
       <MemoryRouter initialEntries={[initialRoute]}>

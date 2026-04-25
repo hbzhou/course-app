@@ -6,6 +6,7 @@ import TagItem from "./TagItem";
 import { Card, CardContent, CardHeader, CardTitle } from "@/common/Card";
 import { Plus } from "lucide-react";
 import { useTags, useCreateTag, useUpdateTag, useDeleteTag } from "@/hooks/useTags";
+import { usePermission } from "@/hooks/usePermission";
 import { Tag } from "@/types/tag";
 
 const Tags = () => {
@@ -17,6 +18,7 @@ const Tags = () => {
   const formRef = useRef<AddTagHandle>(null);
 
   const { data: tags = [], isLoading, error } = useTags();
+  const canEditTags = usePermission("TAG_EDIT");
   const createTagMutation = useCreateTag();
   const updateTagMutation = useUpdateTag();
   const deleteTagMutation = useDeleteTag();
@@ -107,10 +109,12 @@ const Tags = () => {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="text-2xl">Tags</CardTitle>
-          <Button size="sm" onClick={handleAddClick}>
-            <Plus className="h-4 w-4 mr-1" />
-            Add Tag
-          </Button>
+          {canEditTags && (
+            <Button size="sm" onClick={handleAddClick}>
+              <Plus className="h-4 w-4 mr-1" />
+              Add Tag
+            </Button>
+          )}
         </CardHeader>
         <CardContent className="space-y-2">
           {tags.length === 0 ? (
@@ -125,6 +129,7 @@ const Tags = () => {
                 onEdit={handleEditTag}
                 onRemove={handleRemoveTag}
                 isRemoving={isRemoving === tag.id}
+                canEdit={canEditTags}
               />
             ))
           )}

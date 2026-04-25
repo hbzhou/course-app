@@ -5,9 +5,13 @@ import Courses from "../Courses";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import * as courseApi from "@/api/courseApi";
 import * as authorApi from "@/api/authorApi";
+import { usePermission } from "@/hooks/usePermission";
 
 vi.mock("@/api/courseApi");
 vi.mock("@/api/authorApi");
+vi.mock("@/hooks/usePermission", () => ({
+  usePermission: vi.fn(),
+}));
 
 describe("Courses", () => {
   let queryClient: QueryClient;
@@ -17,6 +21,7 @@ describe("Courses", () => {
       defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
     });
     vi.clearAllMocks();
+    vi.mocked(usePermission).mockReturnValue(true);
   });
 
   const renderCourses = () => {

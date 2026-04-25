@@ -5,8 +5,13 @@ import { BrowserRouter } from "react-router-dom";
 import Authors from "../Authors";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import * as authorApi from "@/api/authorApi";
+import { usePermission } from "@/hooks/usePermission";
 
 vi.mock("@/api/authorApi");
+
+vi.mock("@/hooks/usePermission", () => ({
+  usePermission: vi.fn(),
+}));
 
 describe("Authors", () => {
   let queryClient: QueryClient;
@@ -16,6 +21,7 @@ describe("Authors", () => {
       defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
     });
     vi.clearAllMocks();
+    vi.mocked(usePermission).mockReturnValue(true);
   });
 
   const renderAuthors = () => {

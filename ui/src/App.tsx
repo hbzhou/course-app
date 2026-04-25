@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import Header from "@/layout/Header";
 import ProtectedRoute from "@/router/ProtectedRoute";
+import PermissionRoute from "@/router/PermissionRoute";
 import ToastContainer from "@/layout/ToastContainer";
 import ErrorBoundary from "@/common/ErrorBoundary";
 import { AuthProvider } from "@/context/AuthContext";
@@ -80,8 +81,22 @@ const App = () => {
                         <Route path='/courses/:id' element={<CourseInfo />} />
                         <Route path='/authors' element={<Authors />} />
                         <Route path='/tags' element={<Tags />} />
-                        <Route path='/users' element={<Users />} />
-                        <Route path='/courses/add' element={<CreateCourse />} />
+                        <Route
+                          path='/users'
+                          element={
+                            <PermissionRoute required='USER_MANAGE' deny='403'>
+                              <Users />
+                            </PermissionRoute>
+                          }
+                        />
+                        <Route
+                          path='/courses/add'
+                          element={
+                            <PermissionRoute required='COURSE_EDIT' deny='redirect'>
+                              <CreateCourse />
+                            </PermissionRoute>
+                          }
+                        />
                       </Route>
                       <Route path='/login' element={<Login />} />
                       <Route path='/register' element={<Registration />} />

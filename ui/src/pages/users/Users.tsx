@@ -6,6 +6,7 @@ import UserItem from "./UserItem";
 import { Card, CardContent, CardHeader, CardTitle } from "@/common/Card";
 import { Plus } from "lucide-react";
 import { useUsers, useCreateUser, useUpdateUser, useDeleteUser, useRoles } from "@/hooks/useUsers";
+import { usePermission } from "@/hooks/usePermission";
 import { ManagedUser } from "@/types/managed-user";
 
 const Users = () => {
@@ -18,6 +19,7 @@ const Users = () => {
 
   const { data: users = [], isLoading, error } = useUsers();
   const { data: roles = [], isLoading: isLoadingRoles } = useRoles();
+  const canManageUsers = usePermission("USER_MANAGE");
   const createUserMutation = useCreateUser();
   const updateUserMutation = useUpdateUser();
   const deleteUserMutation = useDeleteUser();
@@ -104,10 +106,12 @@ const Users = () => {
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="text-3xl">User Management</CardTitle>
-            <Button onClick={handleAddClick} disabled={isLoadingRoles}>
-              <Plus className="h-4 w-4 mr-2" />
-              Add User
-            </Button>
+            {canManageUsers && (
+              <Button onClick={handleAddClick} disabled={isLoadingRoles}>
+                <Plus className="h-4 w-4 mr-2" />
+                Add User
+              </Button>
+            )}
           </div>
         </CardHeader>
 
@@ -128,6 +132,7 @@ const Users = () => {
                 onEdit={handleEditUser}
                 onRemove={handleRemoveUser}
                 isRemoving={isRemoving === user.id}
+                canManage={canManageUsers}
               />
             ))
           ) : (

@@ -5,6 +5,7 @@ import CourseCard from "./CourseCard";
 import SearchBar from "./SearchBar";
 import { useCourses } from "@/hooks/useCourses";
 import { useAuthors } from "@/hooks/useAuthors";
+import { usePermission } from "@/hooks/usePermission";
 import { Course } from "@/types/course";
 import { CourseGridSkeleton } from "@/common/Skeleton";
 import { AlertCircle, Plus } from "lucide-react";
@@ -14,6 +15,7 @@ const Courses = () => {
   const navigate = useNavigate();
   const { data: courses = [], isLoading: coursesLoading, error: coursesError } = useCourses();
   const { isLoading: authorsLoading } = useAuthors();
+  const canEditCourses = usePermission("COURSE_EDIT");
 
   const handleSearch = (keyword: string) => {
     setKeyword(keyword);
@@ -57,10 +59,12 @@ const Courses = () => {
             <h1 className="text-3xl font-bold text-foreground mb-2">Courses</h1>
             <p className="text-muted-foreground">{filteredCourses.length} {filteredCourses.length === 1 ? 'course' : 'courses'} available</p>
           </div>
-          <Button onClick={() => navigate("/courses/add")} className="gap-2 whitespace-nowrap">
-            <Plus className="w-4 h-4" />
-            Add New Course
-          </Button>
+          {canEditCourses && (
+            <Button onClick={() => navigate("/courses/add")} className="gap-2 whitespace-nowrap">
+              <Plus className="w-4 h-4" />
+              Add New Course
+            </Button>
+          )}
         </div>
       </div>
 
@@ -84,7 +88,7 @@ const Courses = () => {
             <p className="text-muted-foreground mb-4">
               {keyword ? "Try adjusting your search criteria" : "Get started by creating your first course"}
             </p>
-            {!keyword && (
+            {!keyword && canEditCourses && (
               <Button onClick={() => navigate("/courses/add")} className="gap-2">
                 <Plus className="w-4 h-4" />
                 Create Course

@@ -5,8 +5,13 @@ import { BrowserRouter } from "react-router-dom";
 import Tags from "../Tags";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import * as tagApi from "@/api/tagApi";
+import { usePermission } from "@/hooks/usePermission";
 
 vi.mock("@/api/tagApi");
+
+vi.mock("@/hooks/usePermission", () => ({
+  usePermission: vi.fn(),
+}));
 
 describe("Tags", () => {
   let queryClient: QueryClient;
@@ -16,6 +21,7 @@ describe("Tags", () => {
       defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
     });
     vi.clearAllMocks();
+    vi.mocked(usePermission).mockReturnValue(true);
   });
 
   const renderTags = () => {
