@@ -14,6 +14,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       name: userData.username,
       email: userData.email,
       authType: "session",
+      permissions: [],
     });
     setAuthStatus("authenticated");
   };
@@ -35,6 +36,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         email: sessionUser.email,
         provider: sessionUser.provider,
         authType: sessionUser.authType,
+        permissions: sessionUser.permissions ?? [],
       });
       setAuthStatus("authenticated");
     } catch {

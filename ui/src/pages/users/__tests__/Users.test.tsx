@@ -5,6 +5,7 @@ import { BrowserRouter } from "react-router-dom";
 import Users from "../Users";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { userApi } from "@/api/userApi";
+import { usePermission } from "@/hooks/usePermission";
 
 vi.mock("@/api/userApi", () => ({
   userApi: {
@@ -17,6 +18,10 @@ vi.mock("@/api/userApi", () => ({
   },
 }));
 
+vi.mock("@/hooks/usePermission", () => ({
+  usePermission: vi.fn(),
+}));
+
 describe("Users", () => {
   let queryClient: QueryClient;
 
@@ -25,6 +30,7 @@ describe("Users", () => {
       defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
     });
     vi.clearAllMocks();
+    vi.mocked(usePermission).mockReturnValue(true);
   });
 
   const mockUsers = [

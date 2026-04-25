@@ -24,6 +24,7 @@ export interface CurrentUserResponse {
   email: string;
   provider: string;
   authType: "bearer" | "session";
+  permissions: string[];
 }
 
 export const authApi = {

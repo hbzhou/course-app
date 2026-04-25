@@ -6,6 +6,7 @@ export interface AuthenticatedUser {
   email: string;
   provider?: string;
   authType: "legacy" | "bearer" | "session";
+  permissions: string[];
 }
 
 export type AuthStatus = "loading" | "authenticated" | "anonymous";

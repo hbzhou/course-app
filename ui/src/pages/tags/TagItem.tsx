@@ -7,9 +7,10 @@ interface TagItemProps extends Tag {
   onEdit: (tag: Tag) => void;
   onRemove: (tag: Tag) => void;
   isRemoving?: boolean;
+  canEdit?: boolean;
 }
 
-const TagItem = ({ id, name, color, onEdit, onRemove, isRemoving = false }: TagItemProps) => {
+const TagItem = ({ id, name, color, onEdit, onRemove, isRemoving = false, canEdit = true }: TagItemProps) => {
   return (
     <div className="flex items-center justify-between p-4 border border-border rounded-lg hover-lift group transition-colors-fast">
       <div className="flex items-center gap-3 flex-1 min-w-0">
@@ -23,27 +24,29 @@ const TagItem = ({ id, name, color, onEdit, onRemove, isRemoving = false }: TagI
         <span className="text-xs text-muted-foreground font-mono">{color}</span>
         </div>
       </div>
-      <div className="flex gap-2 ml-3 flex-shrink-0">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => onEdit({ id, name, color })}
-          className="gap-1.5 transition-colors-fast"
-        >
-          <Edit className="h-3.5 w-3.5" />
-          <span className="hidden sm:inline">Edit</span>
-        </Button>
-        <Button
-          variant="destructive"
-          size="sm"
-          onClick={() => onRemove({ id, name, color })}
-          disabled={isRemoving}
-          className="gap-1.5 transition-colors-fast"
-        >
-          <Trash2 className="h-3.5 w-3.5" />
-          <span className="hidden sm:inline">{isRemoving ? "Removing" : "Remove"}</span>
-        </Button>
-      </div>
+      {canEdit && (
+        <div className="flex gap-2 ml-3 flex-shrink-0">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onEdit({ id, name, color })}
+            className="gap-1.5 transition-colors-fast"
+          >
+            <Edit className="h-3.5 w-3.5" />
+            <span className="hidden sm:inline">Edit</span>
+          </Button>
+          <Button
+            variant="destructive"
+            size="sm"
+            onClick={() => onRemove({ id, name, color })}
+            disabled={isRemoving}
+            className="gap-1.5 transition-colors-fast"
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+            <span className="hidden sm:inline">{isRemoving ? "Removing" : "Remove"}</span>
+          </Button>
+        </div>
+      )}
     </div>
   );
 };

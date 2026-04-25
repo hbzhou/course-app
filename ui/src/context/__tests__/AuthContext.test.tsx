@@ -26,6 +26,7 @@ describe("AuthContext", () => {
       email: "test@example.com",
       provider: "azure",
       authType: "session",
+      permissions: ["COURSE_VIEW"],
     });
 
     const { result } = renderHook(() => useAuthContext(), { wrapper });
@@ -33,6 +34,7 @@ describe("AuthContext", () => {
     await waitFor(() => {
       expect(result.current.isAuthenticated).toBe(true);
       expect(result.current.user?.name).toBe("testuser");
+      expect(result.current.user?.permissions).toEqual(["COURSE_VIEW"]);
       expect(result.current.authStatus).toBe("authenticated");
     });
   });
@@ -69,6 +71,7 @@ describe("AuthContext", () => {
         name: "session-user",
         email: "session@example.com",
         authType: "session",
+        permissions: [],
       });
       expect(result.current.authStatus).toBe("authenticated");
       expect(result.current.isAuthenticated).toBe(true);
@@ -81,6 +84,7 @@ describe("AuthContext", () => {
       email: "test@example.com",
       provider: "azure",
       authType: "session",
+      permissions: ["COURSE_VIEW"],
     });
 
     const { result } = renderHook(() => useAuthContext(), { wrapper });
@@ -108,6 +112,7 @@ describe("AuthContext", () => {
         email: "session@example.com",
         provider: "azure",
         authType: "session",
+        permissions: ["COURSE_VIEW", "COURSE_EDIT"],
       });
 
     const { result } = renderHook(() => useAuthContext(), { wrapper });
@@ -123,6 +128,7 @@ describe("AuthContext", () => {
     await waitFor(() => {
       expect(result.current.authStatus).toBe("authenticated");
       expect(result.current.user?.name).toBe("session-user");
+      expect(result.current.user?.permissions).toEqual(["COURSE_VIEW", "COURSE_EDIT"]);
       expect(result.current.isAuthenticated).toBe(true);
     });
   });

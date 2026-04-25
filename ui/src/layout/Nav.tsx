@@ -1,10 +1,12 @@
 import { NavLink, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/common/button-variants";
+import { usePermission } from "@/hooks/usePermission";
 
 const Nav = () => {
   const location = useLocation();
   const isCoursesTabActive = location.pathname === "/" || location.pathname.startsWith("/courses");
+  const canManageUsers = usePermission("USER_MANAGE");
 
   return (
     <nav className="hidden md:flex items-center gap-1">
@@ -44,18 +46,20 @@ const Nav = () => {
       >
         Tags
       </NavLink>
-      <NavLink
-        to="/users"
-        className={({ isActive }) =>
-          cn(
-            buttonVariants({ variant: "ghost", size: "sm" }),
-            "text-sm transition-colors-fast",
-            isActive && "bg-primary/10 text-primary font-medium"
-          )
-        }
-      >
-        Users
-      </NavLink>
+      {canManageUsers && (
+        <NavLink
+          to="/users"
+          className={({ isActive }) =>
+            cn(
+              buttonVariants({ variant: "ghost", size: "sm" }),
+              "text-sm transition-colors-fast",
+              isActive && "bg-primary/10 text-primary font-medium"
+            )
+          }
+        >
+          Users
+        </NavLink>
+      )}
     </nav>
   );
 };

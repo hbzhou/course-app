@@ -363,6 +363,14 @@ const server = http.createServer(async (req: http.IncomingMessage, res: http.Ser
       email: sessionUser.email,
       provider: 'legacy',
       authType: 'session',
+      permissions: [
+        'COURSE_VIEW',
+        'COURSE_EDIT',
+        'AUTHOR_EDIT',
+        'TAG_EDIT',
+        'USER_MANAGE',
+        'ROLE_MANAGE',
+      ],
     });
     return;
   }

@@ -6,6 +6,7 @@ import AuthorItem from "./AuthorItem";
 import { Card, CardContent, CardHeader, CardTitle } from "@/common/Card";
 import { Plus } from "lucide-react";
 import { useAuthors, useCreateAuthor, useUpdateAuthor, useDeleteAuthor } from "@/hooks/useAuthors";
+import { usePermission } from "@/hooks/usePermission";
 import { Author } from "@/types/author";
 
 const Authors = () => {
@@ -17,6 +18,7 @@ const Authors = () => {
   const formRef = useRef<AddAuthorHandle>(null);
 
   const { data: authors = [], isLoading, error } = useAuthors();
+  const canEditAuthors = usePermission("AUTHOR_EDIT");
   const createAuthorMutation = useCreateAuthor();
   const updateAuthorMutation = useUpdateAuthor();
   const deleteAuthorMutation = useDeleteAuthor();
@@ -92,10 +94,12 @@ const Authors = () => {
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="text-3xl">Authors</CardTitle>
-            <Button onClick={handleAddClick}>
-              <Plus className="h-4 w-4 mr-2" />
-              Add Author
-            </Button>
+            {canEditAuthors && (
+              <Button onClick={handleAddClick}>
+                <Plus className="h-4 w-4 mr-2" />
+                Add Author
+              </Button>
+            )}
           </div>
         </CardHeader>
         <CardContent className="space-y-3">
@@ -115,6 +119,7 @@ const Authors = () => {
                 onEdit={handleEditAuthor}
                 onRemove={handleRemoveAuthor}
                 isRemoving={isRemoving === author.id}
+                canEdit={canEditAuthors}
               />
             ))
           ) : (
