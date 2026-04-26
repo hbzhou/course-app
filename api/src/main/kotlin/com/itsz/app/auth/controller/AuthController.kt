@@ -16,7 +16,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.userdetails.UserDetailsService
 import org.springframework.security.core.context.SecurityContextHolder
-import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.security.oauth2.core.user.OAuth2User
 import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository
@@ -29,7 +28,6 @@ class AuthController(
     private val userDetailsService: UserDetailsService,
     private val userService: UserService,
     private val roleRepository: RoleRepository,
-    private val passwordEncoder: PasswordEncoder,
     private val oauth2ProviderProperties: OAuth2ProviderProperties
 ) {
 
@@ -65,7 +63,7 @@ class AuthController(
         val user = User(
             username = registerRequest.username!!,
             email = registerRequest.email!!,
-            password = passwordEncoder.encode(registerRequest.password!!),
+            password = registerRequest.password!!,
             roles = setOf(userRole)
         )
         return userService.create(user)
