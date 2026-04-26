@@ -6,6 +6,8 @@ import com.itsz.app.auth.repository.RoleRepository
 import com.itsz.app.auth.service.UserService
 import com.itsz.app.exception.ResourceNotFoundException
 import jakarta.servlet.http.HttpServletRequest
+import jakarta.validation.Valid
+import jakarta.validation.constraints.NotBlank
 import jakarta.servlet.http.HttpServletResponse
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -58,12 +60,12 @@ class AuthController(
     }
 
     @PostMapping("/register")
-    fun register(@RequestBody registerRequest: RegisterRequest): User {
+    fun register(@Valid @RequestBody registerRequest: RegisterRequest): User {
         val userRole = roleRepository.findByName("ROLE_USER").orElseThrow { ResourceNotFoundException("Role not found") }
         val user = User(
-            username = registerRequest.username,
-            email = registerRequest.email,
-            password = passwordEncoder.encode(registerRequest.password),
+            username = registerRequest.username!!,
+            email = registerRequest.email!!,
+            password = passwordEncoder.encode(registerRequest.password!!),
             roles = setOf(userRole)
         )
         return userService.create(user)
@@ -147,6 +149,13 @@ data class UserInfo(
     val email: String
 )
 
-data class RegisterRequest(val username: String, val email: String, val password: String)
+data class RegisterRequest(
+    @field:NotBlank(message = "Username is required")
+    val username: String?,
+    @field:NotBlank(message = "Email is required")
+    val email: String?,
+    @field:NotBlank(message = "Password is required")
+    val password: String?
+)
 
 
