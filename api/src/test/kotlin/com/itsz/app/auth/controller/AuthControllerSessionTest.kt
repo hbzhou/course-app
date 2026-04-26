@@ -132,4 +132,20 @@ class AuthControllerSessionTest : EmbeddedRedisSupport() {
             header { string("Clear-Site-Data", "\"cookies\"") }
         }
     }
+
+    @Test
+    fun `register with missing username returns 400 validation error`() {
+        mockMvc.perform(
+            org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+                .post("/api/auth/register")
+                .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                .content("""{"name":"foo","email":"foo@example.com","password":"secret123"}""")
+        ).andExpect(
+            org.springframework.test.web.servlet.result.MockMvcResultMatchers.status().isBadRequest
+        ).andExpect(
+            org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$.code").value("VALIDATION_ERROR")
+        ).andExpect(
+            org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$.message").value("Username is required")
+        )
+    }
 }
