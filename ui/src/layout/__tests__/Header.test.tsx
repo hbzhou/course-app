@@ -1,10 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import { BrowserRouter } from "react-router-dom";
 import Header from "../Header";
 import { AuthProvider } from "@/context/AuthContext";
 import { NotificationProvider } from "@/context/NotificationContext";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { authApi } from "@/api/authApi";
 
 vi.mock("../Logo", () => ({
   default: () => <div data-testid="logo">Logo</div>,
@@ -22,11 +23,18 @@ vi.mock("../NotificationBell", () => ({
   default: () => <div data-testid="notifications">Notifications</div>,
 }));
 
+vi.mock("@/api/authApi", () => ({
+  authApi: {
+    getCurrentUser: vi.fn(),
+  },
+}));
+
 describe("Header", () => {
   let queryClient: QueryClient;
 
   beforeEach(() => {
     queryClient = new QueryClient();
+    vi.clearAllMocks();
     vi.stubGlobal("localStorage", {
       getItem: vi.fn(),
       setItem: vi.fn(),
@@ -51,17 +59,53 @@ describe("Header", () => {
     );
   };
 
-  it("renders header with all components", () => {
+  it("renders header with all components when authenticated", async () => {
+    vi.mocked(authApi.getCurrentUser).mockResolvedValue({
+      name: "testuser",
+      email: "test@example.com",
+      provider: "azure",
+      authType: "session",
+      permissions: ["COURSE_VIEW"],
+    });
+
     renderHeader();
     
-    expect(screen.getByRole("banner")).toBeInTheDocument();
-    expect(screen.getByTestId("logo")).toBeInTheDocument();
-    expect(screen.getByTestId("nav")).toBeInTheDocument();
-    expect(screen.getByTestId("profile")).toBeInTheDocument();
-    expect(screen.getByTestId("notifications")).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByRole("banner")).toBeInTheDocument();
+      expect(screen.getByTestId("logo")).toBeInTheDocument();
+      expect(screen.getByTestId("nav")).toBeInTheDocument();
+      expect(screen.getByTestId("profile")).toBeInTheDocument();
+      expect(screen.getByTestId("notifications")).toBeInTheDocument();
+    });
+  });
+
+  it("does not render Nav, NotificationBell, or Profile when not authenticated", async () => {
+    vi.mocked(authApi.getCurrentUser).mockRejectedValue(
+      new Error("Unauthorized")
+    );
+
+    renderHeader();
+    
+    await waitFor(() => {
+      // Logo should still be present
+      expect(screen.getByTestId("logo")).toBeInTheDocument();
+      
+      // Nav should not be rendered
+      expect(screen.queryByTestId("nav")).not.toBeInTheDocument();
+      
+      // NotificationBell should not be rendered
+      expect(screen.queryByTestId("notifications")).not.toBeInTheDocument();
+      
+      // Profile should not be rendered
+      expect(screen.queryByTestId("profile")).not.toBeInTheDocument();
+    });
   });
 
   it("has sticky positioning and backdrop blur", () => {
+    vi.mocked(authApi.getCurrentUser).mockRejectedValue(
+      new Error("Unauthorized")
+    );
+    
     const { container } = renderHeader();
     const header = container.querySelector("header");
     
@@ -71,6 +115,10 @@ describe("Header", () => {
   });
 
   it("applies proper layout structure", () => {
+    vi.mocked(authApi.getCurrentUser).mockRejectedValue(
+      new Error("Unauthorized")
+    );
+    
     const { container } = renderHeader();
     const header = container.querySelector("header");
     

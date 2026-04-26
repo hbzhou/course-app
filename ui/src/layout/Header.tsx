@@ -2,6 +2,7 @@ import Logo from "@/layout/Logo";
 import Profile from "@/layout/Profile";
 import Nav from "@/layout/Nav";
 import NotificationBell from "@/layout/NotificationBell";
+import { AuthenticatedOnly } from "@/common/AuthenticatedOnly";
 
 const Header = () => {
   return (
@@ -9,11 +10,15 @@ const Header = () => {
       <div className="container mx-auto flex justify-between items-center h-16 px-4">
         <div className="flex items-center gap-6">
           <Logo />
-          <Nav />
+          <AuthenticatedOnly>
+            <Nav />
+          </AuthenticatedOnly>
         </div>
         <div className="flex items-center gap-4">
-          <NotificationBell />
-          <Profile />
+          <AuthenticatedOnly>
+            <NotificationBell />
+            <Profile />
+          </AuthenticatedOnly>
         </div>
       </div>
     </header>

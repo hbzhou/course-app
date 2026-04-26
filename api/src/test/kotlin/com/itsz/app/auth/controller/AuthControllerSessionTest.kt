@@ -15,6 +15,7 @@ import org.springframework.web.context.WebApplicationContext
 import org.springframework.security.web.FilterChainProxy
 import org.junit.jupiter.api.BeforeEach
 import org.springframework.mock.web.MockHttpSession
+import java.util.UUID
 
 @SpringBootTest
 class AuthControllerSessionTest : EmbeddedRedisSupport() {
@@ -131,5 +132,45 @@ class AuthControllerSessionTest : EmbeddedRedisSupport() {
             status { isOk() }
             header { string("Clear-Site-Data", "\"cookies\"") }
         }
+    }
+
+    @Test
+    fun `register with missing username returns 400 validation error`() {
+        mockMvc.perform(
+            org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+                .post("/api/auth/register")
+                .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                .content("""{"name":"foo","email":"foo@example.com","password":"secret123"}""")
+        ).andExpect(
+            org.springframework.test.web.servlet.result.MockMvcResultMatchers.status().isBadRequest
+        ).andExpect(
+            org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$.code").value("VALIDATION_ERROR")
+        ).andExpect(
+            org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$.message").value("Username is required")
+        )
+    }
+
+    @Test
+    fun `newly registered user can login with same password`() {
+        val username = "reg-${UUID.randomUUID()}"
+        val password = "secret123"
+
+        mockMvc.perform(
+            org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+                .post("/api/auth/register")
+                .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                .content("""{"username":"$username","email":"$username@example.com","password":"$password"}""")
+        ).andExpect(
+            org.springframework.test.web.servlet.result.MockMvcResultMatchers.status().isOk
+        )
+
+        mockMvc.perform(
+            org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+                .post("/api/auth/login")
+                .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                .content("""{"username":"$username","password":"$password"}""")
+        ).andExpect(
+            org.springframework.test.web.servlet.result.MockMvcResultMatchers.status().isOk
+        )
     }
 }

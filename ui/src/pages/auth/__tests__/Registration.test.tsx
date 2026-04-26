@@ -50,7 +50,7 @@ describe("Registration", () => {
     renderRegistration();
     
     expect(screen.getByRole("heading", { name: /create an account/i })).toBeInTheDocument();
-    expect(screen.getByLabelText(/^name/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/^username/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/password/i)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /register/i })).toBeInTheDocument();
@@ -71,14 +71,14 @@ describe("Registration", () => {
     
     renderRegistration();
     
-    await user.type(screen.getByLabelText(/^name/i), "New User");
+    await user.type(screen.getByLabelText(/^username/i), "New User");
     await user.type(screen.getByLabelText(/email/i), "newuser@example.com");
     await user.type(screen.getByLabelText(/password/i), "password123");
     await user.click(screen.getByRole("button", { name: /register/i }));
     
     await waitFor(() => {
       expect(authApi.register).toHaveBeenCalledWith({
-        name: "New User",
+        username: "New User",
         email: "newuser@example.com",
         password: "password123",
       });
@@ -91,7 +91,7 @@ describe("Registration", () => {
     
     renderRegistration();
     
-    await user.type(screen.getByLabelText(/^name/i), "Test User");
+    await user.type(screen.getByLabelText(/^username/i), "Test User");
     await user.type(screen.getByLabelText(/email/i), "existing@example.com");
     await user.type(screen.getByLabelText(/password/i), "password123");
     await user.click(screen.getByRole("button", { name: /register/i }));
@@ -111,7 +111,7 @@ describe("Registration", () => {
     
     renderRegistration();
     
-    await user.type(screen.getByLabelText(/^name/i), "New User");
+    await user.type(screen.getByLabelText(/^username/i), "New User");
     await user.type(screen.getByLabelText(/email/i), "newuser@example.com");
     await user.type(screen.getByLabelText(/password/i), "password123");
     await user.click(screen.getByRole("button", { name: /register/i }));

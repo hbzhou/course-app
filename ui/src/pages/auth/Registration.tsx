@@ -44,13 +44,13 @@ const Registration = () => {
               </div>
             )}
             <div className="space-y-2">
-              <Label htmlFor="name">Name</Label>
+              <Label htmlFor="username">Username</Label>
               <Input
-                id="name"
-                placeholder="Enter name"
-                {...register("name", { required: true })}
+                id="username"
+                placeholder="Enter username"
+                {...register("username", { required: true })}
               />
-              {errors.name && <span className="text-sm text-destructive">This field is required</span>}
+              {errors.username && <span className="text-sm text-destructive">This field is required</span>}
             </div>
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
